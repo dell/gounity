@@ -2,7 +2,7 @@
 Copyright (c) 2019 Dell EMC Corporation
 All Rights Reserved
 */
-package payloads
+package types
 
 import "fmt"
 
@@ -41,6 +41,11 @@ type StoragePoolID struct {
 	PoolId string `json:"id"`
 }
 
+//Struct to capture Nas server Id for Create Volume
+type NasServerID struct {
+	NasServerID string `json:"id"`
+}
+
 // Struct to capture the Lun create Params
 type LunCreateParam struct {
 	Name          string         `json:"name"`
@@ -51,12 +56,41 @@ type LunCreateParam struct {
 // Struct to capture the Lun properties
 type LunParameters struct {
 	Size                   uint64                 `json:"size,omitempty"`
-	IsThinEnabled          bool                   `json:"isThinEnabled"`
+	IsThinEnabled          string                 `json:"isThinEnabled,omitempty"`
 	StoragePool            *StoragePoolID         `json:"pool,omitempty"`
-	IsDataReductionEnabled bool                   `json:"isDataReductionEnabled"`
+	IsDataReductionEnabled string                 `json:"isDataReductionEnabled,omitempty"`
 	FastVPParameters       *FastVPParameters      `json:"fastVPParameters,omitempty"`
 	HostAccess             *[]HostAccess          `json:"hostAccess,omitempty"`
 	IoLimitParameters      *HostIoLimitParameters `json:"ioLimitParameters,omitempty"`
+}
+
+// Struct to capture the Filesystem create Params
+type FsCreateParam struct {
+	Name         string        `json:"name"`
+	Description  string        `json:"description,omitempty"`
+	FsParameters *FsParameters `json:"fsParameters"`
+}
+
+// Struct to capture the File system properties
+type FsParameters struct {
+	Size                   uint64                 `json:"size,omitempty"`
+	IsThinEnabled          bool                   `json:"isThinEnabled"`
+	IsDataReductionEnabled bool                   `json:"isDataReductionEnabled"`
+	SupportedProtocol      int                    `json:"supportedProtocols"`
+	HostIOSize             int                    `json:"hostIOSize"`
+	IsCacheDisabled        bool                   `json:"isCacheDisabled"`
+	StoragePool            *StoragePoolID         `json:"pool,omitempty"`
+	FastVPParameters       *FastVPParameters      `json:"fastVPParameters,omitempty"`
+	HostAccess             *[]HostAccess          `json:"hostAccess,omitempty"`
+	IoLimitParameters      *HostIoLimitParameters `json:"ioLimitParameters,omitempty"`
+	NasServer              *NasServerID           `json:"nasServer"`
+	FileEventSettings      FileEventSettings      `json:"fileEventSettings,omitempty"`
+}
+
+// Struct to capture File event settings
+type FileEventSettings struct {
+	IsCIFSEnabled bool `json:"isCIFSEnabled"`
+	IsNFSEnabled  bool `json:"isNFSEnabled"`
 }
 
 type LunExpandParameters struct {
@@ -102,7 +136,7 @@ type HostIpPortCreateParam struct {
 
 type HostInitiatorCreateParam struct {
 	HostIdContent *HostIdContent `json:"host"`
-	InitiatorType string         `json:"initiatorType"`
+	InitiatorType InitiatorType  `json:"initiatorType"`
 	InitiatorWwn  string         `json:"initiatorWWNorIqn"`
 }
 
@@ -128,11 +162,11 @@ type LunHostAccessModifyParam struct {
 }
 
 type CreateSnapshotParam struct {
-	Name              string                `json:"name"`
+	Name              string                `json:"name,omitempty"`
 	StorageResource   *StorageResourceParam `json:"storageResource,omitempty"`
 	Description       string                `json:"description,omitempty"`
 	RetentionDuration uint64                `json:"retentionDuration,omitempty"`
-	IsReadOnly        bool                  `json:"isReadOnly"`
+	IsAutoDelete      bool                  `json:"isAutoDelete"`
 }
 
 type StorageResourceParam struct {
@@ -146,3 +180,14 @@ type HostIoLimitParameters struct {
 type IoLimitPolicyParam struct {
 	Id string `json:"id"`
 }
+
+type SnapshotIdContent struct {
+	Id string `json:"id"`
+}
+
+type CreateLunThinCloneParam struct {
+	SnapIdContent *SnapshotIdContent `json:"snap"`
+	Name          string             `json:"name"`
+}
+
+type InitiatorType string

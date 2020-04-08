@@ -1,19 +1,21 @@
 package gounity
 
 import (
+	"context"
 	"fmt"
 	"testing"
 )
 
 func TestGetStoragePool(t *testing.T) {
-	pool, err := testConf.poolApi.FindStoragePoolById(testConf.poolId)
+	ctx := context.Background()
+	pool, err := testConf.poolApi.FindStoragePoolById(ctx, testConf.poolId)
 
 	fmt.Println("GetPool:", pool, err)
 	if err != nil {
 		t.Fatalf("Get Pool failed: %v", err)
 	}
 
-	pool, err = testConf.poolApi.FindStoragePoolByName(pool.StoragePoolContent.Name)
+	pool, err = testConf.poolApi.FindStoragePoolByName(ctx, pool.StoragePoolContent.Name)
 
 	fmt.Println("GetPool by name:", pool, err)
 	if err != nil {
@@ -21,7 +23,7 @@ func TestGetStoragePool(t *testing.T) {
 	}
 	//produce 404 status code
 	poolId := "afasd89798asdfasfa089798" //poolid should not exists in unity
-	pool, err = testConf.poolApi.FindStoragePoolById(poolId)
+	pool, err = testConf.poolApi.FindStoragePoolById(ctx, poolId)
 
 	fmt.Println("GetPool:", pool, err)
 	if err != nil {

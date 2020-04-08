@@ -6,13 +6,13 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"github.com/sirupsen/logrus"
+	"github.com/dell/gounity/util"
 	"net/http"
 	"os"
 	"strconv"
 
 	"github.com/dell/gounity/api"
-	types "github.com/dell/gounity/payloads"
+	"github.com/dell/gounity/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -43,16 +43,10 @@ type ConfigConnect struct {
 	Password string
 }
 
-var log *logrus.Logger
-
-func SetLogger(l *logrus.Logger) {
-	log = l
-}
-
 // Authenticate make a REST API call [/loginSessionInfo] to Unity to get authenticate the given credentials.
 // The response contains the EMC-CSRF-TOKEN and the client caches it for further communication.
-func (c *Client) Authenticate(configConnect *ConfigConnect) error {
-	SetLogger(api.GetLogger())
+func (c *Client) Authenticate(ctx context.Context, configConnect *ConfigConnect) error {
+	log := util.GetRunIdLogger(ctx)
 	log.Info("Executing Authenticate REST client")
 	c.configConnect = configConnect
 	c.api.SetToken("")
@@ -60,7 +54,7 @@ func (c *Client) Authenticate(configConnect *ConfigConnect) error {
 	headers[api.AuthorizationHeader] = "Basic " + basicAuth(configConnect.Username, configConnect.Password)
 	headers[api.XEmcRestClient] = "true"
 	headers[api.HeaderKeyContentType] = api.HeaderValContentTypeJSON
-	resp, err := c.api.DoAndGetResponseBody(context.Background(), http.MethodGet, api.UnityApiLoginSessionInfoUri, headers, nil)
+	resp, err := c.api.DoAndGetResponseBody(ctx, http.MethodGet, api.UnityApiLoginSessionInfoUri, headers, nil)
 
 	if err != nil {
 		log.Errorf("Authentication error: %v", err)
@@ -87,8 +81,8 @@ func (c *Client) Authenticate(configConnect *ConfigConnect) error {
 				return status.Errorf(codes.Unauthenticated, "Unable to login to Unity. Verify username and password.")
 			}
 		default:
-			log.Errorf("Authenticate error. Response: %v", c.api.ParseJSONError(resp))
-			return c.api.ParseJSONError(resp)
+			log.Errorf("Authenticate error. Response: %v", c.api.ParseJSONError(ctx, resp))
+			return c.api.ParseJSONError(ctx, resp)
 		}
 
 		c.api.SetToken(resp.Header.Get(emcCsrfToken))
@@ -106,14 +100,14 @@ func basicAuth(username, password string) string {
 
 // GetJSONWithRetry method responsible to make the given API call to Unity REST API Server.
 // In case if the given EMC-CSRF-TOKEN becomes invalid, retries the same operation after performing authentication.
-func (c *Client) executeWithRetryAuthenticate(method, uri string, body, resp interface{}) error {
+func (c *Client) executeWithRetryAuthenticate(ctx context.Context, method, uri string, body, resp interface{}) error {
+	log := util.GetRunIdLogger(ctx)
 	headers := make(map[string]string, 2)
 	headers[api.HeaderKeyAccept] = accHeader
 	headers[api.HeaderKeyContentType] = conHeader
 	headers[api.XEmcRestClient] = "true"
 	log.Info("Invoking REST API server info Method: ", method, ", URI: ", uri)
-
-	err := c.api.DoWithHeaders(context.Background(), method, uri, headers, body, resp)
+	err := c.api.DoWithHeaders(ctx, method, uri, headers, body, resp)
 	if err == nil {
 		log.Info("Execution successful on Method: ", method, ", URI: ", uri)
 		return nil
@@ -125,12 +119,12 @@ func (c *Client) executeWithRetryAuthenticate(method, uri string, body, resp int
 		if e.ErrorContent.HTTPStatusCode == 401 {
 			log.Info("need to re-authenticate")
 			// Authenticate then try again
-			if err := c.Authenticate(c.configConnect); err != nil {
+			if err := c.Authenticate(ctx, c.configConnect); err != nil {
 				return fmt.Errorf("authentication failure due to: %v", err)
 			} else {
 				log.Info("Authentication success")
 			}
-			return c.api.DoWithHeaders(context.Background(), method, uri, headers, body, resp)
+			return c.api.DoWithHeaders(ctx, method, uri, headers, body, resp)
 		}
 	} else {
 		log.Error("Error is not a type of \"*types.Error\". Error:", err)
@@ -149,19 +143,20 @@ func (c *Client) GetToken() string {
 }
 
 // NewClient initialize the new REST Client with default options.
-func NewClient() (client *Client, err error) {
-	return NewClientWithArgs(
+func NewClient(ctx context.Context) (client *Client, err error) {
+	return NewClientWithArgs(ctx,
 		os.Getenv("GOUNITY_ENDPOINT"),
 		os.Getenv("GOUNITY_INSECURE") == "true",
 		os.Getenv("GOUNITY_USECERTS") == "true")
 }
 
 // NewClientWithArgs initialize the new REST Client with the given arguments.
-func NewClientWithArgs(endpoint string, insecure, useCerts bool) (client *Client, err error) {
+func NewClientWithArgs(ctx context.Context, endpoint string, insecure, useCerts bool) (client *Client, err error) {
+	log := util.GetRunIdLogger(ctx)
 	if showHTTP {
 		debug = true
 	}
-	SetLogger(api.GetLogger())
+
 	fields := map[string]interface{}{
 		"endpoint": endpoint,
 		"insecure": insecure,
@@ -174,8 +169,7 @@ func NewClientWithArgs(endpoint string, insecure, useCerts bool) (client *Client
 
 	if endpoint == "" {
 		log.WithFields(fields).Error("endpoint is required")
-		return nil,
-			withFields(fields, "endpoint is required")
+		return nil, withFields(fields, "endpoint is required")
 	}
 
 	opts := api.ClientOptions{
@@ -184,7 +178,7 @@ func NewClientWithArgs(endpoint string, insecure, useCerts bool) (client *Client
 		ShowHTTP: showHTTP,
 	}
 
-	ac, err := api.New(context.Background(), endpoint, opts, debug)
+	ac, err := api.New(ctx, endpoint, opts, debug)
 	if err != nil {
 		log.Errorf("Unable to create HTTP client %v", err)
 		return nil, err

@@ -7,10 +7,12 @@ package gounity
 import (
 	"errors"
 	"fmt"
+	"github.com/dell/gounity/util"
 	"net/http"
 
+	"context"
 	"github.com/dell/gounity/api"
-	types "github.com/dell/gounity/payloads"
+	"github.com/dell/gounity/types"
 )
 
 type storagepool struct {
@@ -22,7 +24,8 @@ func NewStoragePool(client *Client) *storagepool {
 }
 
 //Find the volume by it's name. If the volume is not found, an error will be returned.
-func (sp *storagepool) FindStoragePoolByName(poolName string) (*types.StoragePool, error) {
+func (sp *storagepool) FindStoragePoolByName(ctx context.Context, poolName string) (*types.StoragePool, error) {
+	log := util.GetRunIdLogger(ctx)
 	if len(poolName) == 0 {
 		log.Error("pool name cannot be empty")
 		return nil, errors.New("poolName shouldn't be empty")
@@ -31,7 +34,7 @@ func (sp *storagepool) FindStoragePoolByName(poolName string) (*types.StoragePoo
 
 	fieldsToQuery := "id,name,description,sizeFree,sizeTotal,sizeUsed,sizeSubscribed,hasCompressionEnabledLuns,hasCompressionEnabledFs,isFASTCacheEnabled,type,isAllFlash,poolFastVP"
 
-	err := sp.client.executeWithRetryAuthenticate(http.MethodGet, fmt.Sprintf(api.UnityApiGetResourceByNameWithFieldsUri, "pool", poolName, fieldsToQuery), nil, spResponse)
+	err := sp.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityApiGetResourceByNameWithFieldsUri, "pool", poolName, fieldsToQuery), nil, spResponse)
 	if err != nil {
 		log.Error("Unable to find pool")
 		err = errors.New(fmt.Sprintf("Unable to find pool %s err: %v", poolName, err))
@@ -42,7 +45,8 @@ func (sp *storagepool) FindStoragePoolByName(poolName string) (*types.StoragePoo
 }
 
 //Find the volume by it's Id. If the volume is not found, an error will be returned.
-func (sp *storagepool) FindStoragePoolById(poolId string) (*types.StoragePool, error) {
+func (sp *storagepool) FindStoragePoolById(ctx context.Context, poolId string) (*types.StoragePool, error) {
+	log := util.GetRunIdLogger(ctx)
 	if len(poolId) == 0 {
 		log.Error("pool Id cannot be empty")
 		return nil, errors.New("pool Id cannot be empty")
@@ -52,7 +56,7 @@ func (sp *storagepool) FindStoragePoolById(poolId string) (*types.StoragePool, e
 	fieldsToQuery := "id,name,description,sizeFree,sizeTotal,sizeUsed,sizeSubscribed,hasCompressionEnabledLuns,hasCompressionEnabledFs,isFASTCacheEnabled,type,isAllFlash,poolFastVP"
 
 	log.Info("URI", fmt.Sprintf(api.UnityApiGetResourceWithFieldsUri, "pool", poolId, fieldsToQuery))
-	err := sp.client.executeWithRetryAuthenticate(http.MethodGet, fmt.Sprintf(api.UnityApiGetResourceWithFieldsUri, "pool", poolId, fieldsToQuery), nil, spResponse)
+	err := sp.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityApiGetResourceWithFieldsUri, "pool", poolId, fieldsToQuery), nil, spResponse)
 	if err != nil {
 		log.Errorf("Unable to find PoolID. Error: %v ", err)
 		return nil, errors.New(fmt.Sprintf("unable to find the PoolID %s", poolId))
