@@ -8,15 +8,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/dell/gounity/types"
+	"github.com/dell/gounity/util"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
 	"strings"
 	"time"
-
-	types "github.com/dell/gounity/payloads"
 )
 
 const (
@@ -30,7 +29,6 @@ const (
 var (
 	errNewClient = errors.New("missing endpoint")
 	errSysCerts  = errors.New("unable to initialize certificate pool from system")
-	log          = GetLogger()
 )
 
 // Client Interface defines the methods.
@@ -64,7 +62,7 @@ type Client interface {
 		resp interface{}) error
 
 	// ParseJSONError parses the JSON in r into an error object
-	ParseJSONError(r *http.Response) error
+	ParseJSONError(ctx context.Context, r *http.Response) error
 
 	// DoWithHeaders sends HTTP request using the given method & headers.
 	DoWithHeaders(
@@ -194,11 +192,8 @@ func endsWithSlash(s string) bool {
 	return s[len(s)-1] == '/'
 }
 
-func (c *client) DoAndGetResponseBody(
-	ctx context.Context,
-	method, uri string,
-	headers map[string]string,
-	body interface{}) (*http.Response, error) {
+func (c *client) DoAndGetResponseBody(ctx context.Context, method, uri string, headers map[string]string, body interface{}) (*http.Response, error) {
+	log := util.GetRunIdLogger(ctx)
 	var (
 		err                error
 		req                *http.Request
@@ -280,8 +275,8 @@ func (c *client) DoAndGetResponseBody(
 		req.Header.Add(header, value)
 	}
 
-	// set the auth token
-	if c.token != "" {
+	// set the auth token for POST and DELETE methods only
+	if (method == "POST" || method == "DELETE") && c.token != "" {
 		req.Header.Set(HeaderEMCCSRFToken, c.token)
 	}
 
@@ -304,6 +299,7 @@ func (c *client) DoAndGetResponseBody(
 }
 
 func (c *client) DoWithHeaders(ctx context.Context, method, uri string, headers map[string]string, body, resp interface{}) error {
+	log := util.GetRunIdLogger(ctx)
 	if body != nil {
 		data, _ := json.Marshal(body)
 		strBody := strings.ReplaceAll(string(data), "\"", "")
@@ -332,17 +328,18 @@ func (c *client) DoWithHeaders(ctx context.Context, method, uri string, headers 
 		}
 	case res.StatusCode == 401:
 		jsonError := &types.Error{}
-		jsonError.ErrorContent.HTTPStatusCode = res.StatusCode
-		body, err := ioutil.ReadAll(res.Body)
-		if err != nil {
-			log.Errorf("Reading response body error for url: %s error:%v", uri, err)
+		if err := json.NewDecoder(res.Body).Decode(jsonError); err != nil {
+			jsonError.ErrorContent.HTTPStatusCode = res.StatusCode
+			jsonError.ErrorContent.Message = append(jsonError.ErrorContent.Message, types.ErrorMessage{http.StatusText(res.StatusCode)})
+			return jsonError
 		}
-		log.Errorf("Invalid Response received for url %s", uri)
-		jsonError.ErrorContent.Message = append(jsonError.ErrorContent.Message, types.ErrorMessage{string(body)})
+
+		jsonError.ErrorContent.HTTPStatusCode = res.StatusCode
+		jsonError.ErrorContent.Message = append(jsonError.ErrorContent.Message, types.ErrorMessage{string(res.Status)})
 		return jsonError
 	default:
 		c.doLog(log.WithError(err).Error, fmt.Sprintf("Invalid Response received Body: %s", body))
-		return c.ParseJSONError(res)
+		return c.ParseJSONError(ctx, res)
 	}
 	return nil
 }
@@ -355,7 +352,8 @@ func (c *client) GetToken() string {
 	return c.token
 }
 
-func (c *client) ParseJSONError(r *http.Response) error {
+func (c *client) ParseJSONError(ctx context.Context, r *http.Response) error {
+	log := util.GetRunIdLogger(ctx)
 	jsonError := &types.Error{}
 	err := json.NewDecoder(r.Body).Decode(jsonError)
 	if err != nil && err != io.EOF {

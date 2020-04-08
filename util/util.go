@@ -1,11 +1,17 @@
 package util
 
 import (
+	"context"
 	"errors"
-	"github.com/dell/gounity/api"
+	"fmt"
+	"github.com/sirupsen/logrus"
+	"os"
+	"reflect"
 	"regexp"
+	"runtime"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 var (
@@ -14,14 +20,62 @@ var (
 	InvalidCharacters = errors.New("name contains invalid characters or name doesn't start with alphabetic. Allowed characters are 'a-zA-Z0-9_-'")
 )
 
+const (
+	RUNIDLOG = "runidlog"
+	RUNID    = "runid"
+)
+
+func GetRunIdLogger(ctx context.Context) *logrus.Entry {
+	temp := ctx.Value(RUNIDLOG)
+	entry := &logrus.Entry{}
+	if reflect.TypeOf(temp) == reflect.TypeOf(entry) {
+		return ctx.Value(RUNIDLOG).(*logrus.Entry)
+	}
+
+	log := GetLogger()
+	return log.WithContext(ctx)
+}
+
+var singletonLog *logrus.Logger
+var once sync.Once
+
+//This is a singleton method which returns log object.
+//Type singletonLog initialized only once.
+func GetLogger() *logrus.Logger {
+	once.Do(func() {
+		singletonLog = logrus.New()
+		fmt.Println("gounity logger initiated. This should be called only once.")
+		var debug bool
+		debugStr := os.Getenv("GOUNITY_DEBUG")
+		debug, _ = strconv.ParseBool(debugStr)
+		if debug {
+			fmt.Println("Enabling debug for gounity")
+			singletonLog.Level = logrus.DebugLevel
+			singletonLog.SetReportCaller(true)
+			singletonLog.Formatter = &logrus.TextFormatter{
+				CallerPrettyfier: func(f *runtime.Frame) (string, string) {
+					filename := strings.Split(f.File, "dell/gounity")
+					if len(filename) > 1 {
+						return fmt.Sprintf("%s()", f.Function), fmt.Sprintf("dell/gounity%s:%d", filename[1], f.Line)
+					} else {
+						return fmt.Sprintf("%s()", f.Function), fmt.Sprintf("%s:%d", f.File, f.Line)
+					}
+				},
+			}
+		}
+	})
+
+	return singletonLog
+}
+
 //To validate the resource name
-func ValidateResourceName(name string) (string, error) {
+func ValidateResourceName(name string, maxLength int) (string, error) {
 	name = strings.TrimSpace(name)
 	re := regexp.MustCompile("^[A-Za-z][a-zA-Z0-9:_-]*$")
 
 	if name == "" {
 		return "", NameEmptyError
-	} else if len(name) > api.MaxResourceNameLength {
+	} else if len(name) > maxLength {
 		return "", NameTooLongError
 	} else if !re.MatchString(name) {
 		return "", InvalidCharacters

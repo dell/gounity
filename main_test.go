@@ -2,6 +2,7 @@ package gounity
 
 import (
 	"bufio"
+	"context"
 	"crypto/tls"
 	"encoding/json"
 	"errors"
@@ -27,6 +28,7 @@ type testConfig struct {
 	hostApi         *host
 	poolApi         *storagepool
 	snapApi         *snapshot
+	ipinterfaceApi  *ipinterface
 }
 
 var testConf *testConfig
@@ -37,6 +39,9 @@ func TestMain(m *testing.M) {
 
 	// for this tutorial, we will hard code it to config.txt
 	testProp, err := readTestProperties("test.properties")
+	if err != nil {
+		panic("The system cannot find the file specified")
+	}
 
 	insecure, _ := strconv.ParseBool(testProp["X_CSI_UNITY_INSECURE"])
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: insecure}
@@ -44,6 +49,7 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		fmt.Println(err)
 	}
+	ctx := context.Background()
 
 	testConf = &testConfig{}
 	testConf.unityEndPoint = testProp["GOUNITY_ENDPOINT"]
@@ -62,27 +68,28 @@ func TestMain(m *testing.M) {
 	testConf.username = testProp["X_CSI_UNITY_USER"]
 	testConf.password = testProp["X_CSI_UNITY_PASSWORD"]
 
-	testClient := getTestClient(testConf.unityEndPoint, testConf.username, testConf.password)
+	testClient := getTestClient(ctx, testConf.unityEndPoint, testConf.username, testConf.password)
 	testConf.wwnOrIqns = strings.Split(wwnOrIqnStr, ",")
 
 	testConf.hostApi = NewHost(testClient)
 	testConf.poolApi = NewStoragePool(testClient)
 	testConf.snapApi = NewSnapshot(testClient)
 	testConf.volumeApi = NewVolume(testClient)
+	testConf.ipinterfaceApi = NewIpInterface(testClient)
 
 	code := m.Run()
 	fmt.Println("------------End of TestMain--------------")
 	os.Exit(code)
 }
 
-func getTestClient(url, username, password string) *Client {
+func getTestClient(ctx context.Context, url, username, password string) *Client {
 	fmt.Println("Test:", url, username, password)
-	c, err := NewClient()
+	c, err := NewClient(ctx)
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	err = c.Authenticate(&ConfigConnect{
+	err = c.Authenticate(ctx, &ConfigConnect{
 		Username: username,
 		Password: password,
 		Endpoint: url,

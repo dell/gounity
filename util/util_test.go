@@ -1,30 +1,31 @@
 package util
 
 import (
+	"github.com/dell/gounity/api"
 	"testing"
 )
 
 //To validate the ValidateResourceName function
 func TestValidateResourceName(t *testing.T) {
-	_, err := ValidateResourceName("")
+	_, err := ValidateResourceName("", api.MaxResourceNameLength)
 	if err != NameEmptyError {
 		t.Fatalf("%v", err)
 	}
 
-	_, err = ValidateResourceName(" ")
+	_, err = ValidateResourceName(" ", api.MaxResourceNameLength)
 	if err != NameEmptyError {
 		t.Fatalf("%v", err)
 	}
-	_, err = ValidateResourceName("SomeResource123having space")
+	_, err = ValidateResourceName("SomeResource123having space", api.MaxResourceNameLength)
 	if err != InvalidCharacters {
 		t.Fatalf("%v", err)
 	}
-	_, err = ValidateResourceName("MoreThan40Charactersaaaaaaaaaaaaaa100000000000000000000000000000000000000000000")
+	_, err = ValidateResourceName("MoreThan40Charactersaaaaaaaaaaaaaa100000000000000000000000000000000000000000000", api.MaxResourceNameLength)
 	if err != NameTooLongError {
 		t.Fatalf("%v", err)
 	}
 
-	_, err = ValidateResourceName("Valid_Name-9:1")
+	_, err = ValidateResourceName("Valid_Name-9:1", api.MaxResourceNameLength)
 	if err != nil {
 		t.Fatalf("%v", err)
 	}
