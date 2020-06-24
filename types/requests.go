@@ -74,17 +74,53 @@ type FsCreateParam struct {
 // Struct to capture the File system properties
 type FsParameters struct {
 	Size                   uint64                 `json:"size,omitempty"`
-	IsThinEnabled          bool                   `json:"isThinEnabled"`
-	IsDataReductionEnabled bool                   `json:"isDataReductionEnabled"`
+	IsThinEnabled          string                 `json:"isThinEnabled,omitempty"`
+	IsDataReductionEnabled string                 `json:"isDataReductionEnabled,omitempty"`
 	SupportedProtocol      int                    `json:"supportedProtocols"`
 	HostIOSize             int                    `json:"hostIOSize"`
-	IsCacheDisabled        bool                   `json:"isCacheDisabled"`
 	StoragePool            *StoragePoolID         `json:"pool,omitempty"`
 	FastVPParameters       *FastVPParameters      `json:"fastVPParameters,omitempty"`
 	HostAccess             *[]HostAccess          `json:"hostAccess,omitempty"`
 	IoLimitParameters      *HostIoLimitParameters `json:"ioLimitParameters,omitempty"`
 	NasServer              *NasServerID           `json:"nasServer"`
 	FileEventSettings      FileEventSettings      `json:"fileEventSettings,omitempty"`
+}
+
+// Struct to modify Filesystem parameters
+type FsModifyParameters struct {
+	NFSShares *[]NFSShareCreateParam `json:"nfsShareCreate,omitempty"`
+}
+
+// Struct to capture NFS Share Create parameters
+type NFSShareCreateParam struct {
+	Name               string              `json:"name"`
+	Path               string              `json:"path"`
+	NFSShareParameters *NFSShareParameters `json:"nfsShareParameters,omitempty"`
+}
+
+//Struct to modify NFS Share parameters
+type NFSShareModify struct {
+	NFSSharesModifyContent *[]NFSShareModifyContent `json:"nfsShareModify,omitempty"`
+}
+
+//Struct to modify NFS Share parameters
+type NFSShareDelete struct {
+	NFSSharesDeleteContent *[]NFSShareModifyContent `json:"nfsShareDelete,omitempty"`
+}
+
+//Struct to capture NFS Share modify content
+type NFSShareModifyContent struct {
+	NFSShare           *StorageResourceParam `json:"nfsShare,omitempty"`
+	NFSShareParameters *NFSShareParameters   `json:"nfsShareParameters,omitempty"`
+}
+
+// Struct to capture NFS Share properties
+type NFSShareParameters struct {
+	DefaultAccess           string           `json:"defaultAccess,omitempty"`
+	ReadOnlyHosts           *[]HostIdContent `json:"readOnlyHosts,omitempty"`
+	ReadWriteHosts          *[]HostIdContent `json:"readWriteHosts,omitempty"`
+	ReadOnlyRootAccessHosts *[]HostIdContent `json:"readOnlyRootAccessHosts,omitempty"`
+	RootAccessHosts         *[]HostIdContent `json:"rootAccessHosts,omitempty"`
 }
 
 // Struct to capture File event settings
@@ -98,22 +134,6 @@ type LunExpandParameters struct {
 }
 type LunHostAccessParameters struct {
 	HostAccess *[]HostAccess `json:"hostAccess,omitempty"`
-}
-
-// Struct to capture the FileSystem create Params
-type FileSystemRequestParam struct {
-	Name                 string                `json:"name"`
-	FileSystemParameters *FileSystemParameters `json:"filesystemParameters"`
-}
-
-// Struct to capture the FileSystem properties
-type FileSystemParameters struct {
-	Size                   string `json:"size"`
-	IsThinEnabled          bool   `json:"isThinEnabled"`
-	StoragePoolID          string `json:"pool"`
-	Name                   string `json:"name"`
-	IsDataReductionEnabled bool   `json:"isDataReductionEnabled"`
-	NasServer              string `json:"nasServer"`
 }
 
 // Struct to capture Host Request
@@ -146,7 +166,7 @@ type HostInitiatorModifyParam struct {
 
 type HostAccess struct {
 	HostIdContent *HostIdContent `json:"host"`
-	AccessMask    string         `json:"accessMask"`
+	AccessMask    string         `json:"accessMask,omitempty"`
 }
 
 type LunModifyParam struct {

@@ -6,6 +6,7 @@ package gounity
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -32,8 +33,7 @@ func (f *ipinterface) ListIscsiIPInterfaces(ctx context.Context) ([]types.IPInte
 	log.Debugf("URI: "+api.UnityApiInstanceTypeResourcesWithFields, "ipInterface", fieldsToQuery)
 	err := f.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityApiInstanceTypeResourcesWithFields, "ipInterface", fieldsToQuery), nil, hResponse)
 	if err != nil {
-		log.Error("Unable to list Ip Interfaces", err)
-		return nil, err
+		return nil, errors.New(fmt.Sprintf("Unable to list Ip Interfaces %v", err))
 	}
 	var iscsiInterfaces []types.IPInterfaceEntries
 	for _, ipInterface := range hResponse.Entries {

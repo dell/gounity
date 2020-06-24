@@ -71,12 +71,14 @@ type ParentSnap struct {
 
 //Pool struct to capture Pool Id
 type Pool struct {
-	Id string `json:"id"`
+	Id   string `json:"id"`
+	Name string `json:"name,omitempty"`
 }
 
 //HostAccessResponse Struct to capture Host Access in Volume response
 type HostAccessResponse struct {
 	HostContent HostContent `json:"host"`
+	HLU         int         `json:"hlu"`
 }
 
 //Link Struct to capture the link response
@@ -160,6 +162,12 @@ type HostInitiatorContent struct {
 	InitiatorId string      `json:"InitiatorId"`
 	IsIgnored   bool        `json:"isIgnored"`
 	ParentHost  HostContent `json:"parentHost"`
+	Paths       []Path      `json:"paths"`
+}
+
+//Path struct to capture Path Id
+type Path struct {
+	Id string `json:"id"`
 }
 
 //ListSnapshot struct to capture snapshot list
@@ -220,8 +228,45 @@ type FileContent struct {
 	IsThinEnabled          bool   `json:"isThinEnabled"`
 	IsDataReductionEnabled bool   `json:"isDataReductionEnabled"`
 	Pool                   Pool   `json:"pool,omitempty"`
-	NasServer              Pool   `json:"nasServer,omitempty"`
+	NASServer              Pool   `json:"nasServer,omitempty"`
 	StorageResource        Pool   `json:"storageResource,omitempty"`
+	NFSShare               []Pool `json:"nfsShare,omitempty"`
+	CIFSShare              []Pool `json:"cifsShare,omitempty"`
+}
+
+//NFSShare struct to capture NFS Share object
+type NFSShare struct {
+	NFSShareContent NFSShareContent `json:"content"`
+}
+
+//NFSShareContent struct to capture NFS Share parameters
+type NFSShareContent struct {
+	Id                      string        `json:"id"`
+	Name                    string        `json:"name,omitempty"`
+	Filesystem              Pool          `json:"filesystem,omitempty"`
+	ReadOnlyHosts           []HostContent `json:"readOnlyHosts,omitempty"`
+	ReadWriteHosts          []HostContent `json:"readWriteHosts,omitempty"`
+	ReadOnlyRootAccessHosts []HostContent `json:"readOnlyRootAccessHosts,omitempty"`
+	RootAccessHosts         []HostContent `json:"rootAccessHosts,omitempty"`
+	ExportPaths             []string      `json:"exportPaths,omitempty"`
+}
+
+//Struct to capture NAS Server object
+type NASServer struct {
+	NASServerContent NASServerContent `json:"content"`
+}
+
+type NASServerContent struct {
+	Id        string    `json:"id"`
+	Name      string    `json:"name,omitempty"`
+	NFSServer NFSServer `json:"nfsServer,omitempty"`
+}
+
+type NFSServer struct {
+	Id           string `json:"id"`
+	Name         string `json:"name,omitempty"`
+	NFSv3Enabled bool   `json:"nfsv3Enabled"`
+	NFSv4Enabled bool   `json:"nfsv4Enabled"`
 }
 
 //ListIPInterfaces struct to capture snapshot list
@@ -250,4 +295,29 @@ type LicenseInfo struct {
 type LicenseInfoContent struct {
 	IsInstalled bool `json:"isInstalled"`
 	IsValid     bool `json:"isValid"`
+}
+
+//HostInitiatorPath struct to capture host initiator path object
+type HostInitiatorPath struct {
+	HostInitiatorPathContent HostInitiatorPathContent `json:"content"`
+}
+
+//HostInitiatorPathContent struct to capture host initiator parameters
+type HostInitiatorPathContent struct {
+	FcPortID FcPortID `json:"fcPort"`
+}
+
+//FcPortID struct to capture FC port Id
+type FcPortID struct {
+	Id string `json:"id"`
+}
+
+//FcPort struct to capture FC port object
+type FcPort struct {
+	FcPortContent FcPortContent `json:"content"`
+}
+
+//FcPortContent struct to capture FC port Id
+type FcPortContent struct {
+	Wwn string `json:"wwn"`
 }

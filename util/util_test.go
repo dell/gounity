@@ -1,9 +1,25 @@
 package util
 
 import (
+	"context"
 	"github.com/dell/gounity/api"
 	"testing"
 )
+
+func TestGetRunIdLogger(t *testing.T) {
+	log := GetLogger()
+	ctx := context.Background()
+	entry := log.WithField("runid", "1111")
+	ctx = context.WithValue(ctx, UnityLog, entry)
+
+	logEntry := GetRunIdLogger(ctx)
+	logEntry.Info("Hi This is log test1")
+
+	entry = entry.WithField("arrayid", "arr0000")
+	ctx = context.WithValue(ctx, UnityLog, entry)
+	logEntry = GetRunIdLogger(ctx)
+	logEntry.Info("Hi This is log test2")
+}
 
 //To validate the ValidateResourceName function
 func TestValidateResourceName(t *testing.T) {

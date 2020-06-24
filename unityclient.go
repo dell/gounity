@@ -47,7 +47,7 @@ type ConfigConnect struct {
 // The response contains the EMC-CSRF-TOKEN and the client caches it for further communication.
 func (c *Client) Authenticate(ctx context.Context, configConnect *ConfigConnect) error {
 	log := util.GetRunIdLogger(ctx)
-	log.Info("Executing Authenticate REST client")
+	log.Debug("Executing Authenticate REST client")
 	c.configConnect = configConnect
 	c.api.SetToken("")
 	headers := make(map[string]string, 3)
@@ -57,12 +57,11 @@ func (c *Client) Authenticate(ctx context.Context, configConnect *ConfigConnect)
 	resp, err := c.api.DoAndGetResponseBody(ctx, http.MethodGet, api.UnityApiLoginSessionInfoUri, headers, nil)
 
 	if err != nil {
-		log.Errorf("Authentication error: %v", err)
-		return err
+		return errors.New(fmt.Sprintf("Authentication error: %v", err))
 	}
 
 	if resp != nil {
-		log.Info("Authentication response code:", resp.StatusCode)
+		log.Debugf("Authentication response code: %d", resp.StatusCode)
 		if err != nil {
 			log.Errorf("Reading Authentication response body error:%v", err)
 		}
@@ -70,19 +69,16 @@ func (c *Client) Authenticate(ctx context.Context, configConnect *ConfigConnect)
 		defer resp.Body.Close()
 
 		switch {
-
 		case resp.StatusCode >= 200 && resp.StatusCode <= 299:
 			{
-				log.Info("Authentication successful")
+				log.Debug("Authentication successful")
 			}
 		case resp.StatusCode == 401:
 			{
-				log.Error("Authentication failed")
-				return status.Errorf(codes.Unauthenticated, "Unable to login to Unity. Verify username and password.")
+				return status.Errorf(codes.Unauthenticated, "Authentication failed. Unable to login to Unity. Verify username and password.")
 			}
 		default:
-			log.Errorf("Authenticate error. Response: %v", c.api.ParseJSONError(ctx, resp))
-			return c.api.ParseJSONError(ctx, resp)
+			return errors.New(fmt.Sprintf("Authenticate error. Response: %v", c.api.ParseJSONError(ctx, resp)))
 		}
 
 		c.api.SetToken(resp.Header.Get(emcCsrfToken))
@@ -106,23 +102,22 @@ func (c *Client) executeWithRetryAuthenticate(ctx context.Context, method, uri s
 	headers[api.HeaderKeyAccept] = accHeader
 	headers[api.HeaderKeyContentType] = conHeader
 	headers[api.XEmcRestClient] = "true"
-	log.Info("Invoking REST API server info Method: ", method, ", URI: ", uri)
+	log.Debug("Invoking REST API server info Method: ", method, ", URI: ", uri)
 	err := c.api.DoWithHeaders(ctx, method, uri, headers, body, resp)
 	if err == nil {
-		log.Info("Execution successful on Method: ", method, ", URI: ", uri)
+		log.Debug("Execution successful on Method: ", method, ", URI: ", uri)
 		return nil
 	}
 	// check if we need to authenticate
 	if e, ok := err.(*types.Error); ok {
-		log.Info("Error in response", ", Method: ", method, ", URI: ", uri)
-		log.WithError(err).Debugf("Got JSON error: %+v", e)
+		log.Debugf("Error in response. Method:%s URI:%s Error: %v JSON Error: %+v", method, uri, err, e)
 		if e.ErrorContent.HTTPStatusCode == 401 {
-			log.Info("need to re-authenticate")
+			log.Debug("need to re-authenticate")
 			// Authenticate then try again
 			if err := c.Authenticate(ctx, c.configConnect); err != nil {
 				return fmt.Errorf("authentication failure due to: %v", err)
 			} else {
-				log.Info("Authentication success")
+				log.Debug("Authentication success")
 			}
 			return c.api.DoWithHeaders(ctx, method, uri, headers, body, resp)
 		}
@@ -144,14 +139,12 @@ func (c *Client) GetToken() string {
 
 // NewClient initialize the new REST Client with default options.
 func NewClient(ctx context.Context) (client *Client, err error) {
-	return NewClientWithArgs(ctx,
-		os.Getenv("GOUNITY_ENDPOINT"),
-		os.Getenv("GOUNITY_INSECURE") == "true",
-		os.Getenv("GOUNITY_USECERTS") == "true")
+	insecure, _ := strconv.ParseBool(os.Getenv("GOUNITY_INSECURE"))
+	return NewClientWithArgs(ctx, os.Getenv("GOUNITY_ENDPOINT"), insecure)
 }
 
 // NewClientWithArgs initialize the new REST Client with the given arguments.
-func NewClientWithArgs(ctx context.Context, endpoint string, insecure, useCerts bool) (client *Client, err error) {
+func NewClientWithArgs(ctx context.Context, endpoint string, insecure bool) (client *Client, err error) {
 	log := util.GetRunIdLogger(ctx)
 	if showHTTP {
 		debug = true
@@ -160,7 +153,6 @@ func NewClientWithArgs(ctx context.Context, endpoint string, insecure, useCerts 
 	fields := map[string]interface{}{
 		"endpoint": endpoint,
 		"insecure": insecure,
-		"useCerts": useCerts,
 		"debug":    debug,
 		"showHTTP": showHTTP,
 	}
@@ -174,14 +166,12 @@ func NewClientWithArgs(ctx context.Context, endpoint string, insecure, useCerts 
 
 	opts := api.ClientOptions{
 		Insecure: insecure,
-		UseCerts: useCerts,
 		ShowHTTP: showHTTP,
 	}
 
 	ac, err := api.New(ctx, endpoint, opts, debug)
 	if err != nil {
-		log.Errorf("Unable to create HTTP client %v", err)
-		return nil, err
+		return nil, errors.New(fmt.Sprintf("Unable to create HTTP client %v", err))
 	}
 
 	client = &Client{
