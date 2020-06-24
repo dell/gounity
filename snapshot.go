@@ -79,10 +79,9 @@ func (s *snapshot) DeleteSnapshot(ctx context.Context, snapshotId string) error 
 
 	deleteErr := s.client.executeWithRetryAuthenticate(ctx, http.MethodDelete, fmt.Sprintf(api.UnityApiGetResourceUri, "snap", snapshotId), nil, nil)
 	if deleteErr != nil {
-		log.Infof("Delete Snapshot Id-%s Failed: %v ", snapshotId, deleteErr)
-		return deleteErr
+		return errors.New(fmt.Sprintf("Delete Snapshot Id-%s Failed: %v ", snapshotId, deleteErr))
 	}
-	log.Infof("Delete Snapshot ID-%s Successful", snapshotId)
+	log.Debugf("Delete Snapshot ID-%s Successful", snapshotId)
 	return nil
 }
 
@@ -145,7 +144,7 @@ func (s *snapshot) FindSnapshotByName(ctx context.Context, snapshotName string) 
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("Unable to find Snapshot Name %s Error: %v", snapshotName, err))
 	}
-	log.Infof("Snapshot name: %s Id: %s", snapshotResp.SnapshotContent.Name, snapshotResp.SnapshotContent.ResourceId)
+	log.Debugf("Snapshot name: %s Id: %s", snapshotResp.SnapshotContent.Name, snapshotResp.SnapshotContent.ResourceId)
 	return snapshotResp, nil
 }
 
@@ -160,7 +159,7 @@ func (s *snapshot) FindSnapshotById(ctx context.Context, snapshotId string) (*ty
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("Unable to find Snapshot id %s Error: %v", snapshotId, err))
 	}
-	log.Infof("Snapshot name: %s Id: %s", snapshotResp.SnapshotContent.Name, snapshotResp.SnapshotContent.ResourceId)
+	log.Debugf("Snapshot name: %s Id: %s", snapshotResp.SnapshotContent.Name, snapshotResp.SnapshotContent.ResourceId)
 	return snapshotResp, nil
 }
 
@@ -180,6 +179,6 @@ func (s *snapshot) ModifySnapshotAutoDeleteParameter(ctx context.Context, snapsh
 	if err != nil {
 		return errors.New(fmt.Sprintf("Unable to modify Snapshot %s Error: %v", snapshotId, err))
 	}
-	log.Infof("Changed AutoDelete to false for Snapshot name: %s Id: %s", snapshotResp.SnapshotContent.Name, snapshotResp.SnapshotContent.ResourceId)
+	log.Debugf("Changed AutoDelete to false for Snapshot name: %s Id: %s", snapshotResp.SnapshotContent.Name, snapshotResp.SnapshotContent.ResourceId)
 	return nil
 }

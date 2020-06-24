@@ -8,9 +8,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/dell/gounity/util"
 	"net/http"
 	"strings"
+
+	"github.com/dell/gounity/util"
 
 	"github.com/dell/gounity/api"
 	"github.com/dell/gounity/types"
@@ -43,10 +44,8 @@ func (h *host) FindHostByName(ctx context.Context, hostName string) (*types.Host
 	if err != nil {
 		//Using the multiple host found error code(MultipleHostFoundErrorCode) for comparison
 		if strings.Contains(err.Error(), MultipleHostFoundErrorCode) {
-			log.Error("Found multiple hosts with same name. Delete the duplicate host entries on array.")
 			return nil, MultipleHostFoundError
 		}
-		log.Error("Unable to find host", err)
 		return nil, HostNotFoundError
 	}
 	return hResponse, nil
@@ -161,11 +160,9 @@ func (h *host) FindHostInitiatorByName(ctx context.Context, wwnOrIqn string) (*t
 
 //Find Host Initiator
 func (h *host) FindHostInitiatorById(ctx context.Context, wwnOrIqn string) (*types.HostInitiator, error) {
-	log := util.GetRunIdLogger(ctx)
 	hostInitiatorResp := &types.HostInitiator{}
 	err := h.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityApiGetResourceWithFieldsUri, "hostInitiator", wwnOrIqn, api.HostInitiatorsDisplayFields), nil, hostInitiatorResp)
 	if err != nil {
-		log.Error(fmt.Sprintf("Unable to find host %s", wwnOrIqn))
 		return nil, errors.New(fmt.Sprintf("Unable to find host %s : %v", wwnOrIqn, err))
 	}
 	return hostInitiatorResp, nil
@@ -184,11 +181,11 @@ func (h *host) CreateHostInitiator(ctx context.Context, hostId, wwnOrIqn string,
 
 	hostInitiatorResp := &types.HostInitiator{}
 
-	log.Infof("Finding Initiator: %s", wwnOrIqn)
+	log.Debugf("Finding Initiator: %s", wwnOrIqn)
 	initiator, err := h.FindHostInitiatorByName(ctx, wwnOrIqn)
-	log.Infof("FindHostInitiatorByName: %v Error: %v", initiator, err)
+	log.Debugf("FindHostInitiatorByName: %v Error: %v", initiator, err)
 	if err != nil {
-		log.Infof("Initiator not found. Adding new Initiator: %s to host: %s \n", wwnOrIqn, hostId)
+		log.Debugf("Initiator not found. Adding new Initiator: %s to host: %s \n", wwnOrIqn, hostId)
 		hostIdContent := types.HostIdContent{
 			ID: hostId,
 		}
@@ -203,13 +200,13 @@ func (h *host) CreateHostInitiator(ctx context.Context, hostId, wwnOrIqn string,
 			return nil, errors.New(fmt.Sprintf("Create Host Initiator %s Error: %v", wwnOrIqn, err))
 		}
 	} else if initiator.HostInitiatorContent.ParentHost.ID == "" {
-		log.Infof("Initiator found, but parent host is not added. Updating the existing Initiator: %s to host: %s \n", wwnOrIqn, hostId)
+		log.Debugf("Initiator found, but parent host is not added. Updating the existing Initiator: %s to host: %s \n", wwnOrIqn, hostId)
 		initiator, err = h.ModifyHostInitiator(ctx, hostId, initiator)
 		if err != nil {
 			return nil, errors.New(fmt.Sprintf("Modify Host Initiator %s Error: %v", wwnOrIqn, err))
 		}
 	} else if initiator.HostInitiatorContent.ParentHost.ID == hostId {
-		log.Infof("Initiator found and already added to existing host Initiator: %s to host: %s \n", wwnOrIqn, hostId)
+		log.Debugf("Initiator found and already added to existing host Initiator: %s to host: %s \n", wwnOrIqn, hostId)
 	} else if initiator.HostInitiatorContent.ParentHost.ID != hostId {
 		return nil, errors.New(fmt.Sprintf("Initiator found (%s), and attached to someother host (%s) instead of host: %s", wwnOrIqn, initiator.HostInitiatorContent.ParentHost.ID, hostId))
 	} else {
@@ -239,4 +236,24 @@ func (h *host) ModifyHostInitiator(ctx context.Context, hostId string, initiator
 		return nil, err
 	}
 	return hostInitiatorResp, nil
+}
+
+//Find Host Initiator
+func (h *host) FindHostInitiatorPathById(ctx context.Context, initiatorPathId string) (*types.HostInitiatorPath, error) {
+	hostInitiatorPathResp := &types.HostInitiatorPath{}
+	err := h.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityApiGetResourceWithFieldsUri, "hostInitiatorPath", initiatorPathId, api.HostInitiatorPathDisplayFields), nil, hostInitiatorPathResp)
+	if err != nil {
+		return nil, errors.New(fmt.Sprintf("Unable to find host initiator path %s : %v", initiatorPathId, err))
+	}
+	return hostInitiatorPathResp, nil
+}
+
+//Find FC Port
+func (h *host) FindFcPortById(ctx context.Context, fcPortId string) (*types.FcPort, error) {
+	fcPortResp := &types.FcPort{}
+	err := h.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityApiGetResourceWithFieldsUri, "fcPort", fcPortId, api.FcPortDisplayFields), nil, fcPortResp)
+	if err != nil {
+		return nil, errors.New(fmt.Sprintf("Unable to find Fc port %s : %v", fcPortId, err))
+	}
+	return fcPortResp, nil
 }

@@ -39,7 +39,8 @@ func logRequest(
 	WriteIndented(w, buf)
 	fmt.Fprintln(w)
 
-	lf(log.Debug, w.String())
+	//Will not be logging request to avoid logging of headers as it is
+	//lf(log.Debug, w.String())
 }
 
 func logResponse(

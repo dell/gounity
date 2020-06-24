@@ -23,7 +23,7 @@ const (
 	DataReduction    LicenseType = "DATA_REDUCTION"
 )
 
-var NotFoundError = errors.New("Unable to find volume")
+var VolumeNotFoundError = errors.New("Unable to find volume")
 
 type volume struct {
 	client *Client
@@ -51,7 +51,6 @@ func (v *volume) CreateLun(ctx context.Context, name, poolId, description string
 	poolApi := NewStoragePool(v.client)
 	pool, err := poolApi.FindStoragePoolById(ctx, poolId)
 	if pool == nil {
-		log.Errorf("Unable to get PoolID (%s) Error:%v", poolId, err)
 		return nil, errors.New(fmt.Sprintf("unable to get PoolID (%s) Error:%v", poolId, err))
 	}
 
@@ -80,10 +79,14 @@ func (v *volume) CreateLun(ctx context.Context, name, poolId, description string
 
 	if thinProvisioningLicenseInfoResp.LicenseInfoContent.IsInstalled && thinProvisioningLicenseInfoResp.LicenseInfoContent.IsValid {
 		lunParams.IsThinEnabled = strconv.FormatBool(isThinEnabled)
+	} else if isThinEnabled == true {
+		return nil, errors.New(fmt.Sprintf("Thin Provisioning is not supported on array and hence cannot create Volume."))
 	}
 
 	if dataReductionLicenseInfoResp.LicenseInfoContent.IsInstalled && dataReductionLicenseInfoResp.LicenseInfoContent.IsValid {
 		lunParams.IsDataReductionEnabled = strconv.FormatBool(isDataReductionEnabled)
+	} else if isDataReductionEnabled == true {
+		return nil, errors.New(fmt.Sprintf("Data Reduction is not supported on array and hence cannot create Volume."))
 	}
 
 	if hostIOLimitID != "" {
@@ -98,13 +101,13 @@ func (v *volume) CreateLun(ctx context.Context, name, poolId, description string
 	}
 
 	if pool != nil && pool.StoragePoolContent.PoolFastVP.Status != 0 {
-		log.Info("FastVP is enabled")
+		log.Debug("FastVP is enabled")
 		fastVPParameters := types.FastVPParameters{
 			TieringPolicy: fastVPTieringPolicy,
 		}
 		lunParams.FastVPParameters = &fastVPParameters
 	} else {
-		log.Info("FastVP is not enabled")
+		log.Debug("FastVP is not enabled")
 	}
 
 	volumeReqParam := types.LunCreateParam{
@@ -138,13 +141,15 @@ func (v *volume) FindVolumeByName(ctx context.Context, volName string) (*types.V
 
 //Find the volume by it's Id. If the volume is not found, an error will be returned.
 func (v *volume) FindVolumeById(ctx context.Context, volId string) (*types.Volume, error) {
+	log := util.GetRunIdLogger(ctx)
 	if len(volId) == 0 {
 		return nil, errors.New("lun ID shouldn't be empty")
 	}
 	volumeResp := &types.Volume{}
 	err := v.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityApiGetResourceWithFieldsUri, "lun", volId, api.LunDisplayFields), nil, volumeResp)
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("Unable to find volume Id %s Error: %v", volId, err))
+		log.Debugf("Unable to find volume Id %s Error: %v", volId, err)
+		return nil, VolumeNotFoundError
 	}
 	return volumeResp, nil
 }
@@ -171,24 +176,23 @@ func (v *volume) ListVolumes(ctx context.Context, startToken int, maxEntries int
 	return volumeResp.Volumes, nextToken, err
 }
 
-func (v *volume) DeleteVolume(ctx context.Context, volId string) error {
+//Delete Volume by its ID. If the Volume is not present on the array, an error will be returned.
+func (v *volume) DeleteVolume(ctx context.Context, volumeId string) error {
 	log := util.GetRunIdLogger(ctx)
-	if len(volId) == 0 {
-		return errors.New("lun id cannot be empty")
+	if len(volumeId) == 0 {
+		return errors.New("Volume Id cannot be empty")
 	}
 	volumeResp := &types.Volume{}
 
-	err := v.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityApiGetResourceUri, "lun", volId), nil, volumeResp)
+	err := v.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityApiGetResourceUri, "storageResource", volumeId), nil, volumeResp)
 	if err != nil {
-		log.Info("Unable to find volume ", err)
-		return NotFoundError
+		return VolumeNotFoundError
 	} else {
-		deleteErr := v.client.executeWithRetryAuthenticate(ctx, http.MethodDelete, fmt.Sprintf(api.UnityApiGetResourceUri, "storageResource", volId), nil, nil)
+		deleteErr := v.client.executeWithRetryAuthenticate(ctx, http.MethodDelete, fmt.Sprintf(api.UnityApiGetResourceUri, "storageResource", volumeId), nil, nil)
 		if deleteErr != nil {
-			log.Info("Delete Lun Failed: ", deleteErr)
-			return errors.New(fmt.Sprintf("Delete Lun %s Failed. Error: %v", volId, deleteErr))
+			return errors.New(fmt.Sprintf("Delete Volume %s Failed. Error: %v", volumeId, deleteErr))
 		}
-		log.Infof("Delete Lun %s Successful", volId)
+		log.Debug("Delete Storage Resource %s Successful", volumeId)
 		return nil
 	}
 }

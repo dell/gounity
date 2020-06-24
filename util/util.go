@@ -21,15 +21,17 @@ var (
 )
 
 const (
-	RUNIDLOG = "runidlog"
-	RUNID    = "runid"
+	UnityLog = "unitylog"
 )
 
 func GetRunIdLogger(ctx context.Context) *logrus.Entry {
-	temp := ctx.Value(RUNIDLOG)
+	rlog := ctx.Value(UnityLog)
 	entry := &logrus.Entry{}
-	if reflect.TypeOf(temp) == reflect.TypeOf(entry) {
-		return ctx.Value(RUNIDLOG).(*logrus.Entry)
+	if rlog != nil && reflect.TypeOf(rlog) == reflect.TypeOf(entry) {
+		entry = rlog.(*logrus.Entry)
+	}
+	if len(entry.Data) > 0 {
+		return entry
 	}
 
 	log := GetLogger()

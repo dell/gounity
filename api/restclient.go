@@ -99,9 +99,6 @@ type ClientOptions struct {
 	// Insecure is a flag that indicates whether or not to supress SSL errors.
 	Insecure bool
 
-	// UseCerts is a flag that indicates whether system certs should be loaded
-	UseCerts bool
-
 	// Timeout specifies a time limit for requests made by this client.
 	Timeout time.Duration
 
@@ -121,8 +118,9 @@ func New(ctx context.Context, host string, opts ClientOptions, debug bool) (Clie
 	cookieJar, _ := cookiejar.New(nil)
 
 	c := &client{
-		http: &http.Client{},
-		host: host,
+		http:  &http.Client{},
+		host:  host,
+		debug: debug,
 	}
 
 	if opts.Timeout != 0 {
@@ -135,9 +133,7 @@ func New(ctx context.Context, host string, opts ClientOptions, debug bool) (Clie
 				InsecureSkipVerify: true,
 			},
 		}
-	}
-
-	if opts.UseCerts {
+	} else {
 		pool, err := x509.SystemCertPool()
 		if err != nil {
 			return nil, errSysCerts
@@ -145,7 +141,7 @@ func New(ctx context.Context, host string, opts ClientOptions, debug bool) (Clie
 		c.http.Transport = &http.Transport{
 			TLSClientConfig: &tls.Config{
 				RootCAs:            pool,
-				InsecureSkipVerify: opts.Insecure,
+				InsecureSkipVerify: false,
 			},
 		}
 	}
@@ -153,9 +149,6 @@ func New(ctx context.Context, host string, opts ClientOptions, debug bool) (Clie
 	if opts.ShowHTTP {
 		c.showHTTP = true
 	}
-
-	c.debug = debug
-
 	return c, nil
 }
 
@@ -294,7 +287,7 @@ func (c *client) DoAndGetResponseBody(ctx context.Context, method, uri string, h
 		logResponse(ctx, res, c.doLog)
 	}
 
-	log.Infof("Response code:%d for url: %s", res.StatusCode, uri)
+	log.Debugf("Response code:%d for url: %s", res.StatusCode, uri)
 	return res, err
 }
 
@@ -307,21 +300,18 @@ func (c *client) DoWithHeaders(ctx context.Context, method, uri string, headers 
 	}
 	res, err := c.DoAndGetResponseBody(ctx, method, uri, headers, body)
 	if err != nil {
-		log.Errorf("Error while receiving response for url: %s error: %v", uri, err)
-		return err
+		return errors.New(fmt.Sprintf("Error while receiving response for url: %s error: %v", uri, err))
 	}
 	defer res.Body.Close()
 
 	// parse the response
 	switch {
 	case res == nil:
-		log.Errorf("Nil Response received for url: %s", uri)
-		return errors.New("nil Response received")
+		return errors.New(fmt.Sprintf("Nil Response received for url: %s", uri))
 	case res.StatusCode >= 200 && res.StatusCode <= 299:
 		dec := json.NewDecoder(res.Body)
 		if resp != nil {
 			if err = dec.Decode(resp); err != nil && err != io.EOF {
-				log.Errorf("Decode error %v", err)
 				c.doLog(log.WithError(err).Error, fmt.Sprintf("Unable to decode response into %+v", resp))
 				return err
 			}
@@ -338,7 +328,7 @@ func (c *client) DoWithHeaders(ctx context.Context, method, uri string, headers 
 		jsonError.ErrorContent.Message = append(jsonError.ErrorContent.Message, types.ErrorMessage{string(res.Status)})
 		return jsonError
 	default:
-		c.doLog(log.WithError(err).Error, fmt.Sprintf("Invalid Response received Body: %s", body))
+		log.Debugf("Invalid Response received Body: %s error: %v", body, err)
 		return c.ParseJSONError(ctx, res)
 	}
 	return nil
@@ -357,22 +347,17 @@ func (c *client) ParseJSONError(ctx context.Context, r *http.Response) error {
 	jsonError := &types.Error{}
 	err := json.NewDecoder(r.Body).Decode(jsonError)
 	if err != nil && err != io.EOF {
-		log.Error("ParseJSONError:", err)
-		return err
+		return errors.New(fmt.Sprintf("ParseJSONError:", err))
 	}
-	data, err := json.Marshal(jsonError)
+	_, err = json.Marshal(jsonError)
 	if err != nil {
 		log.Error("ParseJSONError marshal error", err)
 	}
-	log.WithError(err).Errorf("Json error response: %s", strings.ReplaceAll(string(data), "\"", ""))
 
 	return jsonError
 }
 
-func (c *client) doLog(
-	l func(args ...interface{}),
-	msg string) {
-
+func (c *client) doLog(l func(args ...interface{}), msg string) {
 	if c.debug {
 		l(msg)
 	}
