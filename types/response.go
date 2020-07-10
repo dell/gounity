@@ -11,19 +11,19 @@ type StoragePool struct {
 
 //StoragePoolContent Struct to capture the StoragePool Content properties
 type StoragePoolContent struct {
-	ID                        string     `json:"id"`
-	Name                      string     `json:"name"`
-	Description               string     `json:"description"`
-	FreeCapacity              uint64     `json:"sizeFree"`
-	TotalCapacity             uint64     `json:"sizeTotal"`
-	UsedCapacity              uint64     `json:"sizeUsed"`
-	SubscribedCapacity        uint64     `json:"sizeSubscribed"`
-	HasCompressionEnabledLuns bool       `json:"hasCompressionEnabledLuns"`
-	HasCompressionEnabledFs   bool       `json:"hasCompressionEnabledFs"`
-	IsFASTCacheEnabled        bool       `json:"isFASTCacheEnabled"`
-	Type                      int8       `json:"type"`
-	IsAllFlash                bool       `json:"isAllFlash"`
-	PoolFastVP                PoolFastVP `json:"poolFastVP"`
+	ID                          string     `json:"id"`
+	Name                        string     `json:"name"`
+	Description                 string     `json:"description"`
+	FreeCapacity                uint64     `json:"sizeFree"`
+	TotalCapacity               uint64     `json:"sizeTotal"`
+	UsedCapacity                uint64     `json:"sizeUsed"`
+	SubscribedCapacity          uint64     `json:"sizeSubscribed"`
+	HasDataReductionEnabledLuns bool       `json:"hasDataReductionEnabledLuns"`
+	HasDataReductionEnabledFs   bool       `json:"hasDataReductionEnabledFs"`
+	IsFASTCacheEnabled          bool       `json:"isFASTCacheEnabled"`
+	Type                        int8       `json:"type"`
+	IsAllFlash                  bool       `json:"isAllFlash"`
+	PoolFastVP                  PoolFastVP `json:"poolFastVP"`
 }
 
 //PoolFastVP struct to capture fastvp property of pool
