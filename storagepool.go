@@ -29,12 +29,11 @@ func (sp *storagepool) FindStoragePoolByName(ctx context.Context, poolName strin
 	}
 	spResponse := &types.StoragePool{}
 
-	fieldsToQuery := "id,name,description,sizeFree,sizeTotal,sizeUsed,sizeSubscribed,hasCompressionEnabledLuns,hasCompressionEnabledFs,isFASTCacheEnabled,type,isAllFlash,poolFastVP"
+	fieldsToQuery := "id,name,description,sizeFree,sizeTotal,sizeUsed,sizeSubscribed,hasDataReductionEnabledLuns,hasDataReductionEnabledFs,isFASTCacheEnabled,type,isAllFlash,poolFastVP"
 
 	err := sp.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityApiGetResourceByNameWithFieldsUri, "pool", poolName, fieldsToQuery), nil, spResponse)
 	if err != nil {
-		err = errors.New(fmt.Sprintf("Unable to find pool %s err: %v", poolName, err))
-		return nil, err
+		return nil, errors.New(fmt.Sprintf("Find storage pool by name failed %s err: %v", poolName, err))
 	}
 
 	return spResponse, nil
@@ -47,10 +46,10 @@ func (sp *storagepool) FindStoragePoolById(ctx context.Context, poolId string) (
 	}
 	spResponse := &types.StoragePool{}
 
-	fieldsToQuery := "id,name,description,sizeFree,sizeTotal,sizeUsed,sizeSubscribed,hasCompressionEnabledLuns,hasCompressionEnabledFs,isFASTCacheEnabled,type,isAllFlash,poolFastVP"
+	fieldsToQuery := "id,name,description,sizeFree,sizeTotal,sizeUsed,sizeSubscribed,hasDataReductionEnabledLuns,hasDataReductionEnabledFs,isFASTCacheEnabled,type,isAllFlash,poolFastVP"
 	err := sp.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityApiGetResourceWithFieldsUri, "pool", poolId, fieldsToQuery), nil, spResponse)
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("unable to find the PoolID %s", poolId))
+		return nil, errors.New(fmt.Sprintf("Find storage pool by ID failed %s err: %v", poolId, err))
 	}
 
 	return spResponse, nil
