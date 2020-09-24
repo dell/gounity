@@ -2,11 +2,25 @@ package util
 
 import (
 	"context"
-	"github.com/dell/gounity/api"
 	"testing"
+	"fmt"
 )
 
-func TestGetRunIdLogger(t *testing.T) {
+var ctx context.Context
+const MaxResourceNameLength = 63
+
+
+func TestUtils(t *testing.T) {
+
+getRunIdLoggerTest(t)
+getLoggetTest(t)
+validateResourceNameTest(t)
+validateDurationTest(t)
+}
+
+func getRunIdLoggerTest(t *testing.T) {
+	fmt.Println("Begin - Get RunId Logger Test")
+
 	log := GetLogger()
 	ctx := context.Background()
 	entry := log.WithField("runid", "1111")
@@ -19,80 +33,102 @@ func TestGetRunIdLogger(t *testing.T) {
 	ctx = context.WithValue(ctx, UnityLog, entry)
 	logEntry = GetRunIdLogger(ctx)
 	logEntry.Info("Hi This is log test2")
+
+	fmt.Println("Get RunId Logger Test Successful")
 }
 
-//To validate the ValidateResourceName function
-func TestValidateResourceName(t *testing.T) {
-	_, err := ValidateResourceName("", api.MaxResourceNameLength)
-	if err != NameEmptyError {
-		t.Fatalf("%v", err)
-	}
+func getLoggetTest(t *testing.T) {
+	fmt.Println("Begin - Get Logger Test")
 
-	_, err = ValidateResourceName(" ", api.MaxResourceNameLength)
+	_ = GetLogger()
+
+	fmt.Println("Get Logger Test Successful")
+}
+
+func validateResourceNameTest(t *testing.T) {
+	fmt.Println("Begin - Validate Resource Name Test")
+
+	_, err := ValidateResourceName("", MaxResourceNameLength)
 	if err != NameEmptyError {
 		t.Fatalf("%v", err)
 	}
-	_, err = ValidateResourceName("SomeResource123having space", api.MaxResourceNameLength)
+	fmt.Println("Validate Resource Name Error: ", err)
+	_, err = ValidateResourceName(" ", MaxResourceNameLength)
+	if err != NameEmptyError {
+		t.Fatalf("%v", err)
+	}
+	fmt.Println("Validate Resource Name Error: ", err)
+	_, err = ValidateResourceName("SomeResource123having space", MaxResourceNameLength)
 	if err != InvalidCharacters {
 		t.Fatalf("%v", err)
 	}
-	_, err = ValidateResourceName("MoreThan40Charactersaaaaaaaaaaaaaa100000000000000000000000000000000000000000000", api.MaxResourceNameLength)
+	fmt.Println("Validate Resource Name Error: ", err)
+	_, err = ValidateResourceName("MoreThan40Charactersaaaaaaaaaaaaaa100000000000000000000000000000000000000000000", MaxResourceNameLength)
 	if err != NameTooLongError {
 		t.Fatalf("%v", err)
 	}
-
-	_, err = ValidateResourceName("Valid_Name-9:1", api.MaxResourceNameLength)
+	fmt.Println("Validate Resource Name Error: ", err)
+	_, err = ValidateResourceName("Valid_Name-9:@*&^%$1", MaxResourceNameLength)
+	if err != InvalidCharacters {
+		t.Fatalf("%v", err)
+	}
+	fmt.Println("Validate Resource Name Error: ", err)
+	_, err = ValidateResourceName("Valid_Name-9:1", MaxResourceNameLength)
 	if err != nil {
 		t.Fatalf("%v", err)
 	}
+	fmt.Println("Validate Resource Name Error: ", err)
+
+	fmt.Println("Validate Resource Name Test Successful")
 }
 
-//To validate the ValidateResourceName function
-func TestValidateDuration(t *testing.T) {
+func validateDurationTest(t *testing.T) {
+	fmt.Println("Begin - Validate Duration Test")
+
 	_, err := ValidateDuration("")
 	if err != nil {
 		t.Fatalf("%v", err)
 	}
-	_, err = ValidateDuration("1:2:3:")
-	if err != nil {
-		t.Logf("%v", err)
-	} else {
-		t.Fatalf("%v", err)
+	fmt.Println("Error: ", err)
+	_, err = ValidateDuration("1:2")
+	if err == nil {
+		t.Fatalf("ValidateDuration Negative test failed: %v", err)
 	}
-	_, err = ValidateDuration("1:2::4")
-	if err != nil {
-		t.Logf("%v", err)
-	} else {
-		t.Fatalf("%v", err)
+	fmt.Println("Error: ", err)
+	_, err = ValidateDuration("1d:23:52:50")
+	if err == nil {
+		t.Fatalf("ValidateDuration Negative test failed: %v", err)
 	}
-	_, err = ValidateDuration("1:2:3:a")
-	if err != nil {
-		t.Logf("%v", err)
-	} else {
-		t.Fatalf("%v", err)
+	fmt.Println("Error: ", err)
+	_, err = ValidateDuration("1:23h:52:50")
+	if err == nil {
+		t.Fatalf("ValidateDuration Negative test failed: %v", err)
 	}
-
-	_, err = ValidateDuration("1:2:3:4")
-	if err != nil {
-		t.Fatalf("%v", err)
+	fmt.Println("Error: ", err)
+	_, err = ValidateDuration("1:23:52m:50")
+	if err == nil {
+		t.Fatalf("ValidateDuration Negative test failed: %v", err)
 	}
-
-	_, err = ValidateDuration("-1:2:3:4")
-	if err != nil {
-		t.Logf("%v", err)
-	} else {
-		t.Fatalf("%v", err)
+	fmt.Println("Error: ", err)
+	_, err = ValidateDuration("1:23:52:50s")
+	if err == nil {
+		t.Fatalf("ValidateDuration Negative test failed: %v", err)
 	}
-
-	_, err = ValidateDuration("1:200:3:4")
-	if err != nil {
-		t.Logf("%v", err)
-	} else {
-		t.Fatalf("%v", err)
+	fmt.Println("Error: ", err)
+	_, err = ValidateDuration("-1:23:52:50")
+	if err == nil {
+		t.Fatalf("ValidateDuration Negative test failed: %v", err)
 	}
-
-	sec, _ := ValidateDuration("0:7:1:40")
-	if sec != uint64(25300) {
-		t.Fatal("invalid time")
+	fmt.Println("Error: ", err)
+	_, err = ValidateDuration("1:28:52:50")
+	if err == nil {
+		t.Fatalf("ValidateDuration Negative test failed: %v", err)
 	}
+	fmt.Println("Error: ", err)
+	_, err = ValidateDuration("1:23:70:50")
+	if err == nil {
+		t.Fatalf("ValidateDuration Negative test failed: %v", err)
+	}
+	fmt.Println("Error: ", err)
+	fmt.Println("Validate Duration Test Successful")
 }

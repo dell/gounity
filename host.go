@@ -38,9 +38,8 @@ func (h *host) FindHostByName(ctx context.Context, hostName string) (*types.Host
 		return nil, errors.New("host Name shouldn't be empty")
 	}
 	hResponse := &types.Host{}
-	fieldsToQuery := "id,name,description,fcHostInitiators,iscsiHostInitiators,hostIPPorts"
-	log.Info("URI", fmt.Sprintf(api.UnityApiGetResourceByNameWithFieldsUri, "host", hostName, fieldsToQuery))
-	err := h.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityApiGetResourceByNameWithFieldsUri, "host", hostName, fieldsToQuery), nil, hResponse)
+	log.Info("URI", fmt.Sprintf(api.UnityApiGetResourceByNameWithFieldsUri, api.HostAction, hostName, HostfieldsToQuery))
+	err := h.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityApiGetResourceByNameWithFieldsUri, api.HostAction, hostName, HostfieldsToQuery), nil, hResponse)
 	if err != nil {
 		//Using the multiple host found error code(MultipleHostFoundErrorCode) for comparison
 		if strings.Contains(err.Error(), MultipleHostFoundErrorCode) {
@@ -65,7 +64,7 @@ func (h *host) CreateHost(ctx context.Context, hostName string) (*types.Host, er
 	}
 
 	hostResp := &types.Host{}
-	err := h.client.executeWithRetryAuthenticate(ctx, http.MethodPost, fmt.Sprintf(api.UnityApiInstanceTypeResources, "host"), hostReq, hostResp)
+	err := h.client.executeWithRetryAuthenticate(ctx, http.MethodPost, fmt.Sprintf(api.UnityApiInstanceTypeResources, api.HostAction), hostReq, hostResp)
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +78,7 @@ func (h *host) DeleteHost(ctx context.Context, hostName string) error {
 	}
 
 	hostResp := &types.Host{}
-	err := h.client.executeWithRetryAuthenticate(ctx, http.MethodDelete, fmt.Sprintf(api.UnityApiGetResourceByNameUri, "host", hostName), nil, hostResp)
+	err := h.client.executeWithRetryAuthenticate(ctx, http.MethodDelete, fmt.Sprintf(api.UnityApiGetResourceByNameUri, api.HostAction, hostName), nil, hostResp)
 	if err != nil {
 		return err
 	}
@@ -102,7 +101,7 @@ func (h *host) CreateHostIpPort(ctx context.Context, hostId, ip string) (*types.
 	}
 
 	hostIpResp := &types.HostIpPort{}
-	err := h.client.executeWithRetryAuthenticate(ctx, http.MethodPost, fmt.Sprintf(api.UnityApiInstanceTypeResources, "hostIPPort"), hostIpReq, hostIpResp)
+	err := h.client.executeWithRetryAuthenticate(ctx, http.MethodPost, fmt.Sprintf(api.UnityApiInstanceTypeResources, api.HostIPPortAction), hostIpReq, hostIpResp)
 	if err != nil {
 		return nil, err
 	}
@@ -112,7 +111,7 @@ func (h *host) CreateHostIpPort(ctx context.Context, hostId, ip string) (*types.
 // FindHostIpPortById method to get host Ip port object from Unity by cli ID
 func (h *host) FindHostIpPortById(ctx context.Context, hostIpID string) (*types.HostIpPort, error) {
 	hostIpResp := &types.HostIpPort{}
-	err := h.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityApiGetResourceWithFieldsUri, "hostIPPort", hostIpID, api.HostIpPortDisplayFields), nil, hostIpResp)
+	err := h.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityApiGetResourceWithFieldsUri, api.HostIPPortAction, hostIpID, HostIpPortDisplayFields), nil, hostIpResp)
 	if err != nil {
 		return nil, err
 	}
@@ -122,7 +121,7 @@ func (h *host) FindHostIpPortById(ctx context.Context, hostIpID string) (*types.
 // ListHostInitiators lists all host initiators
 func (h *host) ListHostInitiators(ctx context.Context) ([]types.HostInitiator, error) {
 	listInitiatorResp := &types.ListHostInitiator{}
-	hostInitiatorUri := "/api/types/hostInitiator/instances?fields=" + api.HostInitiatorsDisplayFields
+	hostInitiatorUri := api.UnityListHostInitiatorsUri + HostInitiatorsDisplayFields
 	err := h.client.executeWithRetryAuthenticate(ctx, http.MethodGet, hostInitiatorUri, nil, listInitiatorResp)
 	if err != nil {
 		return nil, err
@@ -161,7 +160,7 @@ func (h *host) FindHostInitiatorByName(ctx context.Context, wwnOrIqn string) (*t
 //Find Host Initiator
 func (h *host) FindHostInitiatorById(ctx context.Context, wwnOrIqn string) (*types.HostInitiator, error) {
 	hostInitiatorResp := &types.HostInitiator{}
-	err := h.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityApiGetResourceWithFieldsUri, "hostInitiator", wwnOrIqn, api.HostInitiatorsDisplayFields), nil, hostInitiatorResp)
+	err := h.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityApiGetResourceWithFieldsUri, api.HostInitiatorAction, wwnOrIqn, HostInitiatorsDisplayFields), nil, hostInitiatorResp)
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("Unable to find host %s : %v", wwnOrIqn, err))
 	}
@@ -195,7 +194,7 @@ func (h *host) CreateHostInitiator(ctx context.Context, hostId, wwnOrIqn string,
 			InitiatorType: initiatorType,
 			InitiatorWwn:  wwnOrIqn,
 		}
-		err := h.client.executeWithRetryAuthenticate(ctx, http.MethodPost, fmt.Sprintf(api.UnityApiInstanceTypeResources, "hostInitiator"), hostInitiatorReq, hostInitiatorResp)
+		err := h.client.executeWithRetryAuthenticate(ctx, http.MethodPost, fmt.Sprintf(api.UnityApiInstanceTypeResources, api.HostInitiatorAction), hostInitiatorReq, hostInitiatorResp)
 		if err != nil {
 			return nil, errors.New(fmt.Sprintf("Create Host Initiator %s Error: %v", wwnOrIqn, err))
 		}
@@ -216,10 +215,24 @@ func (h *host) CreateHostInitiator(ctx context.Context, hostId, wwnOrIqn string,
 	return hostInitiatorResp, nil
 }
 
-//Modify Host Initiator
+//Modify Host Initiator - WILL BE DEPRECATED
 func (h *host) ModifyHostInitiator(ctx context.Context, hostId string, initiator *types.HostInitiator) (*types.HostInitiator, error) {
 	if initiator == nil {
 		return nil, errors.New("HostInitiator shouldn't be null")
+	}
+	
+	return h.ModifyHostInitiatorById(ctx, hostId, initiator.HostInitiatorContent.Id)
+}
+
+// ModifyHostInitiatorById
+func (h *host) ModifyHostInitiatorById(ctx context.Context, hostId , initiatorId string) (*types.HostInitiator, error) {
+
+	if hostId == "" {
+		return nil, errors.New("Host ID shouldn't be null")
+	}
+
+	if initiatorId == "" {
+		return nil, errors.New("Initiator ID shouldn't be null")
 	}
 
 	hostIdContent := types.HostIdContent{
@@ -228,10 +241,8 @@ func (h *host) ModifyHostInitiator(ctx context.Context, hostId string, initiator
 	hostInitiatorReq := &types.HostInitiatorModifyParam{
 		HostIdContent: &hostIdContent,
 	}
-
-	initiator.HostInitiatorContent.ParentHost.ID = hostId
 	hostInitiatorResp := &types.HostInitiator{}
-	err := h.client.executeWithRetryAuthenticate(ctx, http.MethodPost, fmt.Sprintf("/api/instances/hostInitiator/%s/action/modify", initiator.HostInitiatorContent.Id), hostInitiatorReq, hostInitiatorResp)
+	err := h.client.executeWithRetryAuthenticate(ctx, http.MethodPost, fmt.Sprintf(api.UnityModifyHostInitiators, initiatorId), hostInitiatorReq, hostInitiatorResp)
 	if err != nil {
 		return nil, err
 	}
@@ -241,7 +252,7 @@ func (h *host) ModifyHostInitiator(ctx context.Context, hostId string, initiator
 //Find Host Initiator
 func (h *host) FindHostInitiatorPathById(ctx context.Context, initiatorPathId string) (*types.HostInitiatorPath, error) {
 	hostInitiatorPathResp := &types.HostInitiatorPath{}
-	err := h.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityApiGetResourceWithFieldsUri, "hostInitiatorPath", initiatorPathId, api.HostInitiatorPathDisplayFields), nil, hostInitiatorPathResp)
+	err := h.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityApiGetResourceWithFieldsUri, api.HostInitiatorPathAction, initiatorPathId, HostInitiatorPathDisplayFields), nil, hostInitiatorPathResp)
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("Unable to find host initiator path %s : %v", initiatorPathId, err))
 	}
@@ -251,7 +262,7 @@ func (h *host) FindHostInitiatorPathById(ctx context.Context, initiatorPathId st
 //Find FC Port
 func (h *host) FindFcPortById(ctx context.Context, fcPortId string) (*types.FcPort, error) {
 	fcPortResp := &types.FcPort{}
-	err := h.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityApiGetResourceWithFieldsUri, "fcPort", fcPortId, api.FcPortDisplayFields), nil, fcPortResp)
+	err := h.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityApiGetResourceWithFieldsUri, HostInitiatorPathDisplayFields, fcPortId, FcPortDisplayFields), nil, fcPortResp)
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("Unable to find Fc port %s : %v", fcPortId, err))
 	}

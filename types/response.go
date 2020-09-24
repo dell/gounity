@@ -62,6 +62,7 @@ type VolumeContent struct {
 	IsThinClone            bool                 `json:"isThinClone"`
 	ParentSnap             ParentSnap           `json:"parentSnap,omitempty"`
 	TieringPolicy          int                  `json:"tieringPolicy,omitempty"`
+	ParentVolume           StorageResource      `json:"originalParentLun,omitempty"`
 }
 
 //Parent Snapshot to capture Source Snapshot Id
@@ -192,11 +193,35 @@ type SnapshotContent struct {
 	State           int             `json:"state,omitempty"`
 	Size            int64           `json:"size"`
 	IsAutoDelete    bool            `json:"isAutoDelete"`
+	AccessType      int             `json:"accessType,omitempty"`
+	ParentSnap      StorageResource `json:"parentSnap,omitempty"`
+}
+
+//CopySnapshots struct to capture copy snapshot content
+type CopySnapshots struct {
+	CopySnapshotsContent CopySnapshotsContent `json:"content"`
+}
+
+//CopySnapshotsContent struct to capture copies list
+type CopySnapshotsContent struct {
+	Copies []StorageResource `json:"copies,omitempty"`
 }
 
 //StorageResource struct to capture storage resource Id
 type StorageResource struct {
-	Id string `json:"id"`
+	Id   string `json:"id"`
+	Name string `json:"name,omitempty"`
+}
+
+//Struct to capture Storage Resource content
+type StorageResourceParameters struct {
+	StorageResourceContent StorageResourceContent `json:"content"`
+}
+
+type StorageResourceContent struct {
+	Id         string          `json:"id"`
+	Name       string          `json:"name,omitempty"`
+	Filesystem StorageResource `json:"filesystem,omitempty"`
 }
 
 //IoLimitPolicy struct IO limit policy object
@@ -217,21 +242,29 @@ type Filesystem struct {
 
 //FileContent struct to capture filesystem parameters
 type FileContent struct {
-	Id                     string `json:"id"`
-	Name                   string `json:"name,omitempty"`
-	SizeTotal              uint64 `json:"sizeTotal,omitempty"`
-	Description            string `json:"description,omitempty"`
-	Type                   int    `json:"type,omitempty"`
-	Format                 int    `json:"format,omitempty"`
-	HostIOSize             int64  `json:"hostIOSize,omitempty"`
-	TieringPolicy          uint64 `json:"tieringPolicy,omitempty"`
-	IsThinEnabled          bool   `json:"isThinEnabled"`
-	IsDataReductionEnabled bool   `json:"isDataReductionEnabled"`
-	Pool                   Pool   `json:"pool,omitempty"`
-	NASServer              Pool   `json:"nasServer,omitempty"`
-	StorageResource        Pool   `json:"storageResource,omitempty"`
-	NFSShare               []Pool `json:"nfsShare,omitempty"`
-	CIFSShare              []Pool `json:"cifsShare,omitempty"`
+	Id                     string  `json:"id"`
+	Name                   string  `json:"name,omitempty"`
+	SizeTotal              uint64  `json:"sizeTotal,omitempty"`
+	Description            string  `json:"description,omitempty"`
+	Type                   int     `json:"type,omitempty"`
+	Format                 int     `json:"format,omitempty"`
+	HostIOSize             int64   `json:"hostIOSize,omitempty"`
+	TieringPolicy          uint64  `json:"tieringPolicy,omitempty"`
+	IsThinEnabled          bool    `json:"isThinEnabled"`
+	IsDataReductionEnabled bool    `json:"isDataReductionEnabled"`
+	Pool                   Pool    `json:"pool,omitempty"`
+	NASServer              Pool    `json:"nasServer,omitempty"`
+	StorageResource        Pool    `json:"storageResource,omitempty"`
+	NFSShare               []Share `json:"nfsShare,omitempty"`
+	CIFSShare              []Pool  `json:"cifsShare,omitempty"`
+}
+
+//Share object to capture NFS Share object from FileContent
+type Share struct {
+	Id         string          `json:"id"`
+	Name       string          `json:"name,omitempty"`
+	Path       string          `json:"path,omitempty"`
+	ParentSnap StorageResource `json:"snap,omitempty"`
 }
 
 //NFSShare struct to capture NFS Share object

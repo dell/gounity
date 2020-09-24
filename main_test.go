@@ -22,13 +22,16 @@ type testConfig struct {
 	poolId          string
 	nodeHostName    string
 	nodeHostIp      string
-	wwnOrIqns       []string
+	wwns      		[]string
+	iqn 			string
 	hostIOLimitName string
+	nasServer		string
 	volumeApi       *volume
 	hostApi         *host
 	poolApi         *storagepool
 	snapApi         *snapshot
 	ipinterfaceApi  *ipinterface
+	fileApi			*filesystem
 }
 
 var testConf *testConfig
@@ -59,7 +62,10 @@ func TestMain(m *testing.M) {
 	testConf.nodeHostName = testProp["NODE_HOSTNAME"]
 	testConf.hostIOLimitName = testProp["HOST_IO_LIMIT_NAME"]
 	testConf.nodeHostIp = testProp["NODE_HOSTIP"]
-	wwnOrIqnStr := testProp["NODE_WWNORIQN"]
+	testConf.nasServer = testProp["UNITY_NAS_SERVER"]
+	testConf.iqn = testProp["NODE_IQN"]
+	wwnStr := testProp["NODE_WWNS"]
+	
 
 	os.Setenv("GOUNITY_ENDPOINT", testConf.unityEndPoint)
 	os.Setenv("X_CSI_UNITY_USER", testConf.username)
@@ -68,23 +74,25 @@ func TestMain(m *testing.M) {
 	testConf.username = testProp["X_CSI_UNITY_USER"]
 	testConf.password = testProp["X_CSI_UNITY_PASSWORD"]
 
-	testClient := getTestClient(ctx, testConf.unityEndPoint, testConf.username, testConf.password)
-	testConf.wwnOrIqns = strings.Split(wwnOrIqnStr, ",")
+	testClient := getTestClient(ctx, testConf.unityEndPoint, testConf.username, testConf.password, testConf.unityEndPoint, insecure)
+	testConf.wwns = strings.Split(wwnStr, ",")
 
 	testConf.hostApi = NewHost(testClient)
 	testConf.poolApi = NewStoragePool(testClient)
 	testConf.snapApi = NewSnapshot(testClient)
 	testConf.volumeApi = NewVolume(testClient)
 	testConf.ipinterfaceApi = NewIpInterface(testClient)
+	testConf.fileApi = NewFilesystem(testClient)
 
 	code := m.Run()
 	fmt.Println("------------End of TestMain--------------")
 	os.Exit(code)
 }
 
-func getTestClient(ctx context.Context, url, username, password string) *Client {
+func getTestClient(ctx context.Context, url, username, password, endpoint string, insecure bool) *Client {
 	fmt.Println("Test:", url, username, password)
-	c, err := NewClient(ctx)
+	
+	c, err := NewClientWithArgs(ctx, endpoint, insecure)
 	if err != nil {
 		fmt.Println(err)
 	}

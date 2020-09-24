@@ -60,36 +60,34 @@ const (
 	//Modify Filesystem URIs
 	UnityModifyFilesystemUri = UnityApiModifyStorageResourceUri + "/action/modifyFilesystem"
 
+	//Modify NFS Share URIs
+	UnityModifyNFSShareUri = UnityApiGetResourceUri + "/action/modify"
+
 	//Snapshot Action resource URIs
 	UnityModifySnapshotUri = UnityApiGetResourceUri + "/action/modify"
 
-	//To Display the Volume fields
-	LunDisplayFields = "id,name,description,type,wwn,sizeTotal,sizeUsed,sizeAllocated,hostAccess,pool,tieringPolicy,ioLimitPolicy,isThinEnabled,isDataReductionEnabled,isThinClone,parentSnap"
+	//Snapshot Copy Action
+	UnityCopySnapshotUri = UnityApiGetResourceUri + "/action/copy"
 
-	//To Display the File System fields
-	FileSystemDisplayFields = "id,name,description,type,sizeTotal,isThinEnabled,isDataReductionEnabled,pool,nasServer,storageResource,nfsShare?fields,cifsShare"
+	//Host Initiator URIs
+	UnityListHostInitiatorsUri = unityApiTypes + "/hostInitiator/instances?fields="
+	UnityModifyHostInitiators  = unityRootApi + "/instances/hostInitiator/%s/action/modify"
 
-	//To Display the NFS Share fields
-	NFSShareDisplayfields = "id,name,filesystem,readOnlyHosts,readWriteHosts,readOnlyRootAccessHosts,rootAccessHosts,exportPaths"
-
-	//To Display the NAS Server fields
-	NasServerDisplayfields = "id,name,nfsServer?fields"
-
-	//To Display the Snapshot fields
-	SnapshotDisplayFields = "id,name,description,storageResource,lun,creationTime,expirationTime,lastRefreshTime,state,size,isAutoDelete"
-
-	//To Display the HostInitiator fields
-	HostInitiatorsDisplayFields = "id,health,type,initiatorId,isIgnored,parentHost,paths"
-
-	//To Display the HostIpPort fields
-	HostIpPortDisplayFields = "id,address"
-
-	//To Display License Info fields
-	LicenseInfoDisplayFields = "isInstalled,isValid"
-
-	//To Display the HostInitiatorPath fields
-	HostInitiatorPathDisplayFields = "fcPort"
-
-	//To Display the FC Port fields
-	FcPortDisplayFields = "wwn"
+	//Action types for URL's
+	LunAction               = "lun"
+	CreateLunAction         = "createLun"
+	FileSystemAction        = "filesystem"
+	CreateFSAction          = "createFilesystem"
+	NfsShareAction          = "nfsShare"
+	StorageResourceAction   = "storageResource"
+	HostAction              = "host"
+	IPInterface             = "ipInterface"
+	SnapAction              = "snap"
+	PoolAction              = "pool"
+	IOLimitPolicy           = "ioLimitPolicy"
+	LicenseAction           = "license"
+	HostInitiatorPathAction = "hostInitiatorPath"
+	HostInitiatorAction     = "hostInitiator"
+	HostIPPortAction        = "hostIPPort"
+	NasServerAction         = "nasServer"
 )
