@@ -55,6 +55,7 @@ type LunCreateParam struct {
 
 // Struct to capture the Lun properties
 type LunParameters struct {
+	Name                   string                 `json:"name,omitempty"`
 	Size                   uint64                 `json:"size,omitempty"`
 	IsThinEnabled          string                 `json:"isThinEnabled,omitempty"`
 	StoragePool            *StoragePoolID         `json:"pool,omitempty"`
@@ -86,6 +87,16 @@ type FsParameters struct {
 	FileEventSettings      FileEventSettings      `json:"fileEventSettings,omitempty"`
 }
 
+//Struct to capture expand Filesystem parameters
+type FsExpandParameters struct {
+	Size uint64 `json:"size"`
+}
+
+//Struct to expand Filesystem
+type FsExpandModifyParam struct {
+	FsParameters *FsExpandParameters `json:"fsParameters"`
+}
+
 // Struct to modify Filesystem parameters
 type FsModifyParameters struct {
 	NFSShares *[]NFSShareCreateParam `json:"nfsShareCreate,omitempty"`
@@ -98,9 +109,24 @@ type NFSShareCreateParam struct {
 	NFSShareParameters *NFSShareParameters `json:"nfsShareParameters,omitempty"`
 }
 
+type NFSShareCreateFromSnapParam struct {
+	Name          string            `json:"name"`
+	Path          string            `json:"path"`
+	DefaultAccess string            `json:"defaultAccess,omitempty"`
+	Snapshot      SnapshotIdContent `json:"snap"`
+}
+
 //Struct to modify NFS Share parameters
 type NFSShareModify struct {
 	NFSSharesModifyContent *[]NFSShareModifyContent `json:"nfsShareModify,omitempty"`
+}
+
+type NFSShareCreateFromSnapModify struct {
+	DefaultAccess           string           `json:"defaultAccess,omitempty"`
+	ReadOnlyHosts           *[]HostIdContent `json:"readOnlyHosts,omitempty"`
+	ReadWriteHosts          *[]HostIdContent `json:"readWriteHosts,omitempty"`
+	ReadOnlyRootAccessHosts *[]HostIdContent `json:"readOnlyRootAccessHosts,omitempty"`
+	RootAccessHosts         *[]HostIdContent `json:"rootAccessHosts,omitempty"`
 }
 
 //Struct to modify NFS Share parameters
@@ -182,11 +208,17 @@ type LunHostAccessModifyParam struct {
 }
 
 type CreateSnapshotParam struct {
-	Name              string                `json:"name,omitempty"`
-	StorageResource   *StorageResourceParam `json:"storageResource,omitempty"`
-	Description       string                `json:"description,omitempty"`
-	RetentionDuration uint64                `json:"retentionDuration,omitempty"`
-	IsAutoDelete      bool                  `json:"isAutoDelete"`
+	Name                 string                `json:"name,omitempty"`
+	StorageResource      *StorageResourceParam `json:"storageResource,omitempty"`
+	Description          string                `json:"description,omitempty"`
+	RetentionDuration    uint64                `json:"retentionDuration,omitempty"`
+	IsAutoDelete         bool                  `json:"isAutoDelete"`
+	FilesystemAccessType int                   `json:"filesystemAccessType,omitempty"`
+}
+
+type CopySnapshot struct {
+	Name  string `json:"copyName,omitempty"`
+	Child bool   `json:"child"`
 }
 
 type StorageResourceParam struct {

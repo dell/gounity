@@ -29,9 +29,8 @@ func (f *ipinterface) ListIscsiIPInterfaces(ctx context.Context) ([]types.IPInte
 
 	log := util.GetRunIdLogger(ctx)
 	hResponse := &types.ListIPInterfaces{}
-	fieldsToQuery := "id,ipAddress,type"
-	log.Debugf("URI: "+api.UnityApiInstanceTypeResourcesWithFields, "ipInterface", fieldsToQuery)
-	err := f.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityApiInstanceTypeResourcesWithFields, "ipInterface", fieldsToQuery), nil, hResponse)
+	log.Debugf("URI: "+api.UnityApiInstanceTypeResourcesWithFields, api.IPInterface, IscsiIPFields)
+	err := f.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityApiInstanceTypeResourcesWithFields, api.IPInterface, IscsiIPFields), nil, hResponse)
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("Unable to list Ip Interfaces %v", err))
 	}

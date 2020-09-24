@@ -347,7 +347,7 @@ func (c *client) ParseJSONError(ctx context.Context, r *http.Response) error {
 	jsonError := &types.Error{}
 	err := json.NewDecoder(r.Body).Decode(jsonError)
 	if err != nil && err != io.EOF {
-		return errors.New(fmt.Sprintf("ParseJSONError:", err))
+		return errors.New(fmt.Sprintf("ParseJSONError: %v", err))
 	}
 	_, err = json.Marshal(jsonError)
 	if err != nil {

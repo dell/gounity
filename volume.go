@@ -8,22 +8,32 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/dell/gounity/api"
 	"github.com/dell/gounity/types"
 	"github.com/dell/gounity/util"
-	"net/http"
-	"strconv"
 )
 
 type LicenseType string
 
 const (
 	LunNameMaxLength             = 63
+	SnapForClone                 = "csi-snapforclone-"
 	ThinProvisioning LicenseType = "THIN_PROVISIONING"
 	DataReduction    LicenseType = "DATA_REDUCTION"
 )
 
+var DependentClonesErrorCode = "0x6701673"
+var DependentClonesError = errors.New("The specified volume cannot be deleted because it has one or more dependent thin clones.")
+var VolumeNotFoundErrorCode = "0x7d13005"
 var VolumeNotFoundError = errors.New("Unable to find volume")
+var CreateSnapshotFailedError = errors.New("Create Snapshot Failed.")
+var CloningFailedError = errors.New("Volume Cloning Failed.")
+var MarkVolumeForDeletion = "csi-marked-vol-for-deletion"
 
 type volume struct {
 	client *Client
@@ -50,12 +60,9 @@ func (v *volume) CreateLun(ctx context.Context, name, poolId, description string
 
 	poolApi := NewStoragePool(v.client)
 	pool, err := poolApi.FindStoragePoolById(ctx, poolId)
-	if pool == nil {
-		return nil, errors.New(fmt.Sprintf("unable to get PoolID (%s) Error:%v", poolId, err))
-	}
 
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("Error trying to get Storage Pool (%s) Error:%v", poolId, err))
+		return nil, errors.New(fmt.Sprintf("Unable to get PoolID (%s) Error:%v", poolId, err))
 	}
 
 	storagePool := types.StoragePoolID{
@@ -118,7 +125,7 @@ func (v *volume) CreateLun(ctx context.Context, name, poolId, description string
 
 	volumeResp := &types.Volume{}
 	err = v.client.executeWithRetryAuthenticate(ctx,
-		http.MethodPost, fmt.Sprintf(api.UnityApiStorageResourceActionUri, "createLun"), volumeReqParam, volumeResp)
+		http.MethodPost, fmt.Sprintf(api.UnityApiStorageResourceActionUri, api.CreateLunAction), volumeReqParam, volumeResp)
 	if err != nil {
 		return nil, err
 	}
@@ -131,7 +138,7 @@ func (v *volume) FindVolumeByName(ctx context.Context, volName string) (*types.V
 		return nil, errors.New(fmt.Sprintf("Lun Name shouldn't be empty."))
 	}
 	volumeResp := &types.Volume{}
-	err := v.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityApiGetResourceByNameWithFieldsUri, "lun", volName, api.LunDisplayFields), nil, volumeResp)
+	err := v.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityApiGetResourceByNameWithFieldsUri, api.LunAction, volName, LunDisplayFields), nil, volumeResp)
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("Unable to find volume by name %s", volName))
 	}
@@ -146,10 +153,13 @@ func (v *volume) FindVolumeById(ctx context.Context, volId string) (*types.Volum
 		return nil, errors.New("lun ID shouldn't be empty")
 	}
 	volumeResp := &types.Volume{}
-	err := v.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityApiGetResourceWithFieldsUri, "lun", volId, api.LunDisplayFields), nil, volumeResp)
+	err := v.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityApiGetResourceWithFieldsUri, api.LunAction, volId, LunDisplayFields), nil, volumeResp)
 	if err != nil {
-		log.Debugf("Unable to find volume Id %s Error: %v", volId, err)
-		return nil, VolumeNotFoundError
+		if strings.Contains(err.Error(), VolumeNotFoundErrorCode) {
+			log.Debugf("Unable to find volume Id %s Error: %v", volId, err)
+			return nil, VolumeNotFoundError
+		}
+		return nil, err
 	}
 	return volumeResp, nil
 }
@@ -158,7 +168,7 @@ func (v *volume) ListVolumes(ctx context.Context, startToken int, maxEntries int
 	log := util.GetRunIdLogger(ctx)
 	volumeResp := &types.ListVolumes{}
 	nextToken := startToken + 1
-	lunUri := fmt.Sprintf(api.UnityApiInstanceTypeResourcesWithFields, "lun", api.LunDisplayFields)
+	lunUri := fmt.Sprintf(api.UnityApiInstanceTypeResourcesWithFields, api.LunAction, LunDisplayFields)
 
 	if maxEntries != 0 {
 		lunUri = fmt.Sprintf(lunUri+"&per_page=%d", maxEntries)
@@ -184,15 +194,45 @@ func (v *volume) DeleteVolume(ctx context.Context, volumeId string) error {
 	}
 	volumeResp := &types.Volume{}
 
-	err := v.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityApiGetResourceUri, "storageResource", volumeId), nil, volumeResp)
+	err := v.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityApiGetResourceUri, api.StorageResourceAction, volumeId), nil, volumeResp)
+
+	volResp, err := v.FindVolumeById(ctx, volumeId)
+
 	if err != nil {
-		return VolumeNotFoundError
+		return err
 	} else {
-		deleteErr := v.client.executeWithRetryAuthenticate(ctx, http.MethodDelete, fmt.Sprintf(api.UnityApiGetResourceUri, "storageResource", volumeId), nil, nil)
+		deleteSourceVol := false
+		if volResp.VolumeContent.IsThinClone {
+			//Check if parent volume is marked for deletion
+			sourceVolName := volResp.VolumeContent.ParentVolume.Name
+			if strings.Contains(sourceVolName, MarkVolumeForDeletion) {
+				deleteSourceVol = true
+			}
+		}
+		deleteErr := v.client.executeWithRetryAuthenticate(ctx, http.MethodDelete, fmt.Sprintf(api.UnityApiGetResourceUri, api.StorageResourceAction, volumeId), nil, nil)
+		if deleteSourceVol {
+			deleteSourceErr := v.client.executeWithRetryAuthenticate(ctx, http.MethodDelete, fmt.Sprintf(api.UnityApiGetResourceUri, api.StorageResourceAction, volResp.VolumeContent.ParentVolume.Id), nil, nil)
+			if deleteSourceErr != nil {
+				log.Warnf("Deletion of source volume: %s marked for deletion failed with error: %v", volResp.VolumeContent.ParentVolume.Id, deleteSourceErr)
+			} else {
+				log.Debugf("Deletion of source volume: %s marked for deletion successful", volResp.VolumeContent.ParentVolume.Id)
+			}
+		}
 		if deleteErr != nil {
+			if strings.Contains(deleteErr.Error(), DependentClonesErrorCode) {
+				newName := MarkVolumeForDeletion + strconv.FormatInt(time.Now().Unix(), 10)
+				err := v.RenameVolume(ctx, newName, volumeId)
+				if err != nil {
+					//Unable to mark volume for deletion
+					log.Warnf("Unable to mark volume %s with dependent clones for deletion", volumeId)
+				} else {
+					log.Debugf("Volume %s has dependent clones and marked for deletion.", volumeId)
+				}
+				return nil
+			}
 			return errors.New(fmt.Sprintf("Delete Volume %s Failed. Error: %v", volumeId, deleteErr))
 		}
-		log.Debug("Delete Storage Resource %s Successful", volumeId)
+		log.Debugf("Delete Storage Resource %s Successful", volumeId)
 		return nil
 	}
 }
@@ -256,8 +296,7 @@ func (v *volume) FindHostIOLimitByName(ctx context.Context, hostIoPolicyName str
 		return nil, errors.New("policy Name shouldn't be empty")
 	}
 	ioLimitPolicyResp := &types.IoLimitPolicy{}
-	fieldsToQuery := "id,name,description"
-	err := v.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityApiGetResourceByNameWithFieldsUri, "ioLimitPolicy", hostIoPolicyName, fieldsToQuery), nil, ioLimitPolicyResp)
+	err := v.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityApiGetResourceByNameWithFieldsUri, api.IOLimitPolicy, hostIoPolicyName, HostIOLimitFields), nil, ioLimitPolicyResp)
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("Unable to find IO Limit Policy:%s Error: %v", hostIoPolicyName, err))
 	}
@@ -281,9 +320,45 @@ func (v *volume) CreteLunThinClone(ctx context.Context, name, snapId, volId stri
 //Get License information
 func (v *volume) isFeatureLicensed(ctx context.Context, featureName LicenseType) (*types.LicenseInfo, error) {
 	licenseInfoResp := &types.LicenseInfo{}
-	err := v.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityApiGetResourceByNameWithFieldsUri, "license", featureName, api.LicenseInfoDisplayFields), nil, licenseInfoResp)
+	err := v.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityApiGetResourceByNameWithFieldsUri, api.LicenseAction, featureName, LicenseInfoDisplayFields), nil, licenseInfoResp)
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("Unable to get license info for feature: %s", featureName))
 	}
 	return licenseInfoResp, nil
+}
+
+// Volume cloning
+func (v *volume) CreateCloneFromVolume(ctx context.Context, name, volId string) (*types.Volume, error) {
+	log := util.GetRunIdLogger(ctx)
+	snapApi := NewSnapshot(v.client)
+	//Create snapshot for cloning
+	snapName := SnapForClone + strconv.FormatInt(time.Now().Unix(), 10)
+	snapResp, err := snapApi.CreateSnapshot(ctx, volId, snapName, "", "")
+	if err != nil {
+		return nil, CreateSnapshotFailedError
+	}
+	//Clone Volume
+	cloned := true
+	volResp, err := v.CreteLunThinClone(ctx, name, snapResp.SnapshotContent.ResourceId, volId)
+	if err != nil {
+		cloned = false
+	}
+	//Delete Snapshot
+	err = snapApi.DeleteSnapshot(ctx, snapResp.SnapshotContent.ResourceId)
+	if err != nil {
+		//If delete snapshot created to clone volume failed then error is only logged not returned
+		log.Warnf("Unable to Delete Snapshot: %s created to clone Volume: %s", snapName, volId)
+	}
+	if !cloned {
+		return nil, CloningFailedError
+	}
+	return volResp, nil
+}
+
+// Rename Volume
+func (v *volume) RenameVolume(ctx context.Context, newName, volId string) error {
+	lunParams := types.LunParameters{
+		Name: newName,
+	}
+	return v.client.executeWithRetryAuthenticate(ctx, http.MethodPost, fmt.Sprintf(api.UnityModifyLunUri, volId), lunParams, nil)
 }

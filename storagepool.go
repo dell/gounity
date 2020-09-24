@@ -28,10 +28,7 @@ func (sp *storagepool) FindStoragePoolByName(ctx context.Context, poolName strin
 		return nil, errors.New("poolName shouldn't be empty")
 	}
 	spResponse := &types.StoragePool{}
-
-	fieldsToQuery := "id,name,description,sizeFree,sizeTotal,sizeUsed,sizeSubscribed,hasDataReductionEnabledLuns,hasDataReductionEnabledFs,isFASTCacheEnabled,type,isAllFlash,poolFastVP"
-
-	err := sp.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityApiGetResourceByNameWithFieldsUri, "pool", poolName, fieldsToQuery), nil, spResponse)
+	err := sp.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityApiGetResourceByNameWithFieldsUri, api.PoolAction, poolName, StoragePoolFields), nil, spResponse)
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("Find storage pool by name failed %s err: %v", poolName, err))
 	}
@@ -46,8 +43,7 @@ func (sp *storagepool) FindStoragePoolById(ctx context.Context, poolId string) (
 	}
 	spResponse := &types.StoragePool{}
 
-	fieldsToQuery := "id,name,description,sizeFree,sizeTotal,sizeUsed,sizeSubscribed,hasDataReductionEnabledLuns,hasDataReductionEnabledFs,isFASTCacheEnabled,type,isAllFlash,poolFastVP"
-	err := sp.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityApiGetResourceWithFieldsUri, "pool", poolId, fieldsToQuery), nil, spResponse)
+	err := sp.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityApiGetResourceWithFieldsUri, api.PoolAction, poolId, StoragePoolFields), nil, spResponse)
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("Find storage pool by ID failed %s err: %v", poolId, err))
 	}

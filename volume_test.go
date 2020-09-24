@@ -2,240 +2,279 @@ package gounity
 
 import (
 	"context"
-	"encoding/json"
-	"errors"
 	"fmt"
-	"github.com/dell/gounity/types"
-	"strings"
 	"testing"
 	"time"
 )
 
-func TestCreateVolume(t *testing.T) {
-	ctx := context.Background()
+var volName string
+var cloneVolumeName string
+var volID string
+var cloneVolumeID string
+var hostIOLimitID string
+
+func TestVolume(t *testing.T) {
 	now := time.Now()
-	volName := "test-" + now.Format("20060102150405")
+	timeStamp := now.Format("20060102150405")
+	volName = "Unit-test-vol-" + timeStamp
+	cloneVolumeName = "Unit-test-clone-vol-" + timeStamp
+	ctx = context.Background()
 
-	var vol *types.Volume
-	var err error
-	hostIOLimit, err := testConf.volumeApi.FindHostIOLimitByName(ctx, testConf.hostIOLimitName)
-	fmt.Println("hostIOLimit:", prettyPrintJson(hostIOLimit), "Error:", err)
+	findHostIOLimitByNameTest(t)
+	createLunTest(t)
+	findVolumeByNameTest(t)
+	findVolumeByIdTest(t)
+	listVolumesTest(t)
+	exportVolumeTest(t)
+	unexportVolumeTest(t)
+	expandVolumeTest(t)
+	createCloneFromVolumeTest(t)
+	deleteVolumeTest(t)
+	//creteLunThinCloneTest(t) - Will be added to snapshot_test
 
-	if hostIOLimit != nil {
-		//Ex JSon Request Body: {size: 5368709120,isThinEnabled: true,pool: {id: pool_1},fastVPParameters: {tieringPolicy: 0}}}
-		vol, err = testConf.volumeApi.CreateLun(ctx, volName, testConf.poolId, "Description", 5368709120, 0, hostIOLimit.IoLimitPolicyContent.Id, true, false)
+}
+
+func findHostIOLimitByNameTest(t *testing.T) {
+	
+	fmt.Println("Begin - Find Host IO Limit by Name Test")
+
+	if testConf.hostIOLimitName != ""{
+		hostIOLimit, err := testConf.volumeApi.FindHostIOLimitByName(ctx, testConf.hostIOLimitName)
+		fmt.Println("hostIOLimit:", prettyPrintJson(hostIOLimit), "Error:", err)
+		hostIOLimitID = hostIOLimit.IoLimitPolicyContent.Id
+
+		//Negative case
+		hostIOTemp := "dummy_hostio_1"
+		_, err = testConf.volumeApi.FindHostIOLimitByName(ctx, hostIOTemp)
+		if err == nil {
+			t.Fatalf("Find Host IO Limit negative case failed: %v", err)
+		}
+
+		hostIOTemp = ""
+		_, err = testConf.volumeApi.FindHostIOLimitByName(ctx, hostIOTemp)
+		if err == nil {
+			t.Fatalf("Find Host IO Limit with empty name case failed: %v", err)
+		}
+
+		fmt.Println("Find Host IO Limit by Name Test - Successful")
 	} else {
-		vol, err = testConf.volumeApi.CreateLun(ctx, volName, testConf.poolId, "Description", 5368709120, 0, "", true, false)
+		fmt.Println("Skipping Host IO Limit by Name Test - Parameter not configured")
 	}
-	fmt.Println("Create volume:", prettyPrintJson(vol), err)
+}
+
+func createLunTest(t *testing.T) {
+
+	fmt.Println("Begin - Create LUN Test")
+
+	_, err := testConf.volumeApi.CreateLun(ctx, volName, testConf.poolId, "Description", 2368709120, 0, hostIOLimitID, true, false)
 	if err != nil {
-		t.Fatalf("Create volume failed: %v", err)
+		t.Fatalf("Create LUN failed: %v", err)
 	}
 
-	vol, err = testConf.volumeApi.FindVolumeByName(ctx, volName)
-	fmt.Println("Find volume:", prettyPrintJson(vol), err)
+	//Negative cases
+	volNameTemp := ""
+	_, err = testConf.volumeApi.CreateLun(ctx, volNameTemp, testConf.poolId, "Description", 2368709120, 0, hostIOLimitID, true, false)
+	if err == nil {
+		t.Fatalf("Create LUN with empty name case failed: %v", err)
+	}
+
+	volNameTemp = "vol-name-max-length-12345678901234567890123456789012345678901234567890"
+	_, err = testConf.volumeApi.CreateLun(ctx, volNameTemp, testConf.poolId, "Description", 2368709120, 0, hostIOLimitID, true, false)
+	if err == nil {
+		t.Fatalf("Create LUN exceeding max name length case failed: %v", err)
+	}
+
+	poolIDTemp := "dummy_pool_1"
+	_, err = testConf.volumeApi.CreateLun(ctx, volName, poolIDTemp, "Description", 2368709120, 0, hostIOLimitID, true, false)
+	if err == nil {
+		t.Fatalf("Create LUN with invalid pool name case failed: %v", err)
+	}
+
+	_, err = testConf.volumeApi.CreateLun(ctx, volName, testConf.poolId, "Description", 2368709120, 0, hostIOLimitID, true, false)
+	if err == nil {
+		t.Fatalf("Create LUN with same name case failed: %v", err)
+	}
+
+	fmt.Println("Create LUN Test - Successful")
+}
+
+func findVolumeByNameTest(t *testing.T) {
+
+	fmt.Println("Begin - Find Volume By Name Test")
+
+	vol, err := testConf.volumeApi.FindVolumeByName(ctx, volName)
+	fmt.Println("Find volume by Name:", prettyPrintJson(vol), err)
 	if err != nil {
-		t.Fatalf("Find volume failed: %v", err)
+		t.Fatalf("Find volume by Name failed: %v", err)
+	}
+	volID = vol.VolumeContent.ResourceId
+
+	//Negative cases
+	volNameTemp := ""
+	_, err = testConf.volumeApi.FindVolumeByName(ctx, volNameTemp)
+	if err == nil {
+		t.Fatalf("Find volume by Name with empty name case failed: %v", err)
 	}
 
-	if vol.VolumeContent.IsThinEnabled != true {
-		t.Fatalf("Thin volume should be true")
+	volNameTemp = "dummy_volume_1"
+	_, err = testConf.volumeApi.FindVolumeByName(ctx, volNameTemp)
+	if err == nil {
+		t.Fatalf("Find volume by Name with invalid name case failed: %v", err)
 	}
 
-	if vol.VolumeContent.IsDataReductionEnabled != false {
-		t.Fatalf("TIsDataReductionEnabled should be false")
-	}
+	fmt.Println("Find Volume by Name Test - Successful")
+}
 
-	err = testConf.volumeApi.DeleteVolume(ctx, vol.VolumeContent.ResourceId)
-	fmt.Println("Delete volume:", prettyPrintJson(vol), err)
+func findVolumeByIdTest(t *testing.T) {
+
+	fmt.Println("Begin - Find Volume By Name Test")
+
+	vol, err := testConf.volumeApi.FindVolumeById(ctx, volID)
+	fmt.Println("Find volume by Name:", prettyPrintJson(vol), err)
 	if err != nil {
-		t.Fatalf("Delete volume failed: %v", err)
+		t.Fatalf("Find volume by Id failed: %v", err)
 	}
 
-	//Ex JSon Request Body: {name:test-20190923105137,description:Description,lunParameters:{size:5368709120,isThinEnabled:false,pool:{id:pool_1},isDataReductionEnabled:false,fastVPParameters:{tieringPolicy:0}}}"
-	fmt.Println("Test to verify thinEnabled false")
-	vol, err = testConf.volumeApi.CreateLun(ctx, volName, testConf.poolId, "Description", 5368709120, 0, "", false, false)
-
-	fmt.Println("Create volume:", prettyPrintJson(vol), err)
-	if err != nil {
-		t.Fatalf("Create volume failed: %v", err)
+	//Negative cases
+	volIDTemp := ""
+	_, err = testConf.volumeApi.FindVolumeById(ctx, volIDTemp)
+	if err == nil {
+		t.Fatalf("Find volume by Id with empty Id case failed: %v", err)
 	}
 
-	vol, err = testConf.volumeApi.FindVolumeByName(ctx, volName)
-	fmt.Println("Find volume:", prettyPrintJson(vol), err)
-	if err != nil {
-		t.Fatalf("Find volume failed: %v", err)
+	volIDTemp = "dummy_vol_sv_1"
+	_, err = testConf.volumeApi.FindVolumeById(ctx, volIDTemp)
+	if err == nil {
+		t.Fatalf("Find volume by Id with invalid Id case failed: %v", err)
 	}
+	fmt.Println("Find Volume by Id Test - Successful")
+}
 
-	vols, _, err := testConf.volumeApi.ListVolumes(ctx, 0, 10)
-	fmt.Println("List volumes: ", len(vols))
+func listVolumesTest(t *testing.T) {
+
+	fmt.Println("Begin - List Volumes Test")
+
+	vols, _, err := testConf.volumeApi.ListVolumes(ctx, 11, 10)
+	fmt.Println("List volumes count: ", len(vols))
 	if len(vols) <= 10 {
 		fmt.Println("List volume success")
 	} else {
-		t.Fatalf("Find volume failed: %v", err)
-	}
-	err = testConf.volumeApi.DeleteVolume(ctx, vol.VolumeContent.ResourceId)
-	fmt.Println("Delete volume:", prettyPrintJson(vol), err)
-	if err != nil {
-		t.Fatalf("Delete volume failed: %v", err)
-	}
-}
-func TestCreateVolumeWithThinAndDataReduction(t *testing.T) {
-	//ctx:=context.Background()
-	now := time.Now()
-	volName := "test-" + now.Format("20060102150405")
-
-	var err error
-	err = testVerifyparameter(volName, true, true)
-	if err != nil {
-		t.Fatalf("Test failed: %v", err)
-	} else {
-		fmt.Println("Test success")
+		t.Fatalf("List volumes failed: %v", err)
 	}
 
-	err = testVerifyparameter(volName, true, false)
-	if err != nil {
-		t.Fatalf("Test failed: %v", err)
-	} else {
-		fmt.Println("Test success")
-	}
-
-	err = testVerifyparameter(volName, false, true)
-	if strings.ContainsAny(err.Error(), "Enable data reduction for the specified LUN also requires thin to be enabled.") {
-		fmt.Println("Test success")
-	} else {
-		t.Fatalf("Test failed: %v", err)
-	}
-
-	err = testVerifyparameter(volName, false, false)
-	if err != nil {
-		t.Fatalf("Test failed: %v", err)
-	} else {
-		fmt.Println("Test success")
-	}
+	fmt.Println("List Volume Test - Successful")
 }
 
-func testVerifyparameter(volName string, thin, dataReduction bool) error {
-	ctx := context.Background()
-	//Ex JSon Request Body: {name:test-20190923105137,description:Description,lunParameters:{size:5368709120,isThinEnabled:false,pool:{id:pool_1},isDataReductionEnabled:false,fastVPParameters:{tieringPolicy:0}}}"
-	volName = fmt.Sprintf("%s%v%v", volName, thin, dataReduction)
-	fmt.Printf("******Test to verify thin:%v and dataReduction:%v VolName: %s\n", thin, dataReduction, volName)
-	vol, err := testConf.volumeApi.CreateLun(ctx, volName, testConf.poolId, "Description", 5368709120, 0, "", thin, dataReduction)
+func exportVolumeTest(t *testing.T) {
 
-	str, _ := json.Marshal(vol)
-	fmt.Println("*****Create volume:", string(str), err)
-	if err != nil {
-		return errors.New(fmt.Sprintf("Create volume failed for volume: %s error :%v", volName, err))
-	}
-	vol, err = testConf.volumeApi.FindVolumeByName(ctx, volName)
-	fmt.Println("*****Find volume:", volName, prettyPrintJson(vol), err)
-	if vol.VolumeContent.IsThinEnabled == thin && vol.VolumeContent.IsDataReductionEnabled == dataReduction {
-		fmt.Println("Success: ", volName)
-	} else {
-		fmt.Println(vol.VolumeContent.IsThinEnabled, thin, vol.VolumeContent.IsDataReductionEnabled, dataReduction)
-		return errors.New(fmt.Sprintf("Parametes are not matched.: %s", volName))
-	}
-	if err != nil {
-		return errors.New(fmt.Sprintf("Find volume failed for volume: %s error :%v", volName, err))
-	}
+	fmt.Println("Begin - Export Volume Test")
 
-	err = testConf.volumeApi.DeleteVolume(ctx, vol.VolumeContent.ResourceId)
-	fmt.Println("Delete volume:", prettyPrintJson(vol), err)
-	return nil
-}
-
-func TestExpandVolume(t *testing.T) {
-	ctx := context.Background()
-	now := time.Now()
-	volName := "test-" + now.Format("20060102150405")
-
-	var vol *types.Volume
-	var err error
-
-	vol, err = testConf.volumeApi.CreateLun(ctx, volName, testConf.poolId, "Description", 1368709120, 0, "", true, false)
-	fmt.Println("Create volume:", prettyPrintJson(vol), err)
-	if err != nil {
-		t.Fatalf("Create volume failed: %v", err)
-	}
-
-	vol, err = testConf.volumeApi.FindVolumeByName(ctx, volName)
-	fmt.Println("Find volume:", prettyPrintJson(vol), err)
-	if err != nil {
-		t.Fatalf("Find volume failed: %v", err)
-	}
-	err = testConf.volumeApi.ExpandVolume(ctx, vol.VolumeContent.ResourceId, 2368709120)
-	if err != nil {
-		t.Fatalf("Expand volume failed: %v", err)
-	}
-
-	vol, err = testConf.volumeApi.FindVolumeByName(ctx, volName)
-	fmt.Println("Find volume:", prettyPrintJson(vol), err)
-	if err != nil {
-		t.Fatalf("Find volume failed: %v", err)
-	}
-
-	if vol.VolumeContent.SizeTotal != 2368709120 {
-		t.Fatalf("Find volume failed: %v", err)
-	}
-
-	err = testConf.volumeApi.DeleteVolume(ctx, vol.VolumeContent.ResourceId)
-	fmt.Println("Delete volume:", prettyPrintJson(vol), err)
-	if err != nil {
-		t.Fatalf("Delete volume failed: %v", err)
-	}
-}
-
-func TestExportVolume(t *testing.T) {
-	ctx := context.Background()
-	now := time.Now()
-	volName := "test-" + now.Format("20060102150405")
-
-	var vol *types.Volume
-	var host *types.Host
-	var err error
-
-	vol, err = testConf.volumeApi.CreateLun(ctx, volName, testConf.poolId, "Description", 5368709120, 0, "", true, false)
-	fmt.Println("Create volume:", prettyPrintJson(vol), err)
-	if err != nil {
-		t.Fatalf("Create volume failed: %v", err)
-	}
-
-	vol, err = testConf.volumeApi.FindVolumeByName(ctx, volName)
-	fmt.Println("Find volume:", prettyPrintJson(vol), err)
-	if err != nil {
-		t.Fatalf("Find volume failed: %v", err)
-	}
-
-	host, err = testConf.hostApi.CreateHost(ctx, testConf.nodeHostName)
-	fmt.Println("Create Host:", prettyPrintJson(host), err)
-	if err != nil {
-		//t.Fatalf("Create Host failed: %v", err)
-	}
-
-	host, err = testConf.hostApi.FindHostByName(ctx, testConf.nodeHostName)
-	fmt.Println("Find Host:", prettyPrintJson(host), err)
+	host, err := testConf.hostApi.FindHostByName(ctx, testConf.nodeHostName)
 	if err != nil {
 		t.Fatalf("Find Host failed: %v", err)
 	}
 
-	err = testConf.volumeApi.ExportVolume(ctx, vol.VolumeContent.ResourceId, host.HostContent.ID)
-	fmt.Println("ExportVolume:", prettyPrintJson(host), err)
+	err = testConf.volumeApi.ExportVolume(ctx, volID, host.HostContent.ID)
 	if err != nil {
 		t.Fatalf("ExportVolume failed: %v", err)
 	}
-	err = testConf.volumeApi.UnexportVolume(ctx, vol.VolumeContent.ResourceId)
-	fmt.Println("UnExportVolume:", prettyPrintJson(host), err)
+
+	//Negative case for Delete Volume
+	err = testConf.volumeApi.DeleteVolume(ctx, volID)
+	if err == nil {
+		t.Fatalf("Delete volume on exported volume case failed: %v", err)
+	}
+
+	fmt.Println("Export Volume Test - Successful")
+}
+
+func unexportVolumeTest(t *testing.T) {
+
+	fmt.Println("Begin - Unexport Volume Test")
+
+	err := testConf.volumeApi.UnexportVolume(ctx, volID)
 	if err != nil {
 		t.Fatalf("UnExportVolume failed: %v", err)
 	}
-	err = testConf.volumeApi.DeleteVolume(ctx, vol.VolumeContent.ResourceId)
-	fmt.Println("Delete volume:", prettyPrintJson(vol), err)
+	fmt.Println("Unexport Volume Test - Successful")
+}
+
+func expandVolumeTest(t *testing.T) {
+
+	fmt.Println("Begin - Expand Volume Test")
+
+	err := testConf.volumeApi.ExpandVolume(ctx, volID, 5368709120)
+	if err != nil {
+		t.Fatalf("Expand volume failed: %v", err)
+	}
+
+	err = testConf.volumeApi.ExpandVolume(ctx, volID, 5368709120)
+	if err != nil {
+		t.Fatalf("Expand volume with same size failed: %v", err)
+	}
+
+	//Negative cases
+	volIDTemp := "dummy_vol_sv_1"
+	err = testConf.volumeApi.ExpandVolume(ctx, volIDTemp, 5368709120)
+	if err == nil {
+		t.Fatalf("Expand volume with invalid Id case failed: %v", err)
+	}
+
+	err = testConf.volumeApi.ExpandVolume(ctx, volID, 4368709120)
+	if err == nil {
+		t.Fatalf("Expand volume with smaller size case failed: %v", err)
+	}
+
+	fmt.Println("Expand Volume Test - Successful")
+}
+
+func createCloneFromVolumeTest(t *testing.T) {
+
+	fmt.Println("Begin - Create clone from Volume Test")
+
+	_, err := testConf.volumeApi.CreateCloneFromVolume(ctx, cloneVolumeName, volID)
+	if err != nil {
+		t.Fatalf("Clone volume failed: %v", err)
+	}
+
+	vol, err := testConf.volumeApi.FindVolumeByName(ctx, cloneVolumeName)
+	fmt.Println("Find volume by Name:", prettyPrintJson(vol), err)
+	if err != nil {
+		t.Fatalf("Find volume by Name failed: %v", err)
+	}
+
+	cloneVolumeID = vol.VolumeContent.ResourceId
+
+
+	fmt.Println("Create clone from Volume Test - Successful")
+}
+
+func deleteVolumeTest(t *testing.T) {
+
+	fmt.Println("Begin - Delete Volume Test")
+
+	err := testConf.volumeApi.DeleteVolume(ctx, cloneVolumeID)
 	if err != nil {
 		t.Fatalf("Delete volume failed: %v", err)
 	}
-	err = testConf.hostApi.DeleteHost(ctx, testConf.nodeHostName)
-	fmt.Println("Delete Host:", err)
+
+	err = testConf.volumeApi.DeleteVolume(ctx, volID)
 	if err != nil {
-		t.Fatalf("Delete Host failed: %v", err)
+		t.Fatalf("Delete volume failed: %v", err)
 	}
+
+	//Negative cases
+	volIDTemp := ""
+	err = testConf.volumeApi.DeleteVolume(ctx, volIDTemp)
+	if err == nil {
+		t.Fatalf("Delete volume with empty Id case failed: %v", err)
+	}
+
+	volIDTemp = "dummy_vol_sv_1"
+	err = testConf.volumeApi.DeleteVolume(ctx, volIDTemp)
+	if err == nil {
+		t.Fatalf("Delete volume with invalid Id case failed: %v", err)
+	}
+
+	fmt.Println("Delete Volume Test - Successful")
 }
