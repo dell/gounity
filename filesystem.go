@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/dell/gounity/util"
 
@@ -45,6 +46,9 @@ const (
 )
 
 var FilesystemNotFoundError = errors.New("Unable to find filesystem")
+var FilesystemNotFoundErrorCode = "0x7d13005"
+var AttachedSnapshotsErrorCode = "0x6000c17"
+var MarkFilesystemForDeletion = "csi-marked-filesystem-for-deletion(do not remove this from description)"
 
 func NewFilesystem(client *Client) *filesystem {
 	return &filesystem{client}
@@ -58,7 +62,10 @@ func (f *filesystem) FindFilesystemByName(ctx context.Context, filesystemName st
 	fileSystemResp := &types.Filesystem{}
 	err := f.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityApiGetResourceByNameWithFieldsUri, api.FileSystemAction, filesystemName, FileSystemDisplayFields), nil, fileSystemResp)
 	if err != nil {
-		return nil, FilesystemNotFoundError
+		if strings.Contains(err.Error(), FilesystemNotFoundErrorCode) {
+			return nil, FilesystemNotFoundError
+		}
+		return nil, err
 	}
 	return fileSystemResp, nil
 }
@@ -73,7 +80,10 @@ func (f *filesystem) FindFilesystemById(ctx context.Context, filesystemId string
 	err := f.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityApiGetResourceWithFieldsUri, api.FileSystemAction, filesystemId, FileSystemDisplayFields), nil, fileSystemResp)
 	if err != nil {
 		log.Debugf("Unable to find filesystem Id %s Error: %v", filesystemId, err)
-		return nil, FilesystemNotFoundError
+		if strings.Contains(err.Error(), FilesystemNotFoundErrorCode) {
+			return nil, FilesystemNotFoundError
+		}
+		return nil, err
 	}
 	return fileSystemResp, nil
 }
@@ -190,16 +200,44 @@ func (f *filesystem) DeleteFilesystem(ctx context.Context, filesystemId string) 
 
 	filesystemResp, err := f.FindFilesystemById(ctx, filesystemId)
 	if err != nil {
-		return FilesystemNotFoundError
+		return err
 	} else {
 		resourceID := filesystemResp.FileContent.StorageResource.Id
 		deleteErr := f.client.executeWithRetryAuthenticate(ctx, http.MethodDelete, fmt.Sprintf(api.UnityApiGetResourceUri, api.StorageResourceAction, resourceID), nil, nil)
 		if deleteErr != nil {
+			if strings.Contains(deleteErr.Error(), AttachedSnapshotsErrorCode) {
+				err := f.updateDescription(ctx, filesystemId, MarkFilesystemForDeletion)
+				if err != nil {
+					return errors.New(fmt.Sprintf("Mark filesystem %s for deletion failed. Error: %v", filesystemId, err))
+				}
+				return nil
+			}
 			return errors.New(fmt.Sprintf("Delete Filesystem %s Failed. Error: %v", filesystemId, deleteErr))
 		}
 		log.Debugf("Delete Filesystem %s Successful", filesystemId)
 		return nil
 	}
+}
+
+//Update description of filesystem
+func (f *filesystem) updateDescription(ctx context.Context, filesystemId, description string) error {
+	if len(filesystemId) == 0 {
+		return errors.New("Filesystem Id cannot be empty")
+	}
+	filesystemResp, err := f.FindFilesystemById(ctx, filesystemId)
+	if err != nil {
+		return err
+	}
+	resourceID := filesystemResp.FileContent.StorageResource.Id
+
+	filesystemModifyParam := types.FsModifyParameters{
+		Description: description,
+	}
+	err = f.client.executeWithRetryAuthenticate(ctx, http.MethodPost, fmt.Sprintf(api.UnityModifyFilesystemUri, resourceID), filesystemModifyParam, nil)
+	if err != nil {
+		return errors.New(fmt.Sprintf("Update filesystem: %s description failed with error: %v", resourceID, err))
+	}
+	return nil
 }
 
 //Create NFSShare - Create NFS Share for a File system
@@ -210,7 +248,7 @@ func (f *filesystem) CreateNFSShare(ctx context.Context, name, path, filesystemI
 
 	filesystemResp, err := f.FindFilesystemById(ctx, filesystemId)
 	if err != nil {
-		return nil, FilesystemNotFoundError
+		return nil, err
 	}
 	resourceID := filesystemResp.FileContent.StorageResource.Id
 

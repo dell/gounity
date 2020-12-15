@@ -137,7 +137,8 @@ type Initiators struct {
 
 //IpPorts struct to capture IpPort Id
 type IpPorts struct {
-	Id string `json:"id"`
+	Id      string `json:"id"`
+	Address string `json:"address,omitempty"`
 }
 
 //HostIpPort struct to capture Host IP port object
@@ -157,18 +158,25 @@ type HostInitiator struct {
 
 //HostInitiatorContent struct to capture host initiator parameters
 type HostInitiatorContent struct {
-	Id          string      `json:"id"`
-	Health      string      `json:"string"`
-	Type        int         `json:"type"`
-	InitiatorId string      `json:"InitiatorId"`
-	IsIgnored   bool        `json:"isIgnored"`
-	ParentHost  HostContent `json:"parentHost"`
-	Paths       []Path      `json:"paths"`
+	Id          string        `json:"id"`
+	Health      HealthContent `json:"health"`
+	Type        int           `json:"type"`
+	InitiatorId string        `json:"InitiatorId"`
+	IsIgnored   bool          `json:"isIgnored"`
+	ParentHost  HostContent   `json:"parentHost"`
+	Paths       []Path        `json:"paths"`
 }
 
 //Path struct to capture Path Id
 type Path struct {
 	Id string `json:"id"`
+}
+
+//Health struct to capture health status
+type HealthContent struct {
+	Value          int      `json:"value"`
+	DescriptionIDs []string `json:"descriptionIds"`
+	Descriptions   []string `json:"descriptions"`
 }
 
 //ListSnapshot struct to capture snapshot list
