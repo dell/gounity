@@ -81,6 +81,28 @@ func (s *snapshot) CreateSnapshotWithFsAccesType(ctx context.Context, storageRes
 	return snapshotResp, nil
 }
 
+//Delete Snapshots acting as filesystem on array
+func (s *snapshot) DeleteFilesystemAsSnapshot(ctx context.Context, snapshotId string, sourceFs *types.Filesystem) error {
+	log := util.GetRunIdLogger(ctx)
+	deleteSourceFs := false
+	if strings.Contains(sourceFs.FileContent.Description, MarkFilesystemForDeletion) {
+		deleteSourceFs = true
+	}
+	err := s.DeleteSnapshot(ctx, snapshotId)
+	if err != nil {
+		return err
+	}
+	if deleteSourceFs {
+		//Try deleting the marked filesystem for deletion
+		f := NewFilesystem(s.client)
+		err = f.DeleteFilesystem(ctx, sourceFs.FileContent.Id)
+		if err != nil {
+			log.Warnf("Deletion of source filesystem: %s marked for deletion failed with error: %v", sourceFs.FileContent.Id, err)
+		}
+	}
+	return nil
+}
+
 // DeleteSnapshot deletes a snapshot based on Snapshot ID
 //
 // Parameters:

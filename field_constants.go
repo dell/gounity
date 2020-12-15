@@ -41,7 +41,7 @@ const (
 	IscsiIPFields = "id,ipAddress,type"
 
 	//Host Display fields
-	HostfieldsToQuery = "id,name,description,fcHostInitiators,iscsiHostInitiators,hostIPPorts"
+	HostfieldsToQuery = "id,name,description,fcHostInitiators,iscsiHostInitiators,hostIPPorts?fields"
 
 	//Find Storage Pool fields
 	StoragePoolFields = "id,name,description,sizeFree,sizeTotal,sizeUsed,sizeSubscribed,hasDataReductionEnabledLuns,hasDataReductionEnabledFs,isFASTCacheEnabled,type,isAllFlash,poolFastVP"

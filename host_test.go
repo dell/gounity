@@ -286,20 +286,38 @@ func modifyHostInitiatorTest(t *testing.T) {
 func modifyHostInitiatorByIdTest(t *testing.T) {
 
 	fmt.Println("Begin - Modify Host Initiator By ID Test")
+	//parameterize this
+	fcHostName := "lglal016"
 
-	initiator, err := testConf.hostApi.ModifyHostInitiatorById(ctx, hostID)
-	fmt.Println("ModifyHostInitiator:", initiator, err)
+	host, err := testConf.hostApi.FindHostByName(ctx, fcHostName)
 	if err != nil {
-		t.Fatalf("ModifyHostInitiator %s Error: %v", iqnInitiatorID, err)
+		t.Fatalf("Find Host failed: %v", err)
+	}
+	for _, fcInitiator := range host.HostContent.FcInitiators {
+		initiatorID := fcInitiator.Id
+		initiator, err := testConf.hostApi.ModifyHostInitiatorById(ctx, hostID, initiatorID)
+		fmt.Println("ModifyHostInitiator:", initiator, err)
+		if err != nil {
+			t.Fatalf("ModifyHostInitiator %s Error: %v", iqnInitiatorID, err)
+		}
 	}
 
-	_, err = testConf.hostApi.ModifyHostInitiatorById(ctx, "")
+	for _, iscsiInitiator := range host.HostContent.IscsiInitiators {
+		initiatorID := iscsiInitiator.Id
+		initiator, err := testConf.hostApi.ModifyHostInitiatorById(ctx, hostID, initiatorID)
+		fmt.Println("ModifyHostInitiator:", initiator, err)
+		if err != nil {
+			t.Fatalf("ModifyHostInitiator %s Error: %v", iqnInitiatorID, err)
+		}
+	}
+
+	_, err = testConf.hostApi.ModifyHostInitiatorById(ctx, "", "")
 	if err == nil {
 		t.Fatalf("Modify Host initiator with nil initiator - Negative case failed")
 	}
 
 	hostIDTemp := "host_dummy_1"
-	_, err = testConf.hostApi.ModifyHostInitiatorById(ctx, hostIDTemp)
+	_, err = testConf.hostApi.ModifyHostInitiatorById(ctx, hostIDTemp, "")
 	if err == nil {
 		t.Fatalf("Modify Host initiator with invalid initiator - Negative case failed")
 	}

@@ -210,6 +210,7 @@ func (v *volume) DeleteVolume(ctx context.Context, volumeId string) error {
 			}
 		}
 		deleteErr := v.client.executeWithRetryAuthenticate(ctx, http.MethodDelete, fmt.Sprintf(api.UnityApiGetResourceUri, api.StorageResourceAction, volumeId), nil, nil)
+
 		if deleteSourceVol {
 			deleteSourceErr := v.client.executeWithRetryAuthenticate(ctx, http.MethodDelete, fmt.Sprintf(api.UnityApiGetResourceUri, api.StorageResourceAction, volResp.VolumeContent.ParentVolume.Id), nil, nil)
 			if deleteSourceErr != nil {
