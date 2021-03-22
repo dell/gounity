@@ -201,16 +201,24 @@ func (v *volume) DeleteVolume(ctx context.Context, volumeId string) error {
 	if err != nil {
 		return err
 	} else {
-		deleteSourceVol := false
+		sourceVolId := ""
 		if volResp.VolumeContent.IsThinClone {
 			//Check if parent volume is marked for deletion
-			sourceVolName := volResp.VolumeContent.ParentVolume.Name
-			if strings.Contains(sourceVolName, MarkVolumeForDeletion) {
+			sourceVolId = volResp.VolumeContent.ParentVolume.Id
+		}
+
+		deleteErr := v.client.executeWithRetryAuthenticate(ctx, http.MethodDelete, fmt.Sprintf(api.UnityApiGetResourceUri, api.StorageResourceAction, volumeId), nil, nil)
+
+		deleteSourceVol := false
+		if sourceVolId != "" {
+			sourceVolResp, err := v.FindVolumeById(ctx, sourceVolId)
+			if err != nil && err != VolumeNotFoundError {
+				return errors.New(fmt.Sprintf("Find Source Volume %s Failed. Error: %v", sourceVolId, err))
+			}
+			if strings.Contains(sourceVolResp.VolumeContent.Name, MarkVolumeForDeletion) {
 				deleteSourceVol = true
 			}
 		}
-		deleteErr := v.client.executeWithRetryAuthenticate(ctx, http.MethodDelete, fmt.Sprintf(api.UnityApiGetResourceUri, api.StorageResourceAction, volumeId), nil, nil)
-
 		if deleteSourceVol {
 			deleteSourceErr := v.client.executeWithRetryAuthenticate(ctx, http.MethodDelete, fmt.Sprintf(api.UnityApiGetResourceUri, api.StorageResourceAction, volResp.VolumeContent.ParentVolume.Id), nil, nil)
 			if deleteSourceErr != nil {
@@ -249,6 +257,31 @@ func (v *volume) ExportVolume(ctx context.Context, volID, hostID string) error {
 		AccessMask:    "1", //Hardcoded as 1 so that the host can have access to production LUNs only.
 	}
 	hostAccessArray := []types.HostAccess{hostAccess}
+	lunParams := types.LunHostAccessParameters{
+		HostAccess: &hostAccessArray,
+	}
+	lunModifyParam := types.LunHostAccessModifyParam{
+		LunHostAccessParameters: &lunParams,
+	}
+	return v.client.executeWithRetryAuthenticate(ctx, http.MethodPost, fmt.Sprintf(api.UnityModifyLunUri, volID), lunModifyParam, nil)
+}
+
+//Export volume to multiple hosts / Modify the host access list on a given Volume
+func (v *volume) ModifyVolumeExport(ctx context.Context, volID string, hostIDList []string) error {
+
+	hostAccessArray := []types.HostAccess{}
+	for _, hostID := range hostIDList {
+		hostIDContent := types.HostIdContent{
+			ID: hostID,
+		}
+
+		hostAccess := types.HostAccess{
+			HostIdContent: &hostIDContent,
+			AccessMask:    "1", //Hardcoded as 1 so that the host can have access to production LUNs only.
+		}
+		hostAccessArray = append(hostAccessArray, hostAccess)
+	}
+
 	lunParams := types.LunHostAccessParameters{
 		HostAccess: &hostAccessArray,
 	}
