@@ -173,6 +173,9 @@ func (f *filesystem) CreateFilesystem(ctx context.Context, name, storagepool, de
 		fsParams.FastVPParameters = &fastVPParameters
 	} else {
 		log.Debug("FastVP is not enabled")
+		if tieringPolicy != 0 {
+			return nil, errors.New(fmt.Sprintf("FastVP is not enabled and requested tiering policy is: %d ", tieringPolicy))
+		}
 	}
 
 	fileReqParam := types.FsCreateParam{

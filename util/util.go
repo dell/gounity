@@ -47,27 +47,55 @@ func GetLogger() *logrus.Logger {
 	once.Do(func() {
 		singletonLog = logrus.New()
 		fmt.Println("gounity logger initiated. This should be called only once.")
-		var debug bool
-		debugStr := os.Getenv("GOUNITY_DEBUG")
-		debug, _ = strconv.ParseBool(debugStr)
-		if debug {
-			fmt.Println("Enabling debug for gounity")
-			singletonLog.Level = logrus.DebugLevel
-			singletonLog.SetReportCaller(true)
-			singletonLog.Formatter = &logrus.TextFormatter{
-				CallerPrettyfier: func(f *runtime.Frame) (string, string) {
-					filename := strings.Split(f.File, "dell/gounity")
-					if len(filename) > 1 {
-						return fmt.Sprintf("%s()", f.Function), fmt.Sprintf("dell/gounity%s:%d", filename[1], f.Line)
-					} else {
-						return fmt.Sprintf("%s()", f.Function), fmt.Sprintf("%s:%d", f.File, f.Line)
-					}
-				},
-			}
+
+		//Gounity users can make use of this environment variable to initialize log level. Default level will be Info
+		logLevel := os.Getenv("X_CSI_LOG_LEVEL")
+		
+		ChangeLogLevel(logLevel)
+
+		singletonLog.SetReportCaller(true)
+		singletonLog.Formatter = &logrus.TextFormatter{
+			CallerPrettyfier: func(f *runtime.Frame) (string, string) {
+				filename := strings.Split(f.File, "dell/gounity")
+				if len(filename) > 1 {
+					return fmt.Sprintf("%s()", f.Function), fmt.Sprintf("dell/gounity%s:%d", filename[1], f.Line)
+				} else {
+					return fmt.Sprintf("%s()", f.Function), fmt.Sprintf("%s:%d", f.File, f.Line)
+				}
+			},
 		}
 	})
 
 	return singletonLog
+}
+
+func ChangeLogLevel(logLevel string) {
+
+	if singletonLog == nil {
+		GetLogger()
+	}
+
+	switch strings.ToLower(logLevel) {
+		
+	case "debug":
+		singletonLog.Level = logrus.DebugLevel
+		break
+
+	case "warn", "warning":
+		singletonLog.Level = logrus.WarnLevel
+		break
+
+	case "error":
+		singletonLog.Level = logrus.ErrorLevel
+		break
+
+	case "info":
+		//Default level will be Info
+		fallthrough
+
+	default:
+		singletonLog.Level = logrus.InfoLevel
+	}
 }
 
 //To validate the resource name

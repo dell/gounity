@@ -22,16 +22,17 @@ type testConfig struct {
 	poolId          string
 	nodeHostName    string
 	nodeHostIp      string
-	wwns      		[]string
-	iqn 			string
+	wwns            []string
+	iqn             string
 	hostIOLimitName string
-	nasServer		string
+	nasServer       string
 	volumeApi       *volume
 	hostApi         *host
 	poolApi         *storagepool
 	snapApi         *snapshot
 	ipinterfaceApi  *ipinterface
-	fileApi			*filesystem
+	fileApi         *filesystem
+	metricsApi      *metrics
 }
 
 var testConf *testConfig
@@ -65,7 +66,6 @@ func TestMain(m *testing.M) {
 	testConf.nasServer = testProp["UNITY_NAS_SERVER"]
 	testConf.iqn = testProp["NODE_IQN"]
 	wwnStr := testProp["NODE_WWNS"]
-	
 
 	os.Setenv("GOUNITY_ENDPOINT", testConf.unityEndPoint)
 	os.Setenv("X_CSI_UNITY_USER", testConf.username)
@@ -83,6 +83,7 @@ func TestMain(m *testing.M) {
 	testConf.volumeApi = NewVolume(testClient)
 	testConf.ipinterfaceApi = NewIpInterface(testClient)
 	testConf.fileApi = NewFilesystem(testClient)
+	testConf.metricsApi = NewMetrics(testClient)
 
 	code := m.Run()
 	fmt.Println("------------End of TestMain--------------")
@@ -91,7 +92,7 @@ func TestMain(m *testing.M) {
 
 func getTestClient(ctx context.Context, url, username, password, endpoint string, insecure bool) *Client {
 	fmt.Println("Test:", url, username, password)
-	
+
 	c, err := NewClientWithArgs(ctx, endpoint, insecure)
 	if err != nil {
 		fmt.Println(err)

@@ -115,6 +115,9 @@ func (v *volume) CreateLun(ctx context.Context, name, poolId, description string
 		lunParams.FastVPParameters = &fastVPParameters
 	} else {
 		log.Debug("FastVP is not enabled")
+		if fastVPTieringPolicy != 0 {
+			return nil, errors.New(fmt.Sprintf("FastVP is not enabled and requested tiering policy is: %d ", fastVPTieringPolicy))
+		}
 	}
 
 	volumeReqParam := types.LunCreateParam{

@@ -362,3 +362,84 @@ type FcPort struct {
 type FcPortContent struct {
 	Wwn string `json:"wwn"`
 }
+
+//MetricRealTimeQuery is body of a request to create a MetricCollection query
+type MetricRealTimeQuery struct {
+	Paths    []string `json:"paths"`
+	Interval int      `json:"interval"`
+}
+
+//MetricQueryResponseContent is part of response to creating a MetricCollection query
+type MetricQueryResponseContent struct {
+	MaximumSamples int      `json:"maximumSamples"`
+	Expiration     string   `json:"expiration"`
+	Interval       int      `json:"interval"`
+	Paths          []string `json:"paths"`
+	Id             int      `json:"id"`
+}
+
+//MetricQueryCreateResponse a response from creating a MetricCollection query
+type MetricQueryCreateResponse struct {
+	Base    string                     `json:"base"`
+	Updated string                     `json:"updated"`
+	Content MetricQueryResponseContent `json:"content"`
+}
+
+//MetricResult is part of response of a MetricCollection query
+type MetricResult struct {
+	QueryId   int                    `json:"queryId"`
+	Path      string                 `json:"path"`
+	Timestamp string                 `json:"timestamp"`
+	Values    map[string]interface{} `json:"values"`
+}
+
+//MetricResultEntry is part of response of a MetricCollection query
+type MetricResultEntry struct {
+	Base    string       `json:"base"`
+	Updated string       `json:"updated"`
+	Content MetricResult `json:"content"`
+}
+
+//MetricQueryRequest is response from querying a MetricCollection
+type MetricQueryResult struct {
+	Base    string              `json:"base"`
+	Updated string              `json:"updated"`
+	Entries []MetricResultEntry `json:"entries"`
+}
+
+//MetricContent is part of the response from /api/types/metric/instances
+type MetricContent struct {
+	Id int `json:"id"`
+}
+
+//MetricEntries is part of the response from /api/types/metric/instances
+type MetricEntries struct {
+	Cnt MetricContent `json:"content"`
+}
+
+//MetricPaths comes from response from /api/types/metric/instances
+type MetricPaths struct {
+	Entries []MetricEntries `json:"entries"`
+}
+
+//MetricInfo has all the details of instance of a Unity metric
+type MetricInfo struct {
+	Id                    int    `json:"id"`
+	Name                  string `json:"name"`
+	Path                  string `json:"path"`
+	Product               int    `json:"product"`
+	Type                  int    `json:"type"`
+	Description           string `json:"description"`
+	IsHistoricalAvailable bool   `json:"isHistoricalAvailable"`
+	IsRealtimeAvailable   bool   `json:"isRealtimeAvailable"`
+	Unit                  int    `json:"unit"`
+	UnitDisplayString     string `json:"unitDisplayString"`
+	Visibility            int    `json:"visibility"`
+}
+
+//MetricInstance describes an instance of Unity metric
+type MetricInstance struct {
+	Base    string     `json:"base"`
+	Updated string     `json:"updated"`
+	Content MetricInfo `json:"content"`
+}
