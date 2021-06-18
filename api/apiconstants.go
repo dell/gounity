@@ -73,6 +73,14 @@ const (
 	UnityListHostInitiatorsUri = unityApiTypes + "/hostInitiator/instances?fields="
 	UnityModifyHostInitiators  = unityRootApi + "/instances/hostInitiator/%s/action/modify"
 
+	//Unity Instance Filter
+	UnityInstancesFilter = UnityApiInstanceTypeResources + "?filter=%s"
+
+	//Unity Metrics
+	UnityMetric              = "metric"
+	UnityMetricQueryResult   = "metricQueryResult"
+	UnityMetricRealTimeQuery = "metricRealTimeQuery"
+
 	//Action types for URL's
 	LunAction               = "lun"
 	CreateLunAction         = "createLun"
