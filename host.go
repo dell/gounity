@@ -25,6 +25,7 @@ var (
 	HostNotFoundError          = errors.New("unable to find host")
 	MultipleHostFoundError     = errors.New("Found multiple hosts with same name. Delete the duplicate entries on the array")
 	MultipleHostFoundErrorCode = "0x7d13158"
+	HostNotFoundErrorCode = "0x7d13005"
 )
 
 func NewHost(client *Client) *host {
@@ -44,8 +45,11 @@ func (h *host) FindHostByName(ctx context.Context, hostName string) (*types.Host
 		//Using the multiple host found error code(MultipleHostFoundErrorCode) for comparison
 		if strings.Contains(err.Error(), MultipleHostFoundErrorCode) {
 			return nil, MultipleHostFoundError
+		} else if strings.Contains(err.Error(), HostNotFoundErrorCode){
+			return nil, HostNotFoundError
+		} else{
+			return nil, err
 		}
-		return nil, HostNotFoundError
 	}
 	return hResponse, nil
 }
