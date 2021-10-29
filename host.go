@@ -55,16 +55,22 @@ func (h *host) FindHostByName(ctx context.Context, hostName string) (*types.Host
 }
 
 //Create a new Host
-func (h *host) CreateHost(ctx context.Context, hostName string) (*types.Host, error) {
+func (h *host) CreateHost(ctx context.Context, hostName string, tenantId string) (*types.Host, error) {
 	if len(hostName) == 0 {
 		return nil, errors.New("hostname shouldn't be empty")
 	}
-
+	tenantIdStruct := types.Tenants{
+		TenantId: tenantId,
+	}
 	hostReq := &types.HostCreateParam{
 		Type:        "1", //Initiator type hardcoded as "1" for FC Initiator
 		Name:        hostName,
 		Description: hostName,
 		OsType:      "Linux",
+	}
+
+	if tenantId != "" {
+		hostReq.Tenant=&tenantIdStruct
 	}
 
 	hostResp := &types.Host{}

@@ -53,6 +53,11 @@ type LunCreateParam struct {
 	LunParameters *LunParameters `json:"lunParameters"`
 }
 
+// Struct to capture the Tenants
+type Tenants struct {
+	TenantId string `json:"id"`
+}
+
 // Struct to capture the Lun properties
 type LunParameters struct {
 	Name                   string                 `json:"name,omitempty"`
@@ -169,6 +174,8 @@ type HostCreateParam struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
 	OsType      string `json:"osType"`
+	Tenant *Tenants `json:"tenant,omitempty"`
+
 }
 
 type HostIdContent struct {
