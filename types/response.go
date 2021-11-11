@@ -63,6 +63,7 @@ type VolumeContent struct {
 	ParentSnap             ParentSnap           `json:"parentSnap,omitempty"`
 	TieringPolicy          int                  `json:"tieringPolicy,omitempty"`
 	ParentVolume           StorageResource      `json:"originalParentLun,omitempty"`
+	Health                 HealthContent        `json:"health,omitempty"`
 }
 
 //Parent Snapshot to capture Source Snapshot Id
@@ -250,21 +251,22 @@ type Filesystem struct {
 
 //FileContent struct to capture filesystem parameters
 type FileContent struct {
-	Id                     string  `json:"id"`
-	Name                   string  `json:"name,omitempty"`
-	SizeTotal              uint64  `json:"sizeTotal,omitempty"`
-	Description            string  `json:"description,omitempty"`
-	Type                   int     `json:"type,omitempty"`
-	Format                 int     `json:"format,omitempty"`
-	HostIOSize             int64   `json:"hostIOSize,omitempty"`
-	TieringPolicy          uint64  `json:"tieringPolicy,omitempty"`
-	IsThinEnabled          bool    `json:"isThinEnabled"`
-	IsDataReductionEnabled bool    `json:"isDataReductionEnabled"`
-	Pool                   Pool    `json:"pool,omitempty"`
-	NASServer              Pool    `json:"nasServer,omitempty"`
-	StorageResource        Pool    `json:"storageResource,omitempty"`
-	NFSShare               []Share `json:"nfsShare,omitempty"`
-	CIFSShare              []Pool  `json:"cifsShare,omitempty"`
+	Id                     string        `json:"id"`
+	Name                   string        `json:"name,omitempty"`
+	SizeTotal              uint64        `json:"sizeTotal,omitempty"`
+	Description            string        `json:"description,omitempty"`
+	Type                   int           `json:"type,omitempty"`
+	Format                 int           `json:"format,omitempty"`
+	HostIOSize             int64         `json:"hostIOSize,omitempty"`
+	TieringPolicy          uint64        `json:"tieringPolicy,omitempty"`
+	IsThinEnabled          bool          `json:"isThinEnabled"`
+	IsDataReductionEnabled bool          `json:"isDataReductionEnabled"`
+	Pool                   Pool          `json:"pool,omitempty"`
+	NASServer              Pool          `json:"nasServer,omitempty"`
+	StorageResource        Pool          `json:"storageResource,omitempty"`
+	NFSShare               []Share       `json:"nfsShare,omitempty"`
+	CIFSShare              []Pool        `json:"cifsShare,omitempty"`
+	Health                 HealthContent `json:"health,omitempty"`
 }
 
 //Share object to capture NFS Share object from FileContent
