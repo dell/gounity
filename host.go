@@ -280,7 +280,7 @@ func (h *host) FindFcPortById(ctx context.Context, fcPortId string) (*types.FcPo
 }
 
 func (h *host) FindTenants(ctx context.Context) (*types.Host, error) {
-	tenantsResp := &types.Tenants{}
+	tenantsResp := &types.TenantInfo{}
 	err := h.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityApiGetTenantUri,api.TenantAction,TenantDisplayFields), nil, tenantsResp)
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("Unable to find tenants : %v", err))
