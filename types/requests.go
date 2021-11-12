@@ -55,7 +55,7 @@ type LunCreateParam struct {
 
 // Struct to capture the Tenants
 type Tenants struct {
-	TenantId	string `json:"id"`
+	TenantId string `json:"id"`
 }
 
 // Struct to capture the Lun properties
