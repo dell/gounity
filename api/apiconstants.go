@@ -18,6 +18,8 @@ const (
 
 	UnityApiInstanceTypeResources = unityApiTypes + "/%s" + "/instances"
 
+	UnityApiGetTenantUri = UnityApiInstanceTypeResources + "?&compact=true&fields=%s"
+
 	UnityApiInstanceTypeResourcesWithFields = UnityApiInstanceTypeResources + "?fields=%s"
 
 	UnityApiInstancesUri = unityRootApi + "/instances"
@@ -98,4 +100,5 @@ const (
 	HostInitiatorAction     = "hostInitiator"
 	HostIPPortAction        = "hostIPPort"
 	NasServerAction         = "nasServer"
+	TenantAction            = "tenant"
 )

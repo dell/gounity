@@ -10,6 +10,9 @@ const (
 	//To Display Storage Resource fields
 	StorageResourceDisplayFields = "id,name,filesystem"
 
+	//To Display Tenants fields
+	TenantDisplayFields = "id,name"
+
 	//To Display the NFS Share fields
 	NFSShareDisplayfields = "id,name,filesystem,readOnlyHosts,readWriteHosts,readOnlyRootAccessHosts,rootAccessHosts,exportPaths"
 

@@ -89,6 +89,19 @@ type Link struct {
 	Href string `json:"href"`
 }
 
+type TenantInfo struct {
+	Entries []TenantEntry `json:"entries"`
+}
+
+type TenantEntry struct {
+	Content TenantContent `json:"content"`
+}
+
+type TenantContent struct {
+	Id string `json:"id"`
+	Name string `json:"name"`
+}
+
 //BasicSystemInfo Struct to capture the BasicSystemInfo response
 type BasicSystemInfo struct {
 	Base    string    `json:"@base"`
