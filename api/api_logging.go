@@ -9,10 +9,11 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"io"
 	"net/http"
 	"net/http/httputil"
+
+	log "github.com/sirupsen/logrus"
 )
 
 func isBinOctetBody(h http.Header) bool {
@@ -36,7 +37,11 @@ func logRequest(
 		return
 	}
 
-	WriteIndented(w, buf)
+	err2 := WriteIndented(w, buf)
+	if err2 != nil {
+		message := fmt.Sprintf("Indentation failed with error: %v", err2)
+		log.Info(message)
+	}
 	fmt.Fprintln(w)
 
 	//Will not be logging request to avoid logging of headers as it is
@@ -61,7 +66,11 @@ func logResponse(
 	}
 
 	bw := &bytes.Buffer{}
-	WriteIndented(bw, buf)
+	err2 := WriteIndented(bw, buf)
+	if err2 != nil {
+		message := fmt.Sprintf("Indentation failed with error: %v", err2)
+		log.Info(message)
+	}
 
 	scanner := bufio.NewScanner(bw)
 	for {
