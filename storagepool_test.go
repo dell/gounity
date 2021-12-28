@@ -16,7 +16,7 @@ func TestStoragePool(t *testing.T) {
 }
 
 func findStoragePoolByIDTest(t *testing.T) {
-	
+
 	fmt.Println("Begin - Find Storage Pool by Id Test")
 
 	pool, err := testConf.poolApi.FindStoragePoolById(ctx, testConf.poolId)
@@ -43,9 +43,9 @@ func findStoragePoolByIDTest(t *testing.T) {
 }
 
 func findStoragePoolByNameTest(t *testing.T) {
-	
+
 	fmt.Println("Begin - Find Storage Pool by Name Test")
-	
+
 	pool, err := testConf.poolApi.FindStoragePoolByName(ctx, storagePoolName)
 	fmt.Println("Find volume by Name:", prettyPrintJson(pool), err)
 	if err != nil {
@@ -67,4 +67,3 @@ func findStoragePoolByNameTest(t *testing.T) {
 
 	fmt.Println("Find Storage Pool by Name Test - Successful")
 }
-

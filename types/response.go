@@ -98,7 +98,7 @@ type TenantEntry struct {
 }
 
 type TenantContent struct {
-	Id string `json:"id"`
+	Id   string `json:"id"`
 	Name string `json:"name"`
 }
 

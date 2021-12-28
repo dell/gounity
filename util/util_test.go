@@ -2,20 +2,20 @@ package util
 
 import (
 	"context"
-	"testing"
 	"fmt"
+	"testing"
 )
 
 var ctx context.Context
-const MaxResourceNameLength = 63
 
+const MaxResourceNameLength = 63
 
 func TestUtils(t *testing.T) {
 
-getRunIdLoggerTest(t)
-getLoggetTest(t)
-validateResourceNameTest(t)
-validateDurationTest(t)
+	getRunIdLoggerTest(t)
+	getLoggetTest(t)
+	validateResourceNameTest(t)
+	validateDurationTest(t)
 }
 
 func getRunIdLoggerTest(t *testing.T) {

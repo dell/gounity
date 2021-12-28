@@ -35,10 +35,10 @@ func TestVolume(t *testing.T) {
 }
 
 func findHostIOLimitByNameTest(t *testing.T) {
-	
+
 	fmt.Println("Begin - Find Host IO Limit by Name Test")
 
-	if testConf.hostIOLimitName != ""{
+	if testConf.hostIOLimitName != "" {
 		hostIOLimit, err := testConf.volumeApi.FindHostIOLimitByName(ctx, testConf.hostIOLimitName)
 		fmt.Println("hostIOLimit:", prettyPrintJson(hostIOLimit), "Error:", err)
 		hostIOLimitID = hostIOLimit.IoLimitPolicyContent.Id
@@ -244,7 +244,6 @@ func createCloneFromVolumeTest(t *testing.T) {
 	}
 
 	cloneVolumeID = vol.VolumeContent.ResourceId
-
 
 	fmt.Println("Create clone from Volume Test - Successful")
 }

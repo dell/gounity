@@ -50,7 +50,7 @@ func GetLogger() *logrus.Logger {
 
 		//Gounity users can make use of this environment variable to initialize log level. Default level will be Info
 		logLevel := os.Getenv("X_CSI_LOG_LEVEL")
-		
+
 		ChangeLogLevel(logLevel)
 
 		singletonLog.SetReportCaller(true)
@@ -76,7 +76,7 @@ func ChangeLogLevel(logLevel string) {
 	}
 
 	switch strings.ToLower(logLevel) {
-		
+
 	case "debug":
 		singletonLog.Level = logrus.DebugLevel
 		break

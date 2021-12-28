@@ -14,8 +14,8 @@ var nfsShareID string
 var ctx context.Context
 
 const (
-	NFSShareLocalPath        = "/"
-	NFSShareNamePrefix       = "csishare-"
+	NFSShareLocalPath  = "/"
+	NFSShareNamePrefix = "csishare-"
 )
 
 func TestFilesystem(t *testing.T) {
@@ -68,7 +68,7 @@ func findNasServerTest(t *testing.T) {
 func createFilesystemTest(t *testing.T) {
 
 	fmt.Println("Begin - Create Filesystem Test")
-	
+
 	_, err := testConf.fileApi.CreateFilesystem(ctx, fsName, testConf.poolId, "Unit test resource", testConf.nasServer, 5368709120, 0, 8192, 0, true, false)
 	if err != nil {
 		t.Fatalf("Create filesystem failed: %v", err)
@@ -115,7 +115,7 @@ func findFilesystemTest(t *testing.T) {
 	fsID = filesystem.FileContent.Id
 	nfsShareName = NFSShareNamePrefix + filesystem.FileContent.Name
 
-	fmt.Println("Filesystem ID: "  + fsID)
+	fmt.Println("Filesystem ID: " + fsID)
 
 	//Test case :  GET using invalid fsName/ID
 	fsNameTemp := "dummy-fs-1"
@@ -178,7 +178,7 @@ func createNfsShareTest(t *testing.T) {
 
 }
 
-func findNfsShareTest(t *testing.T){
+func findNfsShareTest(t *testing.T) {
 
 	fmt.Println("Begin - Find NFS Share Test")
 
@@ -201,20 +201,20 @@ func findNfsShareTest(t *testing.T){
 	if err == nil {
 		t.Fatal("Find NFS Share by name - Negative case failed")
 	}
-	
+
 	_, err = testConf.fileApi.FindNFSShareById(ctx, nfsShareNameTemp)
 	if err == nil {
 		t.Fatal("Find NFS Share by Id - Negative case failed")
 	}
-	
+
 	//Test case :  GET using empty fsName/ID
 	nfsShareNameTemp = ""
-	
+
 	_, err = testConf.fileApi.FindNFSShareByName(ctx, nfsShareNameTemp)
 	if err == nil {
 		t.Fatal("Find NFS Share by name using empty share Name - Negative case failed")
 	}
-	
+
 	_, err = testConf.fileApi.FindNFSShareById(ctx, nfsShareNameTemp)
 	if err == nil {
 		t.Fatal("Find filesystem by Id using empty share ID - Negative case failed")
@@ -224,7 +224,7 @@ func findNfsShareTest(t *testing.T){
 
 }
 
-func modifyNfsShareTest(t *testing.T){
+func modifyNfsShareTest(t *testing.T) {
 
 	fmt.Println("Begin - Modify NFS Share Test")
 
@@ -236,34 +236,34 @@ func modifyNfsShareTest(t *testing.T){
 	var hostIDList []string
 	hostIDList = append(hostIDList, host.HostContent.ID)
 
-	err = testConf.fileApi.ModifyNFSShareHostAccess(ctx, fsID , nfsShareID , hostIDList, ReadOnlyAccessType)
+	err = testConf.fileApi.ModifyNFSShareHostAccess(ctx, fsID, nfsShareID, hostIDList, ReadOnlyAccessType)
 	if err != nil {
 		t.Fatalf("Modify NFS Share by name failed: %v", err)
 	}
 
-	err = testConf.fileApi.ModifyNFSShareHostAccess(ctx, fsID , nfsShareID , hostIDList, ReadWriteAccessType)
+	err = testConf.fileApi.ModifyNFSShareHostAccess(ctx, fsID, nfsShareID, hostIDList, ReadWriteAccessType)
 	if err != nil {
 		t.Fatalf("Modify NFS Share by name failed: %v", err)
 	}
 
-	err = testConf.fileApi.ModifyNFSShareHostAccess(ctx, fsID , nfsShareID , hostIDList, ReadOnlyRootAccessType)
+	err = testConf.fileApi.ModifyNFSShareHostAccess(ctx, fsID, nfsShareID, hostIDList, ReadOnlyRootAccessType)
 	if err != nil {
 		t.Fatalf("Modify NFS Share by name failed: %v", err)
 	}
 
-	err = testConf.fileApi.ModifyNFSShareHostAccess(ctx, fsID , nfsShareID , hostIDList, ReadWriteRootAccessType)
+	err = testConf.fileApi.ModifyNFSShareHostAccess(ctx, fsID, nfsShareID, hostIDList, ReadWriteRootAccessType)
 	if err != nil {
 		t.Fatalf("Modify NFS Share by name failed: %v", err)
 	}
 
 	fsIDTemp := "dummy-fs-1"
-	err = testConf.fileApi.ModifyNFSShareHostAccess(ctx, fsIDTemp , nfsShareID , hostIDList, ReadWriteRootAccessType)
+	err = testConf.fileApi.ModifyNFSShareHostAccess(ctx, fsIDTemp, nfsShareID, hostIDList, ReadWriteRootAccessType)
 	if err == nil {
 		t.Fatalf("Modify NFS Share with invalid fs ID - Negative case Failed")
 	}
 
 	fsIDTemp = ""
-	err = testConf.fileApi.ModifyNFSShareHostAccess(ctx, fsIDTemp , nfsShareID , hostIDList, ReadWriteRootAccessType)
+	err = testConf.fileApi.ModifyNFSShareHostAccess(ctx, fsIDTemp, nfsShareID, hostIDList, ReadWriteRootAccessType)
 	if err == nil {
 		t.Fatalf("Modify NFS Share with empty fs ID - Negative case Failed")
 	}
@@ -272,10 +272,9 @@ func modifyNfsShareTest(t *testing.T){
 
 }
 
-func deleteNfsShareTest(t *testing.T){
+func deleteNfsShareTest(t *testing.T) {
 
 	fmt.Println("Begin - Delete NFS Share Test")
-
 
 	err := testConf.fileApi.DeleteNFSShare(ctx, fsID, nfsShareID)
 	if err != nil {
@@ -297,7 +296,7 @@ func deleteNfsShareTest(t *testing.T){
 	}
 
 	//Test case :  Delete using empty shareID and fsID
-	
+
 	nfsShareIDTemp = ""
 
 	err = testConf.fileApi.DeleteNFSShare(ctx, fsID, nfsShareIDTemp)
@@ -345,7 +344,6 @@ func expandFilesystemTest(t *testing.T) {
 
 	fmt.Println("Expand Filesystem Test Successful")
 }
-
 
 func deleteFilesystemTest(t *testing.T) {
 

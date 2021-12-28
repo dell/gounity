@@ -170,12 +170,11 @@ type LunHostAccessParameters struct {
 
 // Struct to capture Host Request
 type HostCreateParam struct {
-	Type        string  `json:"type"`
-	Name        string  `json:"name"`
-	Description string  `json:"description"`
-	OsType      string  `json:"osType"`
-	Tenant	   *Tenants `json:"tenant,omitempty"`
-
+	Type        string   `json:"type"`
+	Name        string   `json:"name"`
+	Description string   `json:"description"`
+	OsType      string   `json:"osType"`
+	Tenant      *Tenants `json:"tenant,omitempty"`
 }
 
 type HostIdContent struct {
