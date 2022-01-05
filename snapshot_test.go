@@ -39,48 +39,48 @@ func createSnapshotTest(t *testing.T) {
 
 	fmt.Println("Begin - Create Snapshot Test")
 
-	vol, err := testConf.volumeApi.CreateLun(ctx, snapVolName, testConf.poolId, "Description", 5368709120, 0, "", true, false)
+	vol, err := testConf.volumeAPI.CreateLun(ctx, snapVolName, testConf.poolID, "Description", 5368709120, 0, "", true, false)
 	if err != nil {
 		t.Fatalf("Create volume failed: %v", err)
 	}
 
-	vol, err = testConf.volumeApi.FindVolumeByName(ctx, snapVolName)
+	vol, err = testConf.volumeAPI.FindVolumeByName(ctx, snapVolName)
 	if err != nil {
 		t.Fatalf("Find volume failed: %v", err)
 	}
-	snapVolID = vol.VolumeContent.ResourceId
+	snapVolID = vol.VolumeContent.ResourceID
 
-	snap, err := testConf.snapApi.CreateSnapshot(ctx, snapVolID, snapName, "Snapshot Description", "")
-	fmt.Println("Create Snapshot:", prettyPrintJson(snap), err)
+	snap, err := testConf.snapAPI.CreateSnapshot(ctx, snapVolID, snapName, "Snapshot Description", "")
+	fmt.Println("Create Snapshot:", prettyPrintJSON(snap), err)
 	if err != nil {
 		t.Fatalf("Create Snapshot failed: %v", err)
 	}
 
-	snap, err = testConf.snapApi.CreateSnapshot(ctx, snapVolID, snap2Name, "Snapshot Description", "1:23:52:50")
-	fmt.Println("Create Snapshot2:", prettyPrintJson(snap), err)
+	snap, err = testConf.snapAPI.CreateSnapshot(ctx, snapVolID, snap2Name, "Snapshot Description", "1:23:52:50")
+	fmt.Println("Create Snapshot2:", prettyPrintJSON(snap), err)
 	if err != nil {
 		t.Fatalf("Create Snapshot 2failed: %v", err)
 	}
 
 	//Negative cases
 	snapVolIDTemp := ""
-	_, err = testConf.snapApi.CreateSnapshot(ctx, snapVolIDTemp, snap2Name, "Snapshot Description", "")
+	_, err = testConf.snapAPI.CreateSnapshot(ctx, snapVolIDTemp, snap2Name, "Snapshot Description", "")
 	if err == nil {
 		t.Fatalf("Create Snapshot with empty volume Id case failed: %v", err)
 	}
 
 	snapNameTemp := "snap-name-max-length-12345678901234567890123456789012345678901234567890"
-	_, err = testConf.snapApi.CreateSnapshot(ctx, snapVolID, snapNameTemp, "Snapshot Description", "")
+	_, err = testConf.snapAPI.CreateSnapshot(ctx, snapVolID, snapNameTemp, "Snapshot Description", "")
 	if err == nil {
 		t.Fatalf("Create Snapshot with max name characters case failed: %v", err)
 	}
 
-	_, err = testConf.snapApi.CreateSnapshot(ctx, snapVolID, snap2Name, "Snapshot Description", "1:23:99:99")
+	_, err = testConf.snapAPI.CreateSnapshot(ctx, snapVolID, snap2Name, "Snapshot Description", "1:23:99:99")
 	if err == nil {
 		t.Fatalf("Create Snapshot with invalid retention duration case failed: %v", err)
 	}
 
-	_, err = testConf.snapApi.CreateSnapshot(ctx, snapVolID, snap2Name, "Snapshot Description", "1:23:52:50")
+	_, err = testConf.snapAPI.CreateSnapshot(ctx, snapVolID, snap2Name, "Snapshot Description", "1:23:52:50")
 	if err == nil {
 		t.Fatalf("Create duplicate Snapshot case failed: %v", err)
 	}
@@ -92,29 +92,29 @@ func findSnapshotByNameTest(t *testing.T) {
 
 	fmt.Println("Begin - Find Snapshot by Name Test")
 
-	snap, err := testConf.snapApi.FindSnapshotByName(ctx, snapName)
-	fmt.Println("Find snapshot by Name:", prettyPrintJson(snap), err)
+	snap, err := testConf.snapAPI.FindSnapshotByName(ctx, snapName)
+	fmt.Println("Find snapshot by Name:", prettyPrintJSON(snap), err)
 	if err != nil {
 		t.Fatalf("Find snapshot failed: %v", err)
 	}
-	snapID = snap.SnapshotContent.ResourceId
+	snapID = snap.SnapshotContent.ResourceID
 
-	snap, err = testConf.snapApi.FindSnapshotByName(ctx, snap2Name)
-	fmt.Println("Find snapshot2 by Name:", prettyPrintJson(snap), err)
+	snap, err = testConf.snapAPI.FindSnapshotByName(ctx, snap2Name)
+	fmt.Println("Find snapshot2 by Name:", prettyPrintJSON(snap), err)
 	if err != nil {
 		t.Fatalf("Find snapshot2 failed: %v", err)
 	}
-	snap2ID = snap.SnapshotContent.ResourceId
+	snap2ID = snap.SnapshotContent.ResourceID
 
 	//Negative test cases
 	snapNameTemp := ""
-	_, err = testConf.snapApi.FindSnapshotByName(ctx, snapNameTemp)
+	_, err = testConf.snapAPI.FindSnapshotByName(ctx, snapNameTemp)
 	if err == nil {
 		t.Fatalf("Find snapshot by Name with empty name case failed: %v", err)
 	}
 
 	snapNameTemp = "dummy_snap_name_1"
-	_, err = testConf.snapApi.FindSnapshotByName(ctx, snapNameTemp)
+	_, err = testConf.snapAPI.FindSnapshotByName(ctx, snapNameTemp)
 	if err == nil {
 		t.Fatalf("Find snapshot by Name with empty name case failed: %v", err)
 	}
@@ -126,21 +126,21 @@ func findSnapshotByIDTest(t *testing.T) {
 
 	fmt.Println("Begin - Find Snapshot by Id Test")
 
-	snap, err := testConf.snapApi.FindSnapshotById(ctx, snapID)
-	fmt.Println("Find snapshot by ID:", prettyPrintJson(snap), err)
+	snap, err := testConf.snapAPI.FindSnapshotByID(ctx, snapID)
+	fmt.Println("Find snapshot by ID:", prettyPrintJSON(snap), err)
 	if err != nil {
 		t.Fatalf("Find snapshot failed: %v", err)
 	}
 
 	//Negative test cases
 	snapIDTemp := ""
-	_, err = testConf.snapApi.FindSnapshotById(ctx, snapIDTemp)
+	_, err = testConf.snapAPI.FindSnapshotByID(ctx, snapIDTemp)
 	if err == nil {
 		t.Fatalf("Find snapshot by Id with empty Id case failed: %v", err)
 	}
 
 	snapIDTemp = "dummy_snap_id_1"
-	_, err = testConf.snapApi.FindSnapshotById(ctx, snapIDTemp)
+	_, err = testConf.snapAPI.FindSnapshotByID(ctx, snapIDTemp)
 	if err == nil {
 		t.Fatalf("Find snapshot by Id with empty id case failed: %v", err)
 	}
@@ -152,7 +152,7 @@ func listSnapshotsTest(t *testing.T) {
 
 	fmt.Println("Begin - List Snapshots Test")
 
-	snaps, _, err := testConf.snapApi.ListSnapshots(ctx, 0, 10, snapVolID, "")
+	snaps, _, err := testConf.snapAPI.ListSnapshots(ctx, 0, 10, snapVolID, "")
 	fmt.Println("List snapshots:", len(snaps))
 	if len(snaps) > 0 {
 		fmt.Println("List snapshots success:", len(snaps))
@@ -160,7 +160,7 @@ func listSnapshotsTest(t *testing.T) {
 		t.Fatalf("List snapshot failed: %v", err)
 	}
 
-	snaps, _, err = testConf.snapApi.ListSnapshots(ctx, 0, 10, snapVolID, snapID)
+	snaps, _, err = testConf.snapAPI.ListSnapshots(ctx, 0, 10, snapVolID, snapID)
 	fmt.Println("List snapshots with snap Id:", len(snaps))
 	if len(snaps) > 0 {
 		fmt.Println("List snapshots with snap Id success:", len(snaps))
@@ -168,7 +168,7 @@ func listSnapshotsTest(t *testing.T) {
 		t.Fatalf("List snapshot with snap Id failed: %v", err)
 	}
 
-	snaps, _, err = testConf.snapApi.ListSnapshots(ctx, 6, 5, "", "")
+	snaps, _, err = testConf.snapAPI.ListSnapshots(ctx, 6, 5, "", "")
 	fmt.Println("List snapshots pagination:", len(snaps))
 	if len(snaps) > 0 {
 		fmt.Println("List snapshots pagination success:", len(snaps))
@@ -183,20 +183,20 @@ func modifySnapshotAutoDeleteParameterTest(t *testing.T) {
 
 	fmt.Println("Begin - Modify Snapshot Test")
 
-	err := testConf.snapApi.ModifySnapshotAutoDeleteParameter(ctx, snapID)
+	err := testConf.snapAPI.ModifySnapshotAutoDeleteParameter(ctx, snapID)
 	if err != nil {
 		t.Fatalf("Modify Snapshot failed: %v", err)
 	}
 
 	//Negative test cases
 	snapIDTemp := ""
-	err = testConf.snapApi.ModifySnapshotAutoDeleteParameter(ctx, snapIDTemp)
+	err = testConf.snapAPI.ModifySnapshotAutoDeleteParameter(ctx, snapIDTemp)
 	if err == nil {
 		t.Fatalf("Modify snapshot with empty Id case failed: %v", err)
 	}
 
 	snapIDTemp = "dummy_snap_id_1"
-	err = testConf.snapApi.ModifySnapshotAutoDeleteParameter(ctx, snapIDTemp)
+	err = testConf.snapAPI.ModifySnapshotAutoDeleteParameter(ctx, snapIDTemp)
 	if err == nil {
 		t.Fatalf("Modify snapshot with invalid Id case failed: %v", err)
 	}
@@ -208,16 +208,16 @@ func creteLunThinCloneTest(t *testing.T) {
 
 	fmt.Println("Begin - Create LUN thin clone Test")
 
-	vol, err := testConf.volumeApi.CreteLunThinClone(ctx, cloneVolName, snapID, snapVolID)
+	vol, err := testConf.volumeAPI.CreteLunThinClone(ctx, cloneVolName, snapID, snapVolID)
 	if err != nil {
 		t.Fatalf("Create thin clone failed: %v", err)
 	}
 
-	vol, err = testConf.volumeApi.FindVolumeByName(ctx, cloneVolName)
+	vol, err = testConf.volumeAPI.FindVolumeByName(ctx, cloneVolName)
 	if err != nil {
 		t.Fatalf("Find volume failed: %v", err)
 	}
-	cloneVolID = vol.VolumeContent.ResourceId
+	cloneVolID = vol.VolumeContent.ResourceID
 	fmt.Println("Create LUN thin clone Test - Successful")
 }
 
@@ -225,36 +225,36 @@ func deleteSnapshot(t *testing.T) {
 
 	fmt.Println("Begin - Delete Snapshot Test")
 
-	err := testConf.snapApi.DeleteSnapshot(ctx, snapID)
+	err := testConf.snapAPI.DeleteSnapshot(ctx, snapID)
 	if err != nil {
 		t.Fatalf("Delete Snapshot failed: %v", err)
 	}
 
-	err = testConf.snapApi.DeleteSnapshot(ctx, snap2ID)
+	err = testConf.snapAPI.DeleteSnapshot(ctx, snap2ID)
 	if err != nil {
 		t.Fatalf("Delete Snapshot2 failed: %v", err)
 	}
 
 	//Delete thin clone volume
-	err = testConf.volumeApi.DeleteVolume(ctx, cloneVolID)
+	err = testConf.volumeAPI.DeleteVolume(ctx, cloneVolID)
 	if err != nil {
 		t.Fatalf("Delete volume failed: %v", err)
 	}
 
-	err = testConf.volumeApi.DeleteVolume(ctx, snapVolID)
+	err = testConf.volumeAPI.DeleteVolume(ctx, snapVolID)
 	if err != nil {
 		t.Fatalf("Delete volume failed: %v", err)
 	}
 
 	//Negative test cases
 	snapIDTemp := ""
-	err = testConf.snapApi.DeleteSnapshot(ctx, snapIDTemp)
+	err = testConf.snapAPI.DeleteSnapshot(ctx, snapIDTemp)
 	if err == nil {
 		t.Fatalf("Delete snapshot with empty Id case failed: %v", err)
 	}
 
 	snapIDTemp = "dummy_snapshot_id_1"
-	err = testConf.snapApi.DeleteSnapshot(ctx, snapIDTemp)
+	err = testConf.snapAPI.DeleteSnapshot(ctx, snapIDTemp)
 	if err == nil {
 		t.Fatalf("Delete snapshot with invalid Id case failed: %v", err)
 	}

@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/sirupsen/logrus"
 	"os"
 	"reflect"
 	"regexp"
@@ -12,19 +11,29 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+
+	"github.com/sirupsen/logrus"
 )
 
+//Error messages
 var (
-	NameEmptyError    = errors.New("name empty error")
-	NameTooLongError  = errors.New("name too long error")
-	InvalidCharacters = errors.New("name contains invalid characters or name doesn't start with alphabetic. Allowed characters are 'a-zA-Z0-9_-'")
+	ErrorNameEmpty         = errors.New("name empty error")
+	ErrorNameTooLong       = errors.New("name too long error")
+	ErrorInvalidCharacters = errors.New("name contains invalid characters or name doesn't start with alphabetic. Allowed characters are 'a-zA-Z0-9_-'")
 )
 
+//UnityLog constant
 const (
 	UnityLog = "unitylog"
 )
 
-func GetRunIdLogger(ctx context.Context) *logrus.Entry {
+//UnityLogStruct is structure of UnityLog
+type UnityLogStruct struct {
+	unityLog string
+}
+
+//GetRunIDLogger function returns entry if exists
+func GetRunIDLogger(ctx context.Context) *logrus.Entry {
 	rlog := ctx.Value(UnityLog)
 	entry := &logrus.Entry{}
 	if rlog != nil && reflect.TypeOf(rlog) == reflect.TypeOf(entry) {
@@ -41,7 +50,7 @@ func GetRunIdLogger(ctx context.Context) *logrus.Entry {
 var singletonLog *logrus.Logger
 var once sync.Once
 
-//This is a singleton method which returns log object.
+//GetLogger is a singleton method which returns log object.
 //Type singletonLog initialized only once.
 func GetLogger() *logrus.Logger {
 	once.Do(func() {
@@ -59,9 +68,8 @@ func GetLogger() *logrus.Logger {
 				filename := strings.Split(f.File, "dell/gounity")
 				if len(filename) > 1 {
 					return fmt.Sprintf("%s()", f.Function), fmt.Sprintf("dell/gounity%s:%d", filename[1], f.Line)
-				} else {
-					return fmt.Sprintf("%s()", f.Function), fmt.Sprintf("%s:%d", f.File, f.Line)
 				}
+				return fmt.Sprintf("%s()", f.Function), fmt.Sprintf("%s:%d", f.File, f.Line)
 			},
 		}
 	})
@@ -69,6 +77,7 @@ func GetLogger() *logrus.Logger {
 	return singletonLog
 }
 
+//ChangeLogLevel method returns log level
 func ChangeLogLevel(logLevel string) {
 
 	if singletonLog == nil {
@@ -98,22 +107,23 @@ func ChangeLogLevel(logLevel string) {
 	}
 }
 
-//To validate the resource name
+//ValidateResourceName function validate the resource name
 func ValidateResourceName(name string, maxLength int) (string, error) {
 	name = strings.TrimSpace(name)
 	re := regexp.MustCompile("^[A-Za-z][a-zA-Z0-9:_-]*$")
 
 	if name == "" {
-		return "", NameEmptyError
+		return "", ErrorNameEmpty
 	} else if len(name) > maxLength {
-		return "", NameTooLongError
+		return "", ErrorNameTooLong
 	} else if !re.MatchString(name) {
-		return "", InvalidCharacters
+		return "", ErrorInvalidCharacters
 	}
 
 	return name, nil
 }
 
+//ValidateDuration function validates duration
 func ValidateDuration(durationStr string) (uint64, error) {
 	if durationStr != "" {
 		durationArr := strings.Split(durationStr, ":")

@@ -8,16 +8,18 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/dell/gounity/types"
-	"github.com/dell/gounity/util"
 	"io"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/dell/gounity/types"
+	"github.com/dell/gounity/util"
 )
 
+//Header Key constants
 const (
 	HeaderKeyAccept                       = "Accept"
 	HeaderKeyContentType                  = "Content-Type"
@@ -186,7 +188,7 @@ func endsWithSlash(s string) bool {
 }
 
 func (c *client) DoAndGetResponseBody(ctx context.Context, method, uri string, headers map[string]string, body interface{}) (*http.Response, error) {
-	log := util.GetRunIdLogger(ctx)
+	log := util.GetRunIDLogger(ctx)
 	var (
 		err                error
 		req                *http.Request
@@ -292,7 +294,7 @@ func (c *client) DoAndGetResponseBody(ctx context.Context, method, uri string, h
 }
 
 func (c *client) DoWithHeaders(ctx context.Context, method, uri string, headers map[string]string, body, resp interface{}) error {
-	log := util.GetRunIdLogger(ctx)
+	log := util.GetRunIDLogger(ctx)
 	if body != nil {
 		data, _ := json.Marshal(body)
 		strBody := strings.ReplaceAll(string(data), "\"", "")
@@ -300,14 +302,14 @@ func (c *client) DoWithHeaders(ctx context.Context, method, uri string, headers 
 	}
 	res, err := c.DoAndGetResponseBody(ctx, method, uri, headers, body)
 	if err != nil {
-		return errors.New(fmt.Sprintf("Error while receiving response for url: %s error: %v", uri, err))
+		return fmt.Errorf("Error while receiving response for url: %s error: %v", uri, err)
 	}
 	defer res.Body.Close()
 
 	// parse the response
 	switch {
 	case res == nil:
-		return errors.New(fmt.Sprintf("Nil Response received for url: %s", uri))
+		return fmt.Errorf("Nil Response received for url: %s", uri)
 	case res.StatusCode >= 200 && res.StatusCode <= 299:
 		dec := json.NewDecoder(res.Body)
 		if resp != nil {
@@ -320,12 +322,12 @@ func (c *client) DoWithHeaders(ctx context.Context, method, uri string, headers 
 		jsonError := &types.Error{}
 		if err := json.NewDecoder(res.Body).Decode(jsonError); err != nil {
 			jsonError.ErrorContent.HTTPStatusCode = res.StatusCode
-			jsonError.ErrorContent.Message = append(jsonError.ErrorContent.Message, types.ErrorMessage{http.StatusText(res.StatusCode)})
+			jsonError.ErrorContent.Message = append(jsonError.ErrorContent.Message, types.ErrorMessage{EnUS: http.StatusText(res.StatusCode)})
 			return jsonError
 		}
 
 		jsonError.ErrorContent.HTTPStatusCode = res.StatusCode
-		jsonError.ErrorContent.Message = append(jsonError.ErrorContent.Message, types.ErrorMessage{string(res.Status)})
+		jsonError.ErrorContent.Message = append(jsonError.ErrorContent.Message, types.ErrorMessage{EnUS: string(res.Status)})
 		return jsonError
 	default:
 		log.Debugf("Invalid Response received Body: %s error: %v", body, err)
@@ -343,11 +345,11 @@ func (c *client) GetToken() string {
 }
 
 func (c *client) ParseJSONError(ctx context.Context, r *http.Response) error {
-	log := util.GetRunIdLogger(ctx)
+	log := util.GetRunIDLogger(ctx)
 	jsonError := &types.Error{}
 	err := json.NewDecoder(r.Body).Decode(jsonError)
 	if err != nil && err != io.EOF {
-		return errors.New(fmt.Sprintf("ParseJSONError: %v", err))
+		return fmt.Errorf("ParseJSONError: %v", err)
 	}
 	_, err = json.Marshal(jsonError)
 	if err != nil {

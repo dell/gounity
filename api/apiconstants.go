@@ -2,88 +2,90 @@ package api
 
 import "github.com/dell/gounity/types"
 
+//IntiatorType constants
 const (
 	FCInitiatorType     types.InitiatorType = "1"
 	ISCSCIInitiatorType types.InitiatorType = "2"
 )
 
+//constants and URIs
 const (
 	MaxResourceNameLength = 63
 
 	AuthorizationHeader = "Authorization"
 	XEmcRestClient      = "X-EMC-REST-CLIENT"
 	// Base resource URIs
-	unityRootApi  = "/api"
-	unityApiTypes = unityRootApi + "/types"
+	unityRootAPI  = "/api"
+	unityAPITypes = unityRootAPI + "/types"
 
-	UnityApiInstanceTypeResources = unityApiTypes + "/%s" + "/instances"
+	UnityAPIInstanceTypeResources = unityAPITypes + "/%s" + "/instances"
 
-	UnityApiGetTenantUri = UnityApiInstanceTypeResources + "?&compact=true&fields=%s"
+	UnityAPIGetTenantURI = UnityAPIInstanceTypeResources + "?&compact=true&fields=%s"
 
-	UnityApiInstanceTypeResourcesWithFields = UnityApiInstanceTypeResources + "?fields=%s"
+	UnityAPIInstanceTypeResourcesWithFields = UnityAPIInstanceTypeResources + "?fields=%s"
 
-	UnityApiInstancesUri = unityRootApi + "/instances"
+	UnityAPIInstancesURI = unityRootAPI + "/instances"
 
-	// GET RESOURCE BY RESOURCE ID {1}=type of resource, {2}=resource id
-	UnityApiGetResourceUri = UnityApiInstancesUri + "/%s/%s"
+	//UnityAPIGetResourceURI GETS RESOURCE BY RESOURCE ID {1}=type of resource, {2}=resource id
+	UnityAPIGetResourceURI = UnityAPIInstancesURI + "/%s/%s"
 
-	// GET RESOURCE BY RESOURCE NAME {1}=type of resource, {2}=name of the resource
-	UnityApiGetResourceByNameUri = UnityApiInstancesUri + "/%s/name:%s"
+	//UnityAPIGetResourceByNameURI GETS RESOURCE BY RESOURCE NAME {1}=type of resource, {2}=name of the resource
+	UnityAPIGetResourceByNameURI = UnityAPIInstancesURI + "/%s/name:%s"
 
-	// GET RESOURCE BY RESOURCE ID {1}=type of resource, {2}=resource id, {3}=fields
-	UnityApiGetResourceWithFieldsUri = UnityApiGetResourceUri + "?fields=%s"
+	//UnityAPIGetResourceWithFieldsURI GETS RESOURCE BY RESOURCE ID {1}=type of resource, {2}=resource id, {3}=fields
+	UnityAPIGetResourceWithFieldsURI = UnityAPIGetResourceURI + "?fields=%s"
 
-	// GET RESOURCE BY RESOURCE NAME {1}=type of resource, {2}=name of the resource, {3}=fields
-	UnityApiGetResourceByNameWithFieldsUri = UnityApiGetResourceByNameUri + "?fields=%s"
+	//UnityAPIGetResourceByNameWithFieldsURI GETS RESOURCE BY RESOURCE NAME {1}=type of resource, {2}=name of the resource, {3}=fields
+	UnityAPIGetResourceByNameWithFieldsURI = UnityAPIGetResourceByNameURI + "?fields=%s"
 
-	// LOGIN resource URIs
-	UnityApiLoginSessionInfoUri = unityApiTypes + "/loginSessionInfo"
+	//UnityAPILoginSessionInfoURI LOGINS resource URIs
+	UnityAPILoginSessionInfoURI = unityAPITypes + "/loginSessionInfo"
 
-	// BasicSystemInfo URI
-	UnityApiBasicSysInfoUri = unityApiTypes + "/basicSystemInfo/instances"
+	//UnityAPIBasicSysInfoURI gets BasicSystemInfo URI
+	UnityAPIBasicSysInfoURI = unityAPITypes + "/basicSystemInfo/instances"
 
-	//StorageResource instance Action URI
-	UnityApiStorageResourceInstanceActionUri = UnityApiInstancesUri + "/storageResource/%s/action"
+	//UnityAPIStorageResourceInstanceActionURI gets StorageResource instance Action URI
+	UnityAPIStorageResourceInstanceActionURI = UnityAPIInstancesURI + "/storageResource/%s/action"
 
-	//Modify Volume URIs
-	UnityApiModifyLunUri = UnityApiStorageResourceInstanceActionUri + "/modifyLun"
+	//UnityAPIModifyLunURI Modify Volume URIs
+	UnityAPIModifyLunURI = UnityAPIStorageResourceInstanceActionURI + "/modifyLun"
 
-	//Create LUN Thin Clone
-	UnityApiCreateLunThinCloneUri = UnityApiStorageResourceInstanceActionUri + "/createLunThinClone"
+	//UnityAPICreateLunThinCloneURI Create LUN Thin Clone
+	UnityAPICreateLunThinCloneURI = UnityAPIStorageResourceInstanceActionURI + "/createLunThinClone"
 
-	// StorageResource resource URIs
-	UnityApiModifyStorageResourceUri = UnityApiInstancesUri + "/storageResource/%s"
-	// StorageResource Action resource URI
-	UnityApiStorageResourceActionUri = unityApiTypes + "/storageResource/action/%s"
+	//UnityAPIModifyStorageResourceURI gets StorageResource resource URIs
+	UnityAPIModifyStorageResourceURI = UnityAPIInstancesURI + "/storageResource/%s"
+	//UnityAPIStorageResourceActionURI gets StorageResource Action resource URI
+	UnityAPIStorageResourceActionURI = unityAPITypes + "/storageResource/action/%s"
 
-	// StorageResource Action resource URIs
-	UnityModifyLunUri = UnityApiModifyStorageResourceUri + "/action/modifyLun"
+	//UnityModifyLunURI Modify Lun URIs
+	UnityModifyLunURI = UnityAPIModifyStorageResourceURI + "/action/modifyLun"
 
-	//Modify Filesystem URIs
-	UnityModifyFilesystemUri = UnityApiModifyStorageResourceUri + "/action/modifyFilesystem"
+	//UnityModifyFilesystemURI Modify Filesystem URIs
+	UnityModifyFilesystemURI = UnityAPIModifyStorageResourceURI + "/action/modifyFilesystem"
 
-	//Modify NFS Share URIs
-	UnityModifyNFSShareUri = UnityApiGetResourceUri + "/action/modify"
+	//UnityModifyNFSShareURI Modify NFS Share URIs
+	UnityModifyNFSShareURI = UnityAPIGetResourceURI + "/action/modify"
 
-	//Snapshot Action resource URIs
-	UnityModifySnapshotUri = UnityApiGetResourceUri + "/action/modify"
+	//UnityModifySnapshotURI Snapshot Action resource URIs
+	UnityModifySnapshotURI = UnityAPIGetResourceURI + "/action/modify"
 
-	//Snapshot Copy Action
-	UnityCopySnapshotUri = UnityApiGetResourceUri + "/action/copy"
+	//UnityCopySnapshotURI does Snapshot Copy Action
+	UnityCopySnapshotURI = UnityAPIGetResourceURI + "/action/copy"
 
-	//Host Initiator URIs
-	UnityListHostInitiatorsUri = unityApiTypes + "/hostInitiator/instances?fields="
-	UnityModifyHostInitiators  = unityRootApi + "/instances/hostInitiator/%s/action/modify"
+	//UnityListHostInitiatorsURI gets Host Initiator URIs
+	UnityListHostInitiatorsURI = unityAPITypes + "/hostInitiator/instances?fields="
+	UnityModifyHostInitiators  = unityRootAPI + "/instances/hostInitiator/%s/action/modify"
 
-	//Unity Instance Filter
-	UnityInstancesFilter = UnityApiInstanceTypeResources + "?filter=%s"
+	//UnityInstancesFilter does Unity Instance Filter
+	UnityInstancesFilter = UnityAPIInstanceTypeResources + "?filter=%s"
 
-	//Unity Metrics
 	UnityMetric              = "metric"
 	UnityMetricQueryResult   = "metricQueryResult"
 	UnityMetricRealTimeQuery = "metricRealTimeQuery"
 
 	//Action types for URL's
+
 	LunAction               = "lun"
 	CreateLunAction         = "createLun"
 	FileSystemAction        = "filesystem"

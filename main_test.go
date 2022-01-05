@@ -19,20 +19,20 @@ type testConfig struct {
 	unityEndPoint   string
 	username        string
 	password        string
-	poolId          string
+	poolID          string
 	nodeHostName    string
-	nodeHostIp      string
+	nodeHostIP      string
 	wwns            []string
 	iqn             string
 	hostIOLimitName string
 	nasServer       string
-	volumeApi       *volume
-	hostApi         *host
-	poolApi         *storagepool
-	snapApi         *snapshot
-	ipinterfaceApi  *ipinterface
-	fileApi         *filesystem
-	metricsApi      *metrics
+	volumeAPI       *volume
+	hostAPI         *host
+	poolAPI         *storagepool
+	snapAPI         *snapshot
+	ipinterfaceAPI  *ipinterface
+	fileAPI         *filesystem
+	metricsAPI      *metrics
 }
 
 var testConf *testConfig
@@ -59,10 +59,10 @@ func TestMain(m *testing.M) {
 	testConf.unityEndPoint = testProp["GOUNITY_ENDPOINT"]
 	testConf.username = testProp["X_CSI_UNITY_USER"]
 	testConf.password = testProp["X_CSI_UNITY_PASSWORD"]
-	testConf.poolId = testProp["STORAGE_POOL"]
+	testConf.poolID = testProp["STORAGE_POOL"]
 	testConf.nodeHostName = testProp["NODE_HOSTNAME"]
 	testConf.hostIOLimitName = testProp["HOST_IO_LIMIT_NAME"]
-	testConf.nodeHostIp = testProp["NODE_HOSTIP"]
+	testConf.nodeHostIP = testProp["NODE_HOSTIP"]
 	testConf.nasServer = testProp["UNITY_NAS_SERVER"]
 	testConf.iqn = testProp["NODE_IQN"]
 	wwnStr := testProp["NODE_WWNS"]
@@ -77,13 +77,13 @@ func TestMain(m *testing.M) {
 	testClient := getTestClient(ctx, testConf.unityEndPoint, testConf.username, testConf.password, testConf.unityEndPoint, insecure)
 	testConf.wwns = strings.Split(wwnStr, ",")
 
-	testConf.hostApi = NewHost(testClient)
-	testConf.poolApi = NewStoragePool(testClient)
-	testConf.snapApi = NewSnapshot(testClient)
-	testConf.volumeApi = NewVolume(testClient)
-	testConf.ipinterfaceApi = NewIpInterface(testClient)
-	testConf.fileApi = NewFilesystem(testClient)
-	testConf.metricsApi = NewMetrics(testClient)
+	testConf.hostAPI = NewHost(testClient)
+	testConf.poolAPI = NewStoragePool(testClient)
+	testConf.snapAPI = NewSnapshot(testClient)
+	testConf.volumeAPI = NewVolume(testClient)
+	testConf.ipinterfaceAPI = NewIPInterface(testClient)
+	testConf.fileAPI = NewFilesystem(testClient)
+	testConf.metricsAPI = NewMetrics(testClient)
 
 	code := m.Run()
 	fmt.Println("------------End of TestMain--------------")
@@ -145,7 +145,7 @@ func readTestProperties(filename string) (map[string]string, error) {
 	return configPropertiesMap, nil
 }
 
-func prettyPrintJson(obj interface{}) string {
+func prettyPrintJSON(obj interface{}) string {
 	data, _ := json.Marshal(obj)
 	return string(data)
 }
