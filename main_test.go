@@ -26,13 +26,13 @@ type testConfig struct {
 	iqn             string
 	hostIOLimitName string
 	nasServer       string
-	volumeAPI       *volume
-	hostAPI         *host
-	poolAPI         *storagepool
-	snapAPI         *snapshot
-	ipinterfaceAPI  *ipinterface
-	fileAPI         *filesystem
-	metricsAPI      *metrics
+	volumeAPI       *Volume
+	hostAPI         *Host
+	poolAPI         *Storagepool
+	snapAPI         *Snapshot
+	ipinterfaceAPI  *Ipinterface
+	fileAPI         *Filesystem
+	metricsAPI      *Metrics
 }
 
 var testConf *testConfig

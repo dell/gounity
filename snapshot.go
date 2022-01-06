@@ -28,13 +28,14 @@ var SnapshotNotFoundErrorCode = "0x7d13005"
 //ErrorSnapshotNotFound stores Snapshot not found error
 var ErrorSnapshotNotFound = errors.New("Unable to find filesystem")
 
-type snapshot struct {
+//Snapshot structure
+type Snapshot struct {
 	client *Client
 }
 
 //NewSnapshot function returns snapshot
-func NewSnapshot(client *Client) *snapshot {
-	return &snapshot{client}
+func NewSnapshot(client *Client) *Snapshot {
+	return &Snapshot{client}
 }
 
 // CreateSnapshot creates a snapshot of a volume
@@ -47,12 +48,12 @@ func NewSnapshot(client *Client) *snapshot {
 // Returns:
 // - *types.Snapshot
 // - an error if create snapshot fails
-
-func (s *snapshot) CreateSnapshot(ctx context.Context, storageResourceID, snapshotName, description, retentionDuration string) (*types.Snapshot, error) {
+func (s *Snapshot) CreateSnapshot(ctx context.Context, storageResourceID, snapshotName, description, retentionDuration string) (*types.Snapshot, error) {
 	return s.CreateSnapshotWithFsAccesType(ctx, storageResourceID, snapshotName, description, retentionDuration, BlockAccessType)
 }
 
-func (s *snapshot) CreateSnapshotWithFsAccesType(ctx context.Context, storageResourceID, snapshotName, description, retentionDuration string, filesystemAccessType FilesystemAccessType) (*types.Snapshot, error) {
+//CreateSnapshotWithFsAccesType - Creates snashot with FsAccess type
+func (s *Snapshot) CreateSnapshotWithFsAccesType(ctx context.Context, storageResourceID, snapshotName, description, retentionDuration string, filesystemAccessType FilesystemAccessType) (*types.Snapshot, error) {
 	var createSnapshot types.CreateSnapshotParam
 	if len(storageResourceID) == 0 {
 		return nil, errors.New("storage Resource ID cannot be empty")
@@ -87,8 +88,8 @@ func (s *snapshot) CreateSnapshotWithFsAccesType(ctx context.Context, storageRes
 	return snapshotResp, nil
 }
 
-//Delete Snapshots acting as filesystem on array
-func (s *snapshot) DeleteFilesystemAsSnapshot(ctx context.Context, snapshotID string, sourceFs *types.Filesystem) error {
+//DeleteFilesystemAsSnapshot - Delete Snapshots acting as filesystem on array
+func (s *Snapshot) DeleteFilesystemAsSnapshot(ctx context.Context, snapshotID string, sourceFs *types.Filesystem) error {
 	log := util.GetRunIDLogger(ctx)
 	deleteSourceFs := false
 	if strings.Contains(sourceFs.FileContent.Description, MarkFilesystemForDeletion) {
@@ -117,7 +118,7 @@ func (s *snapshot) DeleteFilesystemAsSnapshot(ctx context.Context, snapshotID st
 //
 // Returns:
 // - an error if delete snapshot fails
-func (s *snapshot) DeleteSnapshot(ctx context.Context, snapshotID string) error {
+func (s *Snapshot) DeleteSnapshot(ctx context.Context, snapshotID string) error {
 	log := util.GetRunIDLogger(ctx)
 	if snapshotID == "" {
 		return errors.New("snapshot ID cannot be empty")
@@ -131,9 +132,9 @@ func (s *snapshot) DeleteSnapshot(ctx context.Context, snapshotID string) error 
 	return nil
 }
 
-// ListSnapshot lists all snapshots based on Snapshot ID or source-volume-id
+// ListSnapshots lists all snapshots based on Snapshot ID or source-volume-id
 // Returns a chunk of data on a single page, as specified by the maxEntries and page (startToken) parameters.
-func (s *snapshot) ListSnapshots(ctx context.Context, startToken int, maxEntries int, sourceVolumeID, snapshotID string) ([]types.Snapshot, int, error) {
+func (s *Snapshot) ListSnapshots(ctx context.Context, startToken int, maxEntries int, sourceVolumeID, snapshotID string) ([]types.Snapshot, int, error) {
 	snapResp := &types.ListSnapshot{}
 
 	if snapshotID != "" {
@@ -176,8 +177,8 @@ func (s *snapshot) ListSnapshots(ctx context.Context, startToken int, maxEntries
 	return snapResp.Snapshots, nextToken, nil
 }
 
-// To find snapshot using snapshot-name
-func (s *snapshot) FindSnapshotByName(ctx context.Context, snapshotName string) (*types.Snapshot, error) {
+//FindSnapshotByName - To find snapshot using snapshot-name
+func (s *Snapshot) FindSnapshotByName(ctx context.Context, snapshotName string) (*types.Snapshot, error) {
 	log := util.GetRunIDLogger(ctx)
 	snapshotName, err := util.ValidateResourceName(snapshotName, api.MaxResourceNameLength)
 	if err != nil {
@@ -195,8 +196,8 @@ func (s *snapshot) FindSnapshotByName(ctx context.Context, snapshotName string) 
 	return snapshotResp, nil
 }
 
-// To find snapshot using snapshot-id
-func (s *snapshot) FindSnapshotByID(ctx context.Context, snapshotID string) (*types.Snapshot, error) {
+//FindSnapshotByID - To find snapshot using snapshot-id
+func (s *Snapshot) FindSnapshotByID(ctx context.Context, snapshotID string) (*types.Snapshot, error) {
 	log := util.GetRunIDLogger(ctx)
 	if snapshotID == "" {
 		return nil, errors.New("snapshot ID cannot be empty")
@@ -213,8 +214,8 @@ func (s *snapshot) FindSnapshotByID(ctx context.Context, snapshotID string) (*ty
 	return snapshotResp, nil
 }
 
-// Modify Snapshot (currently used to disable auto-delete parameter)
-func (s *snapshot) ModifySnapshotAutoDeleteParameter(ctx context.Context, snapshotID string) error {
+//ModifySnapshotAutoDeleteParameter - Modify Snapshot (currently used to disable auto-delete parameter)
+func (s *Snapshot) ModifySnapshotAutoDeleteParameter(ctx context.Context, snapshotID string) error {
 	log := util.GetRunIDLogger(ctx)
 	if snapshotID == "" {
 		return errors.New("snapshot ID cannot be empty")
@@ -234,7 +235,7 @@ func (s *snapshot) ModifySnapshotAutoDeleteParameter(ctx context.Context, snapsh
 }
 
 //CopySnapshot - Creates a copy of the source snapshot which can be used for NFS export, and returns the ID of the copy snapshot
-func (s *snapshot) CopySnapshot(ctx context.Context, sourceSnapshotID, name string) (*types.Snapshot, error) {
+func (s *Snapshot) CopySnapshot(ctx context.Context, sourceSnapshotID, name string) (*types.Snapshot, error) {
 	if name == "" {
 		return nil, errors.New("Snapshot Name cannot be empty")
 	}
@@ -262,8 +263,8 @@ func (s *snapshot) CopySnapshot(ctx context.Context, sourceSnapshotID, name stri
 	return snapResp, nil
 }
 
-//Modify Snapshot's description and retention duration parameters
-func (s *snapshot) ModifySnapshot(ctx context.Context, snapshotID, description, retentionDuration string) error {
+//ModifySnapshot - Modify Snapshot's description and retention duration parameters
+func (s *Snapshot) ModifySnapshot(ctx context.Context, snapshotID, description, retentionDuration string) error {
 	if snapshotID == "" {
 		return errors.New("snapshot ID cannot be empty")
 	}

@@ -16,17 +16,18 @@ import (
 	"github.com/dell/gounity/types"
 )
 
-type storagepool struct {
+//Storagepool structure
+type Storagepool struct {
 	client *Client
 }
 
 //NewStoragePool returns storagepool
-func NewStoragePool(client *Client) *storagepool {
-	return &storagepool{client}
+func NewStoragePool(client *Client) *Storagepool {
+	return &Storagepool{client}
 }
 
-//Find the volume by it's name. If the volume is not found, an error will be returned.
-func (sp *storagepool) FindStoragePoolByName(ctx context.Context, poolName string) (*types.StoragePool, error) {
+//FindStoragePoolByName - Find the volume by it's name. If the volume is not found, an error will be returned.
+func (sp *Storagepool) FindStoragePoolByName(ctx context.Context, poolName string) (*types.StoragePool, error) {
 	if len(poolName) == 0 {
 		return nil, errors.New("poolName shouldn't be empty")
 	}
@@ -39,8 +40,8 @@ func (sp *storagepool) FindStoragePoolByName(ctx context.Context, poolName strin
 	return spResponse, nil
 }
 
-//Find the volume by it's Id. If the volume is not found, an error will be returned.
-func (sp *storagepool) FindStoragePoolByID(ctx context.Context, poolID string) (*types.StoragePool, error) {
+//FindStoragePoolByID - Find the volume by it's Id. If the volume is not found, an error will be returned.
+func (sp *Storagepool) FindStoragePoolByID(ctx context.Context, poolID string) (*types.StoragePool, error) {
 	if len(poolID) == 0 {
 		return nil, errors.New("pool Id cannot be empty")
 	}

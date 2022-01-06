@@ -51,19 +51,20 @@ var ErrorCloningFailed = errors.New("volume Cloning Failed")
 //MarkVolumeForDeletion stores mark of volume deletion
 var MarkVolumeForDeletion = "csi-marked-vol-for-deletion"
 
-type volume struct {
+//Volume structure
+type Volume struct {
 	client *Client
 }
 
 //NewVolume function returns volume
-func NewVolume(client *Client) *volume {
-	return &volume{client}
+func NewVolume(client *Client) *Volume {
+	return &Volume{client}
 }
 
 // CreateLun API create a Lun with the given arguments.
 // Pre-validations: 1. Length of the Lun name should be less than 63 characters.
 //                  2. Size of Lun should be in bytes.
-func (v *volume) CreateLun(ctx context.Context, name, poolID, description string, size uint64, fastVPTieringPolicy int,
+func (v *Volume) CreateLun(ctx context.Context, name, poolID, description string, size uint64, fastVPTieringPolicy int,
 	hostIOLimitID string, isThinEnabled, isDataReductionEnabled bool) (*types.Volume, error) {
 	log := util.GetRunIDLogger(ctx)
 
@@ -152,8 +153,8 @@ func (v *volume) CreateLun(ctx context.Context, name, poolID, description string
 	return volumeResp, nil
 }
 
-//Find the volume by it's name. If the volume is not found, an error will be returned.
-func (v *volume) FindVolumeByName(ctx context.Context, volName string) (*types.Volume, error) {
+//FindVolumeByName - Find the volume by it's name. If the volume is not found, an error will be returned.
+func (v *Volume) FindVolumeByName(ctx context.Context, volName string) (*types.Volume, error) {
 	if len(volName) == 0 {
 		return nil, fmt.Errorf("lun Name shouldn't be empty")
 	}
@@ -166,8 +167,8 @@ func (v *volume) FindVolumeByName(ctx context.Context, volName string) (*types.V
 	return volumeResp, nil
 }
 
-//Find the volume by it's Id. If the volume is not found, an error will be returned.
-func (v *volume) FindVolumeByID(ctx context.Context, volID string) (*types.Volume, error) {
+//FindVolumeByID - Find the volume by it's Id. If the volume is not found, an error will be returned.
+func (v *Volume) FindVolumeByID(ctx context.Context, volID string) (*types.Volume, error) {
 	log := util.GetRunIDLogger(ctx)
 	if len(volID) == 0 {
 		return nil, errors.New("lun ID shouldn't be empty")
@@ -184,7 +185,8 @@ func (v *volume) FindVolumeByID(ctx context.Context, volID string) (*types.Volum
 	return volumeResp, nil
 }
 
-func (v *volume) ListVolumes(ctx context.Context, startToken int, maxEntries int) ([]types.Volume, int, error) {
+//ListVolumes - list volumes
+func (v *Volume) ListVolumes(ctx context.Context, startToken int, maxEntries int) ([]types.Volume, int, error) {
 	log := util.GetRunIDLogger(ctx)
 	volumeResp := &types.ListVolumes{}
 	nextToken := startToken + 1
@@ -206,8 +208,8 @@ func (v *volume) ListVolumes(ctx context.Context, startToken int, maxEntries int
 	return volumeResp.Volumes, nextToken, err
 }
 
-//Delete Volume by its ID. If the Volume is not present on the array, an error will be returned.
-func (v *volume) DeleteVolume(ctx context.Context, volumeID string) error {
+//DeleteVolume - Delete Volume by its ID. If the Volume is not present on the array, an error will be returned.
+func (v *Volume) DeleteVolume(ctx context.Context, volumeID string) error {
 	log := util.GetRunIDLogger(ctx)
 	if len(volumeID) == 0 {
 		return errors.New("Volume Id cannot be empty")
@@ -265,8 +267,8 @@ func (v *volume) DeleteVolume(ctx context.Context, volumeID string) error {
 	return nil
 }
 
-//Export volume to a host
-func (v *volume) ExportVolume(ctx context.Context, volID, hostID string) error {
+//ExportVolume - Export volume to a host
+func (v *Volume) ExportVolume(ctx context.Context, volID, hostID string) error {
 	hostIDContent := types.HostIDContent{
 		ID: hostID,
 	}
@@ -285,8 +287,8 @@ func (v *volume) ExportVolume(ctx context.Context, volID, hostID string) error {
 	return v.client.executeWithRetryAuthenticate(ctx, http.MethodPost, fmt.Sprintf(api.UnityModifyLunURI, volID), lunModifyParam, nil)
 }
 
-//Export volume to multiple hosts / Modify the host access list on a given Volume
-func (v *volume) ModifyVolumeExport(ctx context.Context, volID string, hostIDList []string) error {
+//ModifyVolumeExport - Export volume to multiple hosts / Modify the host access list on a given Volume
+func (v *Volume) ModifyVolumeExport(ctx context.Context, volID string, hostIDList []string) error {
 
 	hostAccessArray := []types.HostAccess{}
 	for _, hostID := range hostIDList {
@@ -310,8 +312,8 @@ func (v *volume) ModifyVolumeExport(ctx context.Context, volID string, hostIDLis
 	return v.client.executeWithRetryAuthenticate(ctx, http.MethodPost, fmt.Sprintf(api.UnityModifyLunURI, volID), lunModifyParam, nil)
 }
 
-//Unexport volume
-func (v *volume) UnexportVolume(ctx context.Context, volID string) error {
+//UnexportVolume - Unexport volume
+func (v *Volume) UnexportVolume(ctx context.Context, volID string) error {
 	hostAccessArray := []types.HostAccess{}
 	lunParams := types.LunHostAccessParameters{
 		HostAccess: &hostAccessArray,
@@ -322,8 +324,8 @@ func (v *volume) UnexportVolume(ctx context.Context, volID string) error {
 	return v.client.executeWithRetryAuthenticate(ctx, http.MethodPost, fmt.Sprintf(api.UnityModifyLunURI, volID), lunModifyParam, nil)
 }
 
-// Expand volume to provided capacity
-func (v *volume) ExpandVolume(ctx context.Context, volumeID string, newSize uint64) error {
+//ExpandVolume - Expand volume to provided capacity
+func (v *Volume) ExpandVolume(ctx context.Context, volumeID string, newSize uint64) error {
 	log := util.GetRunIDLogger(ctx)
 	vol, err := v.FindVolumeByID(ctx, volumeID)
 	if err != nil {
@@ -344,7 +346,8 @@ func (v *volume) ExpandVolume(ctx context.Context, volumeID string, newSize uint
 	return v.client.executeWithRetryAuthenticate(ctx, http.MethodPost, fmt.Sprintf(api.UnityAPIModifyLunURI, volumeID), volumeReqParam, nil)
 }
 
-func (v *volume) FindHostIOLimitByName(ctx context.Context, hostIoPolicyName string) (*types.IoLimitPolicy, error) {
+//FindHostIOLimitByName - Find Host IO limit
+func (v *Volume) FindHostIOLimitByName(ctx context.Context, hostIoPolicyName string) (*types.IoLimitPolicy, error) {
 	if len(hostIoPolicyName) == 0 {
 		return nil, errors.New("policy Name shouldn't be empty")
 	}
@@ -356,8 +359,8 @@ func (v *volume) FindHostIOLimitByName(ctx context.Context, hostIoPolicyName str
 	return ioLimitPolicyResp, nil
 }
 
-// Create a lun thin clone
-func (v *volume) CreteLunThinClone(ctx context.Context, name, snapID, volID string) (*types.Volume, error) {
+//CreteLunThinClone - Create a lun thin clone
+func (v *Volume) CreteLunThinClone(ctx context.Context, name, snapID, volID string) (*types.Volume, error) {
 	snapIDContent := types.SnapshotIDContent{
 		ID: snapID,
 	}
@@ -370,8 +373,8 @@ func (v *volume) CreteLunThinClone(ctx context.Context, name, snapID, volID stri
 	return volumeResp, err
 }
 
-//Get License information
-func (v *volume) isFeatureLicensed(ctx context.Context, featureName LicenseType) (*types.LicenseInfo, error) {
+//isFeatureLicensed - Get License information
+func (v *Volume) isFeatureLicensed(ctx context.Context, featureName LicenseType) (*types.LicenseInfo, error) {
 	licenseInfoResp := &types.LicenseInfo{}
 	err := v.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityAPIGetResourceByNameWithFieldsURI, api.LicenseAction, featureName, LicenseInfoDisplayFields), nil, licenseInfoResp)
 	if err != nil {
@@ -380,8 +383,8 @@ func (v *volume) isFeatureLicensed(ctx context.Context, featureName LicenseType)
 	return licenseInfoResp, nil
 }
 
-// Volume cloning
-func (v *volume) CreateCloneFromVolume(ctx context.Context, name, volID string) (*types.Volume, error) {
+//CreateCloneFromVolume - Volume cloning
+func (v *Volume) CreateCloneFromVolume(ctx context.Context, name, volID string) (*types.Volume, error) {
 	log := util.GetRunIDLogger(ctx)
 	snapAPI := NewSnapshot(v.client)
 	//Create snapshot for cloning
@@ -408,8 +411,8 @@ func (v *volume) CreateCloneFromVolume(ctx context.Context, name, volID string) 
 	return volResp, nil
 }
 
-// Rename Volume
-func (v *volume) RenameVolume(ctx context.Context, newName, volID string) error {
+//RenameVolume - Rename Volume
+func (v *Volume) RenameVolume(ctx context.Context, newName, volID string) error {
 	lunParams := types.LunParameters{
 		Name: newName,
 	}

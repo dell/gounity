@@ -18,7 +18,8 @@ import (
 	"github.com/dell/gounity/types"
 )
 
-type host struct {
+//Host Structure
+type Host struct {
 	client *Client
 }
 
@@ -31,12 +32,12 @@ var (
 )
 
 //NewHost function returns new host
-func NewHost(client *Client) *host {
-	return &host{client}
+func NewHost(client *Client) *Host {
+	return &Host{client}
 }
 
-//Find the Host by it's name. If the Host is not found, an error will be returned.
-func (h *host) FindHostByName(ctx context.Context, hostName string) (*types.Host, error) {
+//FindHostByName Finds the Host by it's name. If the Host is not found, an error will be returned.
+func (h *Host) FindHostByName(ctx context.Context, hostName string) (*types.Host, error) {
 	log := util.GetRunIDLogger(ctx)
 	if len(hostName) == 0 {
 		return nil, errors.New("host Name shouldn't be empty")
@@ -57,8 +58,8 @@ func (h *host) FindHostByName(ctx context.Context, hostName string) (*types.Host
 	return hResponse, nil
 }
 
-//Create a new Host
-func (h *host) CreateHost(ctx context.Context, hostName string, tenantID string) (*types.Host, error) {
+//CreateHost Create a new Host
+func (h *Host) CreateHost(ctx context.Context, hostName string, tenantID string) (*types.Host, error) {
 	if len(hostName) == 0 {
 		return nil, errors.New("hostname shouldn't be empty")
 	}
@@ -84,8 +85,8 @@ func (h *host) CreateHost(ctx context.Context, hostName string, tenantID string)
 	return hostResp, nil
 }
 
-//Delete Host. This function is used only in unit tests
-func (h *host) DeleteHost(ctx context.Context, hostName string) error {
+//DeleteHost function is used only in unit tests
+func (h *Host) DeleteHost(ctx context.Context, hostName string) error {
 	if len(hostName) == 0 {
 		return fmt.Errorf("hostname shouldn't be empty")
 	}
@@ -98,8 +99,8 @@ func (h *host) DeleteHost(ctx context.Context, hostName string) error {
 	return nil
 }
 
-//Create Host IP Port
-func (h *host) CreateHostIPPort(ctx context.Context, hostID, ip string) (*types.HostIPPort, error) {
+//CreateHostIPPort - Create Host IP Port
+func (h *Host) CreateHostIPPort(ctx context.Context, hostID, ip string) (*types.HostIPPort, error) {
 	if len(hostID) == 0 {
 		return nil, errors.New("host ID shouldn't be empty")
 	}
@@ -122,7 +123,7 @@ func (h *host) CreateHostIPPort(ctx context.Context, hostID, ip string) (*types.
 }
 
 // FindHostIPPortByID method to get host Ip port object from Unity by cli ID
-func (h *host) FindHostIPPortByID(ctx context.Context, hostIPID string) (*types.HostIPPort, error) {
+func (h *Host) FindHostIPPortByID(ctx context.Context, hostIPID string) (*types.HostIPPort, error) {
 	hostIPResp := &types.HostIPPort{}
 	err := h.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityAPIGetResourceWithFieldsURI, api.HostIPPortAction, hostIPID, HostIPPortDisplayFields), nil, hostIPResp)
 	if err != nil {
@@ -132,7 +133,7 @@ func (h *host) FindHostIPPortByID(ctx context.Context, hostIPID string) (*types.
 }
 
 // ListHostInitiators lists all host initiators
-func (h *host) ListHostInitiators(ctx context.Context) ([]types.HostInitiator, error) {
+func (h *Host) ListHostInitiators(ctx context.Context) ([]types.HostInitiator, error) {
 	listInitiatorResp := &types.ListHostInitiator{}
 	hostInitiatorURI := api.UnityListHostInitiatorsURI + HostInitiatorsDisplayFields
 	err := h.client.executeWithRetryAuthenticate(ctx, http.MethodGet, hostInitiatorURI, nil, listInitiatorResp)
@@ -142,8 +143,8 @@ func (h *host) ListHostInitiators(ctx context.Context) ([]types.HostInitiator, e
 	return listInitiatorResp.HostInitiator, nil
 }
 
-//Find Host Initiator
-func (h *host) FindHostInitiatorByName(ctx context.Context, wwnOrIqn string) (*types.HostInitiator, error) {
+//FindHostInitiatorByName - Find Host Initiator by name
+func (h *Host) FindHostInitiatorByName(ctx context.Context, wwnOrIqn string) (*types.HostInitiator, error) {
 	if len(wwnOrIqn) == 0 {
 		return nil, errors.New("host Initiator Name shouldn't be empty")
 	}
@@ -170,8 +171,8 @@ func (h *host) FindHostInitiatorByName(ctx context.Context, wwnOrIqn string) (*t
 	return nil, errors.New("wwn or iqn not found")
 }
 
-//Find Host Initiator
-func (h *host) FindHostInitiatorByID(ctx context.Context, wwnOrIqn string) (*types.HostInitiator, error) {
+//FindHostInitiatorByID - Find Host Initiator
+func (h *Host) FindHostInitiatorByID(ctx context.Context, wwnOrIqn string) (*types.HostInitiator, error) {
 	hostInitiatorResp := &types.HostInitiator{}
 	err := h.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityAPIGetResourceWithFieldsURI, api.HostInitiatorAction, wwnOrIqn, HostInitiatorsDisplayFields), nil, hostInitiatorResp)
 	if err != nil {
@@ -180,8 +181,8 @@ func (h *host) FindHostInitiatorByID(ctx context.Context, wwnOrIqn string) (*typ
 	return hostInitiatorResp, nil
 }
 
-//Create Host Initiator
-func (h *host) CreateHostInitiator(ctx context.Context, hostID, wwnOrIqn string, initiatorType types.InitiatorType) (*types.HostInitiator, error) {
+//CreateHostInitiator - Create Host Initiator
+func (h *Host) CreateHostInitiator(ctx context.Context, hostID, wwnOrIqn string, initiatorType types.InitiatorType) (*types.HostInitiator, error) {
 	log := util.GetRunIDLogger(ctx)
 	if len(hostID) == 0 {
 		return nil, errors.New("host ID shouldn't be empty")
@@ -228,8 +229,8 @@ func (h *host) CreateHostInitiator(ctx context.Context, hostID, wwnOrIqn string,
 	return hostInitiatorResp, nil
 }
 
-//Modify Host Initiator - WILL BE DEPRECATED
-func (h *host) ModifyHostInitiator(ctx context.Context, hostID string, initiator *types.HostInitiator) (*types.HostInitiator, error) {
+//ModifyHostInitiator - WILL BE DEPRECATED
+func (h *Host) ModifyHostInitiator(ctx context.Context, hostID string, initiator *types.HostInitiator) (*types.HostInitiator, error) {
 	if initiator == nil {
 		return nil, errors.New("HostInitiator shouldn't be null")
 	}
@@ -237,8 +238,8 @@ func (h *host) ModifyHostInitiator(ctx context.Context, hostID string, initiator
 	return h.ModifyHostInitiatorByID(ctx, hostID, initiator.HostInitiatorContent.ID)
 }
 
-// ModifyHostInitiatorByID
-func (h *host) ModifyHostInitiatorByID(ctx context.Context, hostID, initiatorID string) (*types.HostInitiator, error) {
+//ModifyHostInitiatorByID function modifies host initiator by ID
+func (h *Host) ModifyHostInitiatorByID(ctx context.Context, hostID, initiatorID string) (*types.HostInitiator, error) {
 
 	if hostID == "" {
 		return nil, errors.New("Host ID shouldn't be null")
@@ -262,8 +263,8 @@ func (h *host) ModifyHostInitiatorByID(ctx context.Context, hostID, initiatorID 
 	return hostInitiatorResp, nil
 }
 
-//Find Host Initiator
-func (h *host) FindHostInitiatorPathByID(ctx context.Context, initiatorPathID string) (*types.HostInitiatorPath, error) {
+//FindHostInitiatorPathByID Finds Host Initiator
+func (h *Host) FindHostInitiatorPathByID(ctx context.Context, initiatorPathID string) (*types.HostInitiatorPath, error) {
 	hostInitiatorPathResp := &types.HostInitiatorPath{}
 	err := h.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityAPIGetResourceWithFieldsURI, api.HostInitiatorPathAction, initiatorPathID, HostInitiatorPathDisplayFields), nil, hostInitiatorPathResp)
 	if err != nil {
@@ -272,8 +273,8 @@ func (h *host) FindHostInitiatorPathByID(ctx context.Context, initiatorPathID st
 	return hostInitiatorPathResp, nil
 }
 
-//Find FC Port
-func (h *host) FindFcPortByID(ctx context.Context, fcPortID string) (*types.FcPort, error) {
+//FindFcPortByID Finds FC Port
+func (h *Host) FindFcPortByID(ctx context.Context, fcPortID string) (*types.FcPort, error) {
 	fcPortResp := &types.FcPort{}
 	err := h.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityAPIGetResourceWithFieldsURI, HostInitiatorPathDisplayFields, fcPortID, FcPortDisplayFields), nil, fcPortResp)
 	if err != nil {
@@ -282,7 +283,8 @@ func (h *host) FindFcPortByID(ctx context.Context, fcPortID string) (*types.FcPo
 	return fcPortResp, nil
 }
 
-func (h *host) FindTenants(ctx context.Context) (*types.TenantInfo, error) {
+//FindTenants finds tenants
+func (h *Host) FindTenants(ctx context.Context) (*types.TenantInfo, error) {
 	tenantsResp := &types.TenantInfo{}
 	err := h.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityAPIGetTenantURI, api.TenantAction, TenantDisplayFields), nil, tenantsResp)
 	if err != nil {

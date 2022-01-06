@@ -23,20 +23,20 @@ import (
 	"github.com/dell/gounity/util"
 )
 
-type metrics struct {
+//Metrics structure
+type Metrics struct {
 	client *Client
 }
 
 //NewMetrics returns a new instance of the Unity Metric query interface.
-func NewMetrics(client *Client) *metrics {
-	return &metrics{client}
+func NewMetrics(client *Client) *Metrics {
+	return &Metrics{client}
 }
 
-//GetAllRealTimeMetricsPaths gets all the Unity Metric paths. Consider using for debugging
+//GetAllRealTimeMetricPaths gets all the Unity Metric paths. Consider using for debugging
 //or enumerating metrics. This will take a bit of time to complete.
 // - /api/types/metric/instances?compact=true&filter=isRealtimeAvailable eq true
-//
-func (m *metrics) GetAllRealTimeMetricPaths(ctx context.Context) error {
+func (m *Metrics) GetAllRealTimeMetricPaths(ctx context.Context) error {
 	log := util.GetRunIDLogger(ctx)
 	filter := "isRealtimeAvailable eq true"
 
@@ -64,7 +64,7 @@ func (m *metrics) GetAllRealTimeMetricPaths(ctx context.Context) error {
 //GetMetricsCollection gets Unity MetricsCollection of the provided 'queryID'.
 // - The MetricCollection should exist already or you can create one using CreateXXXMetricsQuery.
 // - Example: GET /api/types/metricQueryResult/instances?filter=queryID eq 37
-func (m *metrics) GetMetricsCollection(ctx context.Context, queryID int) (*types.MetricQueryResult, error) {
+func (m *Metrics) GetMetricsCollection(ctx context.Context, queryID int) (*types.MetricQueryResult, error) {
 	log := util.GetRunIDLogger(ctx)
 
 	filter := fmt.Sprintf("queryID eq %d", queryID)
@@ -87,7 +87,7 @@ func (m *metrics) GetMetricsCollection(ctx context.Context, queryID int) (*types
 //               "paths": ["sp.*.cpu.summary.busyTicks" ,"sp.*.cpu.summary.idleTicks"],
 //               "interval": 5
 //            }
-func (m *metrics) CreateRealTimeMetricsQuery(ctx context.Context, metricPaths []string, interval int) (*types.MetricQueryCreateResponse, error) {
+func (m *Metrics) CreateRealTimeMetricsQuery(ctx context.Context, metricPaths []string, interval int) (*types.MetricQueryCreateResponse, error) {
 	log := util.GetRunIDLogger(ctx)
 
 	createURI := fmt.Sprintf(api.UnityAPIInstanceTypeResources, api.UnityMetricRealTimeQuery)
@@ -108,7 +108,7 @@ func (m *metrics) CreateRealTimeMetricsQuery(ctx context.Context, metricPaths []
 
 //DeleteRealTimeMetricsQuery deletes the MetricRealTime Collection of the given queryID.
 // - Example: DELETE /api/instances/metricRealTimeQuery/37
-func (m *metrics) DeleteRealTimeMetricsQuery(ctx context.Context, queryID int) error {
+func (m *Metrics) DeleteRealTimeMetricsQuery(ctx context.Context, queryID int) error {
 	log := util.GetRunIDLogger(ctx)
 	deleteURI := fmt.Sprintf(api.UnityAPIGetResourceURI, api.UnityMetricRealTimeQuery, strconv.Itoa(queryID))
 	log.Info("DeleteRealTimeMetricsQuery:", deleteURI)

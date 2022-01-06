@@ -16,17 +16,18 @@ import (
 	"github.com/dell/gounity/types"
 )
 
-type ipinterface struct {
+//Ipinterface structure
+type Ipinterface struct {
 	client *Client
 }
 
 //NewIPInterface returns IP interface
-func NewIPInterface(client *Client) *ipinterface {
-	return &ipinterface{client}
+func NewIPInterface(client *Client) *Ipinterface {
+	return &Ipinterface{client}
 }
 
 //ListIscsiIPInterfaces - List the IpnInterfaces configured on the array
-func (f *ipinterface) ListIscsiIPInterfaces(ctx context.Context) ([]types.IPInterfaceEntries, error) {
+func (f *Ipinterface) ListIscsiIPInterfaces(ctx context.Context) ([]types.IPInterfaceEntries, error) {
 
 	log := util.GetRunIDLogger(ctx)
 	hResponse := &types.ListIPInterfaces{}
