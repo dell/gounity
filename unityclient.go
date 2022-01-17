@@ -6,10 +6,11 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"github.com/dell/gounity/util"
 	"net/http"
 	"os"
 	"strconv"
+
+	"github.com/dell/gounity/util"
 
 	"github.com/dell/gounity/api"
 	"github.com/dell/gounity/types"
@@ -30,13 +31,13 @@ var (
 	showHTTP, _ = strconv.ParseBool(os.Getenv("GOUNITY_SHOWHTTP"))
 )
 
-// Struct holds the configuration & REST Client.
+//Client Struct holds the configuration & REST Client.
 type Client struct {
 	configConnect *ConfigConnect
 	api           api.Client
 }
 
-// Struct holds the endpoint & credential info.
+//ConfigConnect Struct holds the endpoint & credential info.
 type ConfigConnect struct {
 	Endpoint string
 	Username string
@@ -46,7 +47,7 @@ type ConfigConnect struct {
 // Authenticate make a REST API call [/loginSessionInfo] to Unity to get authenticate the given credentials.
 // The response contains the EMC-CSRF-TOKEN and the client caches it for further communication.
 func (c *Client) Authenticate(ctx context.Context, configConnect *ConfigConnect) error {
-	log := util.GetRunIdLogger(ctx)
+	log := util.GetRunIDLogger(ctx)
 	log.Debug("Executing Authenticate REST client")
 	c.configConnect = configConnect
 	c.api.SetToken("")
@@ -54,10 +55,10 @@ func (c *Client) Authenticate(ctx context.Context, configConnect *ConfigConnect)
 	headers[api.AuthorizationHeader] = "Basic " + basicAuth(configConnect.Username, configConnect.Password)
 	headers[api.XEmcRestClient] = "true"
 	headers[api.HeaderKeyContentType] = api.HeaderValContentTypeJSON
-	resp, err := c.api.DoAndGetResponseBody(ctx, http.MethodGet, api.UnityApiLoginSessionInfoUri, headers, nil)
+	resp, err := c.api.DoAndGetResponseBody(ctx, http.MethodGet, api.UnityAPILoginSessionInfoURI, headers, nil)
 
 	if err != nil {
-		return errors.New(fmt.Sprintf("Authentication error: %v", err))
+		return fmt.Errorf("authentication error: %v", err)
 	}
 
 	if resp != nil {
@@ -78,7 +79,7 @@ func (c *Client) Authenticate(ctx context.Context, configConnect *ConfigConnect)
 				return status.Errorf(codes.Unauthenticated, "Authentication failed. Unable to login to Unity. Verify username and password.")
 			}
 		default:
-			return errors.New(fmt.Sprintf("Authenticate error. Response: %v", c.api.ParseJSONError(ctx, resp)))
+			return fmt.Errorf("authenticate error. Response: %v", c.api.ParseJSONError(ctx, resp))
 		}
 
 		c.api.SetToken(resp.Header.Get(emcCsrfToken))
@@ -97,7 +98,7 @@ func basicAuth(username, password string) string {
 // GetJSONWithRetry method responsible to make the given API call to Unity REST API Server.
 // In case if the given EMC-CSRF-TOKEN becomes invalid, retries the same operation after performing authentication.
 func (c *Client) executeWithRetryAuthenticate(ctx context.Context, method, uri string, body, resp interface{}) error {
-	log := util.GetRunIdLogger(ctx)
+	log := util.GetRunIDLogger(ctx)
 	headers := make(map[string]string, 2)
 	headers[api.HeaderKeyAccept] = accHeader
 	headers[api.HeaderKeyContentType] = conHeader
@@ -116,9 +117,8 @@ func (c *Client) executeWithRetryAuthenticate(ctx context.Context, method, uri s
 			// Authenticate then try again
 			if err := c.Authenticate(ctx, c.configConnect); err != nil {
 				return fmt.Errorf("authentication failure due to: %v", err)
-			} else {
-				log.Debug("Authentication success")
 			}
+			log.Debug("Authentication success")
 			return c.api.DoWithHeaders(ctx, method, uri, headers, body, resp)
 		}
 	} else {
@@ -129,10 +129,12 @@ func (c *Client) executeWithRetryAuthenticate(ctx context.Context, method, uri s
 	return err
 }
 
+//SetToken function sets token
 func (c *Client) SetToken(token string) {
 	c.api.SetToken(token)
 }
 
+//GetToken function gets token
 func (c *Client) GetToken() string {
 	return c.api.GetToken()
 }
@@ -145,7 +147,7 @@ func NewClient(ctx context.Context) (client *Client, err error) {
 
 // NewClientWithArgs initialize the new REST Client with the given arguments.
 func NewClientWithArgs(ctx context.Context, endpoint string, insecure bool) (client *Client, err error) {
-	log := util.GetRunIdLogger(ctx)
+	log := util.GetRunIDLogger(ctx)
 	if showHTTP {
 		debug = true
 	}
@@ -171,7 +173,7 @@ func NewClientWithArgs(ctx context.Context, endpoint string, insecure bool) (cli
 
 	ac, err := api.New(ctx, endpoint, opts, debug)
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("Unable to create HTTP client %v", err))
+		return nil, fmt.Errorf("unable to create HTTP client %v", err)
 	}
 
 	client = &Client{

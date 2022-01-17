@@ -12,23 +12,30 @@ import (
 	"github.com/dell/gounity/util"
 )
 
+//FilesystemAccessType is integer
 type FilesystemAccessType int
 
+//FilesystemAccessType constants
 const (
 	BlockAccessType      FilesystemAccessType = 0 //Parameter not applicable for block
 	CheckpointAccessType FilesystemAccessType = 1 //Checkpoint access to enable access through a .ckpt folder in the file system.
 	ProtocolAccessType   FilesystemAccessType = 2 //Protocol access to enable access through a file share.
 )
 
+//SnapshotNotFoundErrorCode stores snapshot not found error code
 var SnapshotNotFoundErrorCode = "0x7d13005"
-var SnapshotNotFoundError = errors.New("Unable to find filesystem")
 
-type snapshot struct {
+//ErrorSnapshotNotFound stores Snapshot not found error
+var ErrorSnapshotNotFound = errors.New("Unable to find filesystem")
+
+//Snapshot structure
+type Snapshot struct {
 	client *Client
 }
 
-func NewSnapshot(client *Client) *snapshot {
-	return &snapshot{client}
+//NewSnapshot function returns snapshot
+func NewSnapshot(client *Client) *Snapshot {
+	return &Snapshot{client}
 }
 
 // CreateSnapshot creates a snapshot of a volume
@@ -41,12 +48,12 @@ func NewSnapshot(client *Client) *snapshot {
 // Returns:
 // - *types.Snapshot
 // - an error if create snapshot fails
-
-func (s *snapshot) CreateSnapshot(ctx context.Context, storageResourceID, snapshotName, description, retentionDuration string) (*types.Snapshot, error) {
+func (s *Snapshot) CreateSnapshot(ctx context.Context, storageResourceID, snapshotName, description, retentionDuration string) (*types.Snapshot, error) {
 	return s.CreateSnapshotWithFsAccesType(ctx, storageResourceID, snapshotName, description, retentionDuration, BlockAccessType)
 }
 
-func (s *snapshot) CreateSnapshotWithFsAccesType(ctx context.Context, storageResourceID, snapshotName, description, retentionDuration string, filesystemAccessType FilesystemAccessType) (*types.Snapshot, error) {
+//CreateSnapshotWithFsAccesType - Creates snashot with FsAccess type
+func (s *Snapshot) CreateSnapshotWithFsAccesType(ctx context.Context, storageResourceID, snapshotName, description, retentionDuration string, filesystemAccessType FilesystemAccessType) (*types.Snapshot, error) {
 	var createSnapshot types.CreateSnapshotParam
 	if len(storageResourceID) == 0 {
 		return nil, errors.New("storage Resource ID cannot be empty")
@@ -54,7 +61,7 @@ func (s *snapshot) CreateSnapshotWithFsAccesType(ctx context.Context, storageRes
 	var err error
 	createSnapshot.Name, err = util.ValidateResourceName(snapshotName, api.MaxResourceNameLength)
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("invalid snapshot name Error:%v", err))
+		return nil, fmt.Errorf("invalid snapshot name Error:%v", err)
 	}
 
 	if retentionDuration != "" {
@@ -74,30 +81,30 @@ func (s *snapshot) CreateSnapshotWithFsAccesType(ctx context.Context, storageRes
 	createSnapshot.FilesystemAccessType = int(filesystemAccessType)
 
 	snapshotResp := &types.Snapshot{}
-	err = s.client.executeWithRetryAuthenticate(ctx, http.MethodPost, fmt.Sprintf(api.UnityApiInstanceTypeResources, api.SnapAction), createSnapshot, snapshotResp)
+	err = s.client.executeWithRetryAuthenticate(ctx, http.MethodPost, fmt.Sprintf(api.UnityAPIInstanceTypeResources, api.SnapAction), createSnapshot, snapshotResp)
 	if err != nil {
 		return nil, err
 	}
 	return snapshotResp, nil
 }
 
-//Delete Snapshots acting as filesystem on array
-func (s *snapshot) DeleteFilesystemAsSnapshot(ctx context.Context, snapshotId string, sourceFs *types.Filesystem) error {
-	log := util.GetRunIdLogger(ctx)
+//DeleteFilesystemAsSnapshot - Delete Snapshots acting as filesystem on array
+func (s *Snapshot) DeleteFilesystemAsSnapshot(ctx context.Context, snapshotID string, sourceFs *types.Filesystem) error {
+	log := util.GetRunIDLogger(ctx)
 	deleteSourceFs := false
 	if strings.Contains(sourceFs.FileContent.Description, MarkFilesystemForDeletion) {
 		deleteSourceFs = true
 	}
-	err := s.DeleteSnapshot(ctx, snapshotId)
+	err := s.DeleteSnapshot(ctx, snapshotID)
 	if err != nil {
 		return err
 	}
 	if deleteSourceFs {
 		//Try deleting the marked filesystem for deletion
 		f := NewFilesystem(s.client)
-		err = f.DeleteFilesystem(ctx, sourceFs.FileContent.Id)
+		err = f.DeleteFilesystem(ctx, sourceFs.FileContent.ID)
 		if err != nil {
-			log.Warnf("Deletion of source filesystem: %s marked for deletion failed with error: %v", sourceFs.FileContent.Id, err)
+			log.Warnf("Deletion of source filesystem: %s marked for deletion failed with error: %v", sourceFs.FileContent.ID, err)
 		}
 	}
 	return nil
@@ -107,111 +114,110 @@ func (s *snapshot) DeleteFilesystemAsSnapshot(ctx context.Context, snapshotId st
 //
 // Parameters:
 //
-// - `snapshotId` : User need to provide snapshot CLI Id.
+// - `snapshotID` : User need to provide snapshot CLI Id.
 //
 // Returns:
 // - an error if delete snapshot fails
-func (s *snapshot) DeleteSnapshot(ctx context.Context, snapshotId string) error {
-	log := util.GetRunIdLogger(ctx)
-	if snapshotId == "" {
+func (s *Snapshot) DeleteSnapshot(ctx context.Context, snapshotID string) error {
+	log := util.GetRunIDLogger(ctx)
+	if snapshotID == "" {
 		return errors.New("snapshot ID cannot be empty")
 	}
 
-	deleteErr := s.client.executeWithRetryAuthenticate(ctx, http.MethodDelete, fmt.Sprintf(api.UnityApiGetResourceUri, api.SnapAction, snapshotId), nil, nil)
+	deleteErr := s.client.executeWithRetryAuthenticate(ctx, http.MethodDelete, fmt.Sprintf(api.UnityAPIGetResourceURI, api.SnapAction, snapshotID), nil, nil)
 	if deleteErr != nil {
-		return errors.New(fmt.Sprintf("Delete Snapshot Id-%s Failed: %v ", snapshotId, deleteErr))
+		return fmt.Errorf("delete Snapshot Id-%s Failed: %v ", snapshotID, deleteErr)
 	}
-	log.Debugf("Delete Snapshot ID-%s Successful", snapshotId)
+	log.Debugf("Delete Snapshot ID-%s Successful", snapshotID)
 	return nil
 }
 
-// ListSnapshot lists all snapshots based on Snapshot ID or source-volume-id
+// ListSnapshots lists all snapshots based on Snapshot ID or source-volume-id
 // Returns a chunk of data on a single page, as specified by the maxEntries and page (startToken) parameters.
-func (s *snapshot) ListSnapshots(ctx context.Context, startToken int, maxEntries int, sourceVolumeId, snapshotId string) ([]types.Snapshot, int, error) {
+func (s *Snapshot) ListSnapshots(ctx context.Context, startToken int, maxEntries int, sourceVolumeID, snapshotID string) ([]types.Snapshot, int, error) {
 	snapResp := &types.ListSnapshot{}
 
-	if snapshotId != "" {
-		snapshotUri := fmt.Sprintf(api.UnityApiGetResourceWithFieldsUri, api.SnapAction, snapshotId, SnapshotDisplayFields)
+	if snapshotID != "" {
+		snapshotURI := fmt.Sprintf(api.UnityAPIGetResourceWithFieldsURI, api.SnapAction, snapshotID, SnapshotDisplayFields)
 		snapshotResp := &types.Snapshot{}
-		err := s.client.executeWithRetryAuthenticate(ctx, http.MethodGet, snapshotUri, nil, snapshotResp)
+		err := s.client.executeWithRetryAuthenticate(ctx, http.MethodGet, snapshotURI, nil, snapshotResp)
 		if err != nil {
 			return nil, 0, nil
 		}
 		return []types.Snapshot{*snapshotResp}, 0, nil
-	} else {
-		nextToken := startToken + 1
-		snapshotUri := fmt.Sprintf(api.UnityApiInstanceTypeResourcesWithFields, api.SnapAction, SnapshotDisplayFields)
-		//Pagination will apply only for list all snapshots. If user provides snapshotId or sourceVolumeId then pagination will not apply
-		if sourceVolumeId == "" {
-			if maxEntries != 0 {
-				snapshotUri = fmt.Sprintf(snapshotUri+"&per_page=%d", maxEntries)
-
-				//startToken should exists only when maxEntries are present
-				if startToken != 0 {
-					snapshotUri = fmt.Sprintf(snapshotUri+"&page=%d", startToken)
-				}
-			}
-		}
-		err := s.client.executeWithRetryAuthenticate(ctx, http.MethodGet, snapshotUri, nil, snapResp)
-		if err != nil {
-			return nil, 0, err
-		}
-
-		var snapshots []types.Snapshot
-		if sourceVolumeId != "" {
-			for _, snapshot := range snapResp.Snapshots {
-				if snapshot.SnapshotContent.StorageResource.Id == sourceVolumeId {
-					snapshots = append(snapshots, snapshot)
-				}
-			}
-			return snapshots, 0, nil
-		}
-
-		return snapResp.Snapshots, nextToken, nil
 	}
+	nextToken := startToken + 1
+	snapshotURI := fmt.Sprintf(api.UnityAPIInstanceTypeResourcesWithFields, api.SnapAction, SnapshotDisplayFields)
+	//Pagination will apply only for list all snapshots. If user provides snapshotID or sourceVolumeID then pagination will not apply
+	if sourceVolumeID == "" {
+		if maxEntries != 0 {
+			snapshotURI = fmt.Sprintf(snapshotURI+"&per_page=%d", maxEntries)
+
+			//startToken should exists only when maxEntries are present
+			if startToken != 0 {
+				snapshotURI = fmt.Sprintf(snapshotURI+"&page=%d", startToken)
+			}
+		}
+	}
+	err := s.client.executeWithRetryAuthenticate(ctx, http.MethodGet, snapshotURI, nil, snapResp)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	var snapshots []types.Snapshot
+	if sourceVolumeID != "" {
+		for _, snapshot := range snapResp.Snapshots {
+			if snapshot.SnapshotContent.StorageResource.ID == sourceVolumeID {
+				snapshots = append(snapshots, snapshot)
+			}
+		}
+		return snapshots, 0, nil
+	}
+
+	return snapResp.Snapshots, nextToken, nil
 }
 
-// To find snapshot using snapshot-name
-func (s *snapshot) FindSnapshotByName(ctx context.Context, snapshotName string) (*types.Snapshot, error) {
-	log := util.GetRunIdLogger(ctx)
+//FindSnapshotByName - To find snapshot using snapshot-name
+func (s *Snapshot) FindSnapshotByName(ctx context.Context, snapshotName string) (*types.Snapshot, error) {
+	log := util.GetRunIDLogger(ctx)
 	snapshotName, err := util.ValidateResourceName(snapshotName, api.MaxResourceNameLength)
 	if err != nil {
 		return nil, err
 	}
 	snapshotResp := &types.Snapshot{}
-	err = s.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityApiGetResourceByNameWithFieldsUri, api.SnapAction, snapshotName, SnapshotDisplayFields), nil, snapshotResp)
+	err = s.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityAPIGetResourceByNameWithFieldsURI, api.SnapAction, snapshotName, SnapshotDisplayFields), nil, snapshotResp)
 	if err != nil {
 		if strings.Contains(err.Error(), SnapshotNotFoundErrorCode) {
-			return nil, SnapshotNotFoundError
+			return nil, ErrorSnapshotNotFound
 		}
-		return nil, errors.New(fmt.Sprintf("Unable to find Snapshot Name %s Error: %v", snapshotName, err))
+		return nil, fmt.Errorf("unable to find Snapshot Name %s Error: %v", snapshotName, err)
 	}
-	log.Debugf("Snapshot name: %s Id: %s", snapshotResp.SnapshotContent.Name, snapshotResp.SnapshotContent.ResourceId)
+	log.Debugf("Snapshot name: %s Id: %s", snapshotResp.SnapshotContent.Name, snapshotResp.SnapshotContent.ResourceID)
 	return snapshotResp, nil
 }
 
-// To find snapshot using snapshot-id
-func (s *snapshot) FindSnapshotById(ctx context.Context, snapshotId string) (*types.Snapshot, error) {
-	log := util.GetRunIdLogger(ctx)
-	if snapshotId == "" {
+//FindSnapshotByID - To find snapshot using snapshot-id
+func (s *Snapshot) FindSnapshotByID(ctx context.Context, snapshotID string) (*types.Snapshot, error) {
+	log := util.GetRunIDLogger(ctx)
+	if snapshotID == "" {
 		return nil, errors.New("snapshot ID cannot be empty")
 	}
 	snapshotResp := &types.Snapshot{}
-	err := s.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityApiGetResourceWithFieldsUri, api.SnapAction, snapshotId, SnapshotDisplayFields), nil, snapshotResp)
+	err := s.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityAPIGetResourceWithFieldsURI, api.SnapAction, snapshotID, SnapshotDisplayFields), nil, snapshotResp)
 	if err != nil {
 		if strings.Contains(err.Error(), SnapshotNotFoundErrorCode) {
-			return nil, SnapshotNotFoundError
+			return nil, ErrorSnapshotNotFound
 		}
-		return nil, errors.New(fmt.Sprintf("Unable to find Snapshot id %s Error: %v", snapshotId, err))
+		return nil, fmt.Errorf("unable to find Snapshot id %s Error: %v", snapshotID, err)
 	}
-	log.Debugf("Snapshot name: %s Id: %s", snapshotResp.SnapshotContent.Name, snapshotResp.SnapshotContent.ResourceId)
+	log.Debugf("Snapshot name: %s Id: %s", snapshotResp.SnapshotContent.Name, snapshotResp.SnapshotContent.ResourceID)
 	return snapshotResp, nil
 }
 
-// Modify Snapshot (currently used to disable auto-delete parameter)
-func (s *snapshot) ModifySnapshotAutoDeleteParameter(ctx context.Context, snapshotId string) error {
-	log := util.GetRunIdLogger(ctx)
-	if snapshotId == "" {
+//ModifySnapshotAutoDeleteParameter - Modify Snapshot (currently used to disable auto-delete parameter)
+func (s *Snapshot) ModifySnapshotAutoDeleteParameter(ctx context.Context, snapshotID string) error {
+	log := util.GetRunIDLogger(ctx)
+	if snapshotID == "" {
 		return errors.New("snapshot ID cannot be empty")
 	}
 
@@ -220,21 +226,21 @@ func (s *snapshot) ModifySnapshotAutoDeleteParameter(ctx context.Context, snapsh
 	}
 	snapshotResp := &types.Snapshot{}
 
-	err := s.client.executeWithRetryAuthenticate(ctx, http.MethodPost, fmt.Sprintf(api.UnityModifySnapshotUri, api.SnapAction, snapshotId), modifySnapshot, snapshotResp)
+	err := s.client.executeWithRetryAuthenticate(ctx, http.MethodPost, fmt.Sprintf(api.UnityModifySnapshotURI, api.SnapAction, snapshotID), modifySnapshot, snapshotResp)
 	if err != nil {
-		return errors.New(fmt.Sprintf("Unable to modify Snapshot %s Error: %v", snapshotId, err))
+		return fmt.Errorf("unable to modify Snapshot %s Error: %v", snapshotID, err)
 	}
-	log.Debugf("Changed AutoDelete to false for Snapshot name: %s Id: %s", snapshotResp.SnapshotContent.Name, snapshotResp.SnapshotContent.ResourceId)
+	log.Debugf("Changed AutoDelete to false for Snapshot name: %s Id: %s", snapshotResp.SnapshotContent.Name, snapshotResp.SnapshotContent.ResourceID)
 	return nil
 }
 
 //CopySnapshot - Creates a copy of the source snapshot which can be used for NFS export, and returns the ID of the copy snapshot
-func (s *snapshot) CopySnapshot(ctx context.Context, sourceSnapshotId, name string) (*types.Snapshot, error) {
+func (s *Snapshot) CopySnapshot(ctx context.Context, sourceSnapshotID, name string) (*types.Snapshot, error) {
 	if name == "" {
 		return nil, errors.New("Snapshot Name cannot be empty")
 	}
 
-	if sourceSnapshotId == "" {
+	if sourceSnapshotID == "" {
 		return nil, errors.New("Source Snapshot ID cannot be empty")
 	}
 
@@ -244,12 +250,12 @@ func (s *snapshot) CopySnapshot(ctx context.Context, sourceSnapshotId, name stri
 	}
 
 	snapsResp := &types.CopySnapshots{}
-	err := s.client.executeWithRetryAuthenticate(ctx, http.MethodPost, fmt.Sprintf(api.UnityCopySnapshotUri, api.SnapAction, sourceSnapshotId), copySnapshotReq, snapsResp)
+	err := s.client.executeWithRetryAuthenticate(ctx, http.MethodPost, fmt.Sprintf(api.UnityCopySnapshotURI, api.SnapAction, sourceSnapshotID), copySnapshotReq, snapsResp)
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("Unable to Copy Snapshot %s. Error: %v", sourceSnapshotId, err))
+		return nil, fmt.Errorf("unable to Copy Snapshot %s. Error: %v", sourceSnapshotID, err)
 	}
 
-	snapResp, err := s.FindSnapshotById(ctx, snapsResp.CopySnapshotsContent.Copies[0].Id)
+	snapResp, err := s.FindSnapshotByID(ctx, snapsResp.CopySnapshotsContent.Copies[0].ID)
 	if err != nil {
 		return nil, err
 	}
@@ -257,9 +263,9 @@ func (s *snapshot) CopySnapshot(ctx context.Context, sourceSnapshotId, name stri
 	return snapResp, nil
 }
 
-//Modify Snapshot's description and retention duration parameters
-func (s *snapshot) ModifySnapshot(ctx context.Context, snapshotId, description, retentionDuration string) error {
-	if snapshotId == "" {
+//ModifySnapshot - Modify Snapshot's description and retention duration parameters
+func (s *Snapshot) ModifySnapshot(ctx context.Context, snapshotID, description, retentionDuration string) error {
+	if snapshotID == "" {
 		return errors.New("snapshot ID cannot be empty")
 	}
 
@@ -278,9 +284,9 @@ func (s *snapshot) ModifySnapshot(ctx context.Context, snapshotId, description, 
 	}
 	snapshotResp := &types.Snapshot{}
 
-	err := s.client.executeWithRetryAuthenticate(ctx, http.MethodPost, fmt.Sprintf(api.UnityModifySnapshotUri, api.SnapAction, snapshotId), modifySnapshot, snapshotResp)
+	err := s.client.executeWithRetryAuthenticate(ctx, http.MethodPost, fmt.Sprintf(api.UnityModifySnapshotURI, api.SnapAction, snapshotID), modifySnapshot, snapshotResp)
 	if err != nil {
-		return errors.New(fmt.Sprintf("Unable to modify Snapshot %s Error: %v", snapshotId, err))
+		return fmt.Errorf("unable to modify Snapshot %s Error: %v", snapshotID, err)
 	}
 	return nil
 }

@@ -13,12 +13,13 @@ package gounity
 import (
 	"context"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"os"
 	"strconv"
 	"strings"
 	"testing"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 )
 
 func TestMetrics(t *testing.T) {
@@ -34,14 +35,14 @@ func getVolumeMetrics(t *testing.T) {
 		log.SetLevel(level)
 	}
 
-	queryId := -1
+	queryID := -1
 
 	fmt.Println("Begin - Realtime Volume Metrics Query")
 	defer func() {
 		fmt.Println("End - Realtime Volume Metrics Query")
 		// Clean up the query if it was created
-		if queryId != -1 {
-			err := testConf.metricsApi.DeleteRealTimeMetricsQuery(ctx, queryId)
+		if queryID != -1 {
+			err := testConf.metricsAPI.DeleteRealTimeMetricsQuery(ctx, queryID)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -58,7 +59,7 @@ func getVolumeMetrics(t *testing.T) {
 	}
 
 	interval := 5 // seconds
-	query, err := testConf.metricsApi.CreateRealTimeMetricsQuery(ctx, paths, interval)
+	query, err := testConf.metricsAPI.CreateRealTimeMetricsQuery(ctx, paths, interval)
 	if err != nil {
 		t.Fatal(err)
 		return
@@ -67,17 +68,17 @@ func getVolumeMetrics(t *testing.T) {
 	// Example result:
 	//	============== 1 ==============
 	//	Timestamp: 2021-04-08T13:42:50.000Z
-	//  QueryId:   71
+	//  QueryID:   71
 	//  Path:      sp.*.storage.lun.*.reads [spa = map[sv_108:0 sv_18:0 sv_19:0 sv_22:0 sv_23:0 sv_24:0 sv_25:0 sv_26:0 sv_27:0 sv_28:0 sv_29:0 sv_42:0 sv_43:0]]
 	//	Path:      sp.*.storage.lun.*.writes [spa = map[sv_108:0 sv_18:0 sv_19:0 sv_22:0 sv_23:0 sv_24:0 sv_25:0 sv_26:0 sv_27:0 sv_28:0 sv_29:0 sv_42:0 sv_43:0]]
 	//	Path:      sp.*.cpu.summary.busyTicks [spa = 243675336]
 	//	Path:      sp.*.cpu.summary.idleTicks [spa = 615488915]
 	//	================================
-	queryId = query.Content.Id
-	fmt.Printf("Created MetricsQuery %d. Waiting %d seconds before trying queries\n", queryId, interval)
+	queryID = query.Content.ID
+	fmt.Printf("Created MetricsQuery %d. Waiting %d seconds before trying queries\n", queryID, interval)
 	for i := 1; i <= 2; i++ {
 		time.Sleep(time.Duration(interval) * time.Second)
-		timeMetrics, err2 := testConf.metricsApi.GetMetricsCollection(ctx, queryId)
+		timeMetrics, err2 := testConf.metricsAPI.GetMetricsCollection(ctx, queryID)
 		if err2 != nil {
 			t.Fatal(err2)
 			return
@@ -87,7 +88,7 @@ func getVolumeMetrics(t *testing.T) {
 		for _, entry := range timeMetrics.Entries {
 			if doOnce {
 				fmt.Printf("Timestamp: %s\n", entry.Content.Timestamp)
-				fmt.Printf("QueryId:   %d\n", entry.Content.QueryId)
+				fmt.Printf("QueryID:   %d\n", entry.Content.QueryID)
 				doOnce = false
 			}
 			keyValues := make([]string, 0)

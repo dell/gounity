@@ -46,7 +46,7 @@ type Volume struct {
 
 //VolumeContent struct to capture volume properties
 type VolumeContent struct {
-	ResourceId             string               `json:"id"`
+	ResourceID             string               `json:"id"`
 	Name                   string               `json:"name,omitempty"`
 	Description            string               `json:"description,omitempty"`
 	Type                   int                  `json:"type,omitempty"`
@@ -66,14 +66,14 @@ type VolumeContent struct {
 	Health                 HealthContent        `json:"health,omitempty"`
 }
 
-//Parent Snapshot to capture Source Snapshot Id
+//ParentSnap to capture Source Snapshot ID
 type ParentSnap struct {
-	Id string `json:"id"`
+	ID string `json:"id"`
 }
 
 //Pool struct to capture Pool Id
 type Pool struct {
-	Id   string `json:"id"`
+	ID   string `json:"id"`
 	Name string `json:"name,omitempty"`
 }
 
@@ -89,16 +89,19 @@ type Link struct {
 	Href string `json:"href"`
 }
 
+//TenantInfo Struct to capture the Tenant Info
 type TenantInfo struct {
 	Entries []TenantEntry `json:"entries"`
 }
 
+//TenantEntry Struct to capture the Tenant Entry
 type TenantEntry struct {
 	Content TenantContent `json:"content"`
 }
 
+//TenantContent Struct to capture the Tenant Content
 type TenantContent struct {
-	Id string `json:"id"`
+	ID   string `json:"id"`
 	Name string `json:"name"`
 }
 
@@ -140,24 +143,24 @@ type HostContent struct {
 	Description     string       `json:"description,omitempty"`
 	FcInitiators    []Initiators `json:"fcHostInitiators,omitempty"`
 	IscsiInitiators []Initiators `json:"iscsiHostInitiators,omitempty"`
-	IpPorts         []IpPorts    `json:"hostIPPorts,omitempty"`
+	IPPorts         []IPPorts    `json:"hostIPPorts,omitempty"`
 	Address         string       `json:"address,omitempty"`
 }
 
-//FcInitiators struct to capture Initiator Id
+//Initiators struct to capture Initiator ID
 type Initiators struct {
-	Id string `json:"id"`
+	ID string `json:"id"`
 }
 
-//IpPorts struct to capture IpPort Id
-type IpPorts struct {
-	Id      string `json:"id"`
+//IPPorts struct to capture IpPort ID
+type IPPorts struct {
+	ID      string `json:"id"`
 	Address string `json:"address,omitempty"`
 }
 
-//HostIpPort struct to capture Host IP port object
-type HostIpPort struct {
-	HostIpContent HostContent `json:"content"`
+//HostIPPort struct to capture Host IP port object
+type HostIPPort struct {
+	HostIPContent HostContent `json:"content"`
 }
 
 //ListHostInitiator struct to capture host initiators
@@ -172,21 +175,21 @@ type HostInitiator struct {
 
 //HostInitiatorContent struct to capture host initiator parameters
 type HostInitiatorContent struct {
-	Id          string        `json:"id"`
+	ID          string        `json:"id"`
 	Health      HealthContent `json:"health"`
 	Type        int           `json:"type"`
-	InitiatorId string        `json:"InitiatorId"`
+	InitiatorID string        `json:"InitiatorId"`
 	IsIgnored   bool          `json:"isIgnored"`
 	ParentHost  HostContent   `json:"parentHost"`
 	Paths       []Path        `json:"paths"`
 }
 
-//Path struct to capture Path Id
+//Path struct to capture Path ID
 type Path struct {
-	Id string `json:"id"`
+	ID string `json:"id"`
 }
 
-//Health struct to capture health status
+//HealthContent to capture health status
 type HealthContent struct {
 	Value          int      `json:"value"`
 	DescriptionIDs []string `json:"descriptionIds"`
@@ -205,7 +208,7 @@ type Snapshot struct {
 
 //SnapshotContent struct to capture snapshot parameters
 type SnapshotContent struct {
-	ResourceId      string          `json:"id"`
+	ResourceID      string          `json:"id"`
 	Name            string          `json:"name"`
 	Description     string          `json:"description,omitempty"`
 	StorageResource StorageResource `json:"storageResource,omitempty"`
@@ -229,19 +232,20 @@ type CopySnapshotsContent struct {
 	Copies []StorageResource `json:"copies,omitempty"`
 }
 
-//StorageResource struct to capture storage resource Id
+//StorageResource struct to capture storage resource ID
 type StorageResource struct {
-	Id   string `json:"id"`
+	ID   string `json:"id"`
 	Name string `json:"name,omitempty"`
 }
 
-//Struct to capture Storage Resource content
+//StorageResourceParameters struct to capture Storage Resource content
 type StorageResourceParameters struct {
 	StorageResourceContent StorageResourceContent `json:"content"`
 }
 
+//StorageResourceContent struct to capture Storage Resource content
 type StorageResourceContent struct {
-	Id         string          `json:"id"`
+	ID         string          `json:"id"`
 	Name       string          `json:"name,omitempty"`
 	Filesystem StorageResource `json:"filesystem,omitempty"`
 }
@@ -253,7 +257,7 @@ type IoLimitPolicy struct {
 
 //IoLimitPolicyContent struct to capture IoLimitPolicyContent parameters
 type IoLimitPolicyContent struct {
-	Id   string `json:"id"`
+	ID   string `json:"id"`
 	Name string `json:"name"`
 }
 
@@ -264,7 +268,7 @@ type Filesystem struct {
 
 //FileContent struct to capture filesystem parameters
 type FileContent struct {
-	Id                     string        `json:"id"`
+	ID                     string        `json:"id"`
 	Name                   string        `json:"name,omitempty"`
 	SizeTotal              uint64        `json:"sizeTotal,omitempty"`
 	Description            string        `json:"description,omitempty"`
@@ -284,7 +288,7 @@ type FileContent struct {
 
 //Share object to capture NFS Share object from FileContent
 type Share struct {
-	Id         string          `json:"id"`
+	ID         string          `json:"id"`
 	Name       string          `json:"name,omitempty"`
 	Path       string          `json:"path,omitempty"`
 	ParentSnap StorageResource `json:"snap,omitempty"`
@@ -297,7 +301,7 @@ type NFSShare struct {
 
 //NFSShareContent struct to capture NFS Share parameters
 type NFSShareContent struct {
-	Id                      string        `json:"id"`
+	ID                      string        `json:"id"`
 	Name                    string        `json:"name,omitempty"`
 	Filesystem              Pool          `json:"filesystem,omitempty"`
 	ReadOnlyHosts           []HostContent `json:"readOnlyHosts,omitempty"`
@@ -307,19 +311,21 @@ type NFSShareContent struct {
 	ExportPaths             []string      `json:"exportPaths,omitempty"`
 }
 
-//Struct to capture NAS Server object
+//NASServer struct to capture NAS Server object
 type NASServer struct {
 	NASServerContent NASServerContent `json:"content"`
 }
 
+//NASServerContent struct to capture NAS Server object
 type NASServerContent struct {
-	Id        string    `json:"id"`
+	ID        string    `json:"id"`
 	Name      string    `json:"name,omitempty"`
 	NFSServer NFSServer `json:"nfsServer,omitempty"`
 }
 
+//NFSServer struct to capture NFS Server object
 type NFSServer struct {
-	Id           string `json:"id"`
+	ID           string `json:"id"`
 	Name         string `json:"name,omitempty"`
 	NFSv3Enabled bool   `json:"nfsv3Enabled"`
 	NFSv4Enabled bool   `json:"nfsv4Enabled"`
@@ -363,9 +369,9 @@ type HostInitiatorPathContent struct {
 	FcPortID FcPortID `json:"fcPort"`
 }
 
-//FcPortID struct to capture FC port Id
+//FcPortID struct to capture FC port ID
 type FcPortID struct {
-	Id string `json:"id"`
+	ID string `json:"id"`
 }
 
 //FcPort struct to capture FC port object
@@ -373,7 +379,7 @@ type FcPort struct {
 	FcPortContent FcPortContent `json:"content"`
 }
 
-//FcPortContent struct to capture FC port Id
+//FcPortContent struct to capture FC port ID
 type FcPortContent struct {
 	Wwn string `json:"wwn"`
 }
@@ -390,7 +396,7 @@ type MetricQueryResponseContent struct {
 	Expiration     string   `json:"expiration"`
 	Interval       int      `json:"interval"`
 	Paths          []string `json:"paths"`
-	Id             int      `json:"id"`
+	ID             int      `json:"id"`
 }
 
 //MetricQueryCreateResponse a response from creating a MetricCollection query
@@ -402,7 +408,7 @@ type MetricQueryCreateResponse struct {
 
 //MetricResult is part of response of a MetricCollection query
 type MetricResult struct {
-	QueryId   int                    `json:"queryId"`
+	QueryID   int                    `json:"queryId"`
 	Path      string                 `json:"path"`
 	Timestamp string                 `json:"timestamp"`
 	Values    map[string]interface{} `json:"values"`
@@ -415,7 +421,7 @@ type MetricResultEntry struct {
 	Content MetricResult `json:"content"`
 }
 
-//MetricQueryRequest is response from querying a MetricCollection
+//MetricQueryResult is response from querying a MetricCollection
 type MetricQueryResult struct {
 	Base    string              `json:"base"`
 	Updated string              `json:"updated"`
@@ -424,7 +430,7 @@ type MetricQueryResult struct {
 
 //MetricContent is part of the response from /api/types/metric/instances
 type MetricContent struct {
-	Id int `json:"id"`
+	ID int `json:"id"`
 }
 
 //MetricEntries is part of the response from /api/types/metric/instances
@@ -439,7 +445,7 @@ type MetricPaths struct {
 
 //MetricInfo has all the details of instance of a Unity metric
 type MetricInfo struct {
-	Id                    int    `json:"id"`
+	ID                    int    `json:"id"`
 	Name                  string `json:"name"`
 	Path                  string `json:"path"`
 	Product               int    `json:"product"`

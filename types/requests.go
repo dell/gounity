@@ -2,26 +2,29 @@
 Copyright (c) 2019 Dell EMC Corporation
 All Rights Reserved
 */
+
 package types
 
 import "fmt"
 
-// Struct to capture the Error information.
+//ErrorContent Struct to capture the Error information.
 type ErrorContent struct {
 	Message        []ErrorMessage `json:"messages"`
 	HTTPStatusCode int            `json:"httpStatusCode"`
 	ErrorCode      int            `json:"errorCode"`
 }
 
+//ErrorMessage Struct to cature error message
 type ErrorMessage struct {
 	EnUS string `json:"en-US"`
 }
 
+//Error Struct to cature error
 type Error struct {
 	ErrorContent ErrorContent `json:"error"`
 }
 
-// Return the error message from the given Error object.
+//Error function returns the error message.
 func (e Error) Error() string {
 	return fmt.Sprintf("%v", e.ErrorContent.Message)
 }
@@ -31,34 +34,34 @@ func (e Error) Error() string {
 //	ID string `json:"id"`
 //}
 
-//Struct to capture Tiering Policy for Create Volume
+//FastVPParameters Struct to capture Tiering Policy for Create Volume
 type FastVPParameters struct {
 	TieringPolicy int `json:"tieringPolicy"`
 }
 
-//Struct to capture Storage pool Id for Create Volume
+//StoragePoolID Struct to capture Storage pool ID for Create Volume
 type StoragePoolID struct {
-	PoolId string `json:"id"`
+	PoolID string `json:"id"`
 }
 
-//Struct to capture Nas server Id for Create Volume
+//NasServerID Struct to capture Nas server ID for Create Volume
 type NasServerID struct {
 	NasServerID string `json:"id"`
 }
 
-// Struct to capture the Lun create Params
+//LunCreateParam Struct to capture the Lun create Params
 type LunCreateParam struct {
 	Name          string         `json:"name"`
 	Description   string         `json:"description,omitempty"`
 	LunParameters *LunParameters `json:"lunParameters"`
 }
 
-// Struct to capture the Tenants
+//Tenants Struct to capture the Tenants
 type Tenants struct {
-	TenantId string `json:"id"`
+	TenantID string `json:"id"`
 }
 
-// Struct to capture the Lun properties
+//LunParameters Struct to capture the Lun properties
 type LunParameters struct {
 	Name                   string                 `json:"name,omitempty"`
 	Size                   uint64                 `json:"size,omitempty"`
@@ -70,14 +73,14 @@ type LunParameters struct {
 	IoLimitParameters      *HostIoLimitParameters `json:"ioLimitParameters,omitempty"`
 }
 
-// Struct to capture the Filesystem create Params
+//FsCreateParam Struct to capture the Filesystem create Params
 type FsCreateParam struct {
 	Name         string        `json:"name"`
 	Description  string        `json:"description,omitempty"`
 	FsParameters *FsParameters `json:"fsParameters"`
 }
 
-// Struct to capture the File system properties
+//FsParameters Struct to capture the File system properties
 type FsParameters struct {
 	Size                   uint64                 `json:"size,omitempty"`
 	IsThinEnabled          string                 `json:"isThinEnabled,omitempty"`
@@ -92,129 +95,141 @@ type FsParameters struct {
 	FileEventSettings      FileEventSettings      `json:"fileEventSettings,omitempty"`
 }
 
-//Struct to capture expand Filesystem parameters
+//FsExpandParameters Struct to capture expand Filesystem parameters
 type FsExpandParameters struct {
 	Size uint64 `json:"size"`
 }
 
-//Struct to expand Filesystem
+//FsExpandModifyParam Struct to expand Filesystem
 type FsExpandModifyParam struct {
 	FsParameters *FsExpandParameters `json:"fsParameters"`
 }
 
-// Struct to modify Filesystem parameters
+//FsModifyParameters Struct to modify Filesystem parameters
 type FsModifyParameters struct {
 	NFSShares   *[]NFSShareCreateParam `json:"nfsShareCreate,omitempty"`
 	Description string                 `json:"description,omitempty"`
 }
 
-// Struct to capture NFS Share Create parameters
+//NFSShareCreateParam Struct to capture NFS Share Create parameters
 type NFSShareCreateParam struct {
 	Name               string              `json:"name"`
 	Path               string              `json:"path"`
 	NFSShareParameters *NFSShareParameters `json:"nfsShareParameters,omitempty"`
 }
 
+//NFSShareCreateFromSnapParam Struct to capture create NFS share from snapshot parameters
 type NFSShareCreateFromSnapParam struct {
 	Name          string            `json:"name"`
 	Path          string            `json:"path"`
 	DefaultAccess string            `json:"defaultAccess,omitempty"`
-	Snapshot      SnapshotIdContent `json:"snap"`
+	Snapshot      SnapshotIDContent `json:"snap"`
 }
 
-//Struct to modify NFS Share parameters
+//NFSShareModify Struct to modify NFS Share parameters
 type NFSShareModify struct {
 	NFSSharesModifyContent *[]NFSShareModifyContent `json:"nfsShareModify,omitempty"`
 }
 
+//NFSShareCreateFromSnapModify Struct to modify NFS Share created from snapshot parameters
 type NFSShareCreateFromSnapModify struct {
 	DefaultAccess           string           `json:"defaultAccess,omitempty"`
-	ReadOnlyHosts           *[]HostIdContent `json:"readOnlyHosts,omitempty"`
-	ReadWriteHosts          *[]HostIdContent `json:"readWriteHosts,omitempty"`
-	ReadOnlyRootAccessHosts *[]HostIdContent `json:"readOnlyRootAccessHosts,omitempty"`
-	RootAccessHosts         *[]HostIdContent `json:"rootAccessHosts,omitempty"`
+	ReadOnlyHosts           *[]HostIDContent `json:"readOnlyHosts,omitempty"`
+	ReadWriteHosts          *[]HostIDContent `json:"readWriteHosts,omitempty"`
+	ReadOnlyRootAccessHosts *[]HostIDContent `json:"readOnlyRootAccessHosts,omitempty"`
+	RootAccessHosts         *[]HostIDContent `json:"rootAccessHosts,omitempty"`
 }
 
-//Struct to modify NFS Share parameters
+//NFSShareDelete Struct to modify NFS Share parameters
 type NFSShareDelete struct {
 	NFSSharesDeleteContent *[]NFSShareModifyContent `json:"nfsShareDelete,omitempty"`
 }
 
-//Struct to capture NFS Share modify content
+//NFSShareModifyContent Struct to capture NFS Share modify content
 type NFSShareModifyContent struct {
 	NFSShare           *StorageResourceParam `json:"nfsShare,omitempty"`
 	NFSShareParameters *NFSShareParameters   `json:"nfsShareParameters,omitempty"`
 }
 
-// Struct to capture NFS Share properties
+//NFSShareParameters Struct to capture NFS Share properties
 type NFSShareParameters struct {
 	DefaultAccess           string           `json:"defaultAccess,omitempty"`
-	ReadOnlyHosts           *[]HostIdContent `json:"readOnlyHosts,omitempty"`
-	ReadWriteHosts          *[]HostIdContent `json:"readWriteHosts,omitempty"`
-	ReadOnlyRootAccessHosts *[]HostIdContent `json:"readOnlyRootAccessHosts,omitempty"`
-	RootAccessHosts         *[]HostIdContent `json:"rootAccessHosts,omitempty"`
+	ReadOnlyHosts           *[]HostIDContent `json:"readOnlyHosts,omitempty"`
+	ReadWriteHosts          *[]HostIDContent `json:"readWriteHosts,omitempty"`
+	ReadOnlyRootAccessHosts *[]HostIDContent `json:"readOnlyRootAccessHosts,omitempty"`
+	RootAccessHosts         *[]HostIDContent `json:"rootAccessHosts,omitempty"`
 }
 
-// Struct to capture File event settings
+//FileEventSettings Struct to capture File event settings
 type FileEventSettings struct {
 	IsCIFSEnabled bool `json:"isCIFSEnabled"`
 	IsNFSEnabled  bool `json:"isNFSEnabled"`
 }
 
+//LunExpandParameters to capture Lun expand parameters
 type LunExpandParameters struct {
 	Size uint64 `json:"size,omitempty"`
 }
+
+//LunHostAccessParameters to capture Lun Host Access parameters
 type LunHostAccessParameters struct {
 	HostAccess *[]HostAccess `json:"hostAccess,omitempty"`
 }
 
-// Struct to capture Host Request
+//HostCreateParam Struct to capture Host Request
 type HostCreateParam struct {
-	Type        string  `json:"type"`
-	Name        string  `json:"name"`
-	Description string  `json:"description"`
-	OsType      string  `json:"osType"`
-	Tenant	   *Tenants `json:"tenant,omitempty"`
-
+	Type        string   `json:"type"`
+	Name        string   `json:"name"`
+	Description string   `json:"description"`
+	OsType      string   `json:"osType"`
+	Tenant      *Tenants `json:"tenant,omitempty"`
 }
 
-type HostIdContent struct {
+//HostIDContent Struct to capture Host ID Content
+type HostIDContent struct {
 	ID string `json:"id"`
 }
 
-// Struct to capture Host Ip Pot Request
-type HostIpPortCreateParam struct {
-	HostIdContent *HostIdContent `json:"host"`
+//HostIPPortCreateParam Struct to capture Host IP Pot Request
+type HostIPPortCreateParam struct {
+	HostIDContent *HostIDContent `json:"host"`
 	Address       string         `json:"address"`
 }
 
+//HostInitiatorCreateParam Struct to capture Host Initiator create parameters
 type HostInitiatorCreateParam struct {
-	HostIdContent *HostIdContent `json:"host"`
+	HostIDContent *HostIDContent `json:"host"`
 	InitiatorType InitiatorType  `json:"initiatorType"`
 	InitiatorWwn  string         `json:"initiatorWWNorIqn"`
 }
 
+//HostInitiatorModifyParam Struct to capture Host Initiator modify parameters
 type HostInitiatorModifyParam struct {
-	HostIdContent *HostIdContent `json:"host"`
+	HostIDContent *HostIDContent `json:"host"`
 }
 
+//HostAccess Struct to capture Host access parameters
 type HostAccess struct {
-	HostIdContent *HostIdContent `json:"host"`
+	HostIDContent *HostIDContent `json:"host"`
 	AccessMask    string         `json:"accessMask,omitempty"`
 }
 
+//LunModifyParam Struct to capture Lun modify parameters
 type LunModifyParam struct {
 	LunParameters *LunParameters `json:"lunParameters"`
 }
 
+//LunExpandModifyParam Struct to capture Lun expand modify parameters
 type LunExpandModifyParam struct {
 	LunParameters *LunExpandParameters `json:"lunParameters"`
 }
 
+//LunHostAccessModifyParam Struct to capture Lun host access modify parameters
 type LunHostAccessModifyParam struct {
 	LunHostAccessParameters *LunHostAccessParameters `json:"lunParameters"`
 }
 
+//CreateSnapshotParam struct to capture create snapshot parameters
 type CreateSnapshotParam struct {
 	Name                 string                `json:"name,omitempty"`
 	StorageResource      *StorageResourceParam `json:"storageResource,omitempty"`
@@ -224,30 +239,37 @@ type CreateSnapshotParam struct {
 	FilesystemAccessType int                   `json:"filesystemAccessType,omitempty"`
 }
 
+//CopySnapshot struct to capture Copy snapshot parameters
 type CopySnapshot struct {
 	Name  string `json:"copyName,omitempty"`
 	Child bool   `json:"child"`
 }
 
+//StorageResourceParam struct to capture storage resource parameters
 type StorageResourceParam struct {
 	ID string `json:"id"`
 }
 
+//HostIoLimitParameters struct to capture HostIO Limit parameters
 type HostIoLimitParameters struct {
 	IoLimitPolicyParam *IoLimitPolicyParam `json:"ioLimitPolicy"`
 }
 
+//IoLimitPolicyParam struct to capture IOLimit Policy Parameters
 type IoLimitPolicyParam struct {
-	Id string `json:"id"`
+	ID string `json:"id"`
 }
 
-type SnapshotIdContent struct {
-	Id string `json:"id"`
+//SnapshotIDContent struct to capture Snapshot ID Content
+type SnapshotIDContent struct {
+	ID string `json:"id"`
 }
 
+//CreateLunThinCloneParam struct to capture Create LUN thin clone Parameters
 type CreateLunThinCloneParam struct {
-	SnapIdContent *SnapshotIdContent `json:"snap"`
+	SnapIDContent *SnapshotIDContent `json:"snap"`
 	Name          string             `json:"name"`
 }
 
+//InitiatorType is string Type
 type InitiatorType string

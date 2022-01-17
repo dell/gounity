@@ -2,6 +2,7 @@
 Copyright (c) 2019 Dell EMC Corporation
 All Rights Reserved
 */
+
 package gounity
 
 import (
@@ -17,50 +18,53 @@ import (
 	"github.com/dell/gounity/types"
 )
 
-type host struct {
+//Host Structure
+type Host struct {
 	client *Client
 }
 
+//Host not found error variables
 var (
-	HostNotFoundError          = errors.New("unable to find host")
-	MultipleHostFoundError     = errors.New("Found multiple hosts with same name. Delete the duplicate entries on the array")
+	ErrorHostNotFound          = errors.New("unable to find host")
+	ErrorMultipleHostFound     = errors.New("Found multiple hosts with same name. Delete the duplicate entries on the array")
 	MultipleHostFoundErrorCode = "0x7d13158"
-	HostNotFoundErrorCode = "0x7d13005"
+	HostNotFoundErrorCode      = "0x7d13005"
 )
 
-func NewHost(client *Client) *host {
-	return &host{client}
+//NewHost function returns new host
+func NewHost(client *Client) *Host {
+	return &Host{client}
 }
 
-//Find the Host by it's name. If the Host is not found, an error will be returned.
-func (h *host) FindHostByName(ctx context.Context, hostName string) (*types.Host, error) {
-	log := util.GetRunIdLogger(ctx)
+//FindHostByName Finds the Host by it's name. If the Host is not found, an error will be returned.
+func (h *Host) FindHostByName(ctx context.Context, hostName string) (*types.Host, error) {
+	log := util.GetRunIDLogger(ctx)
 	if len(hostName) == 0 {
 		return nil, errors.New("host Name shouldn't be empty")
 	}
 	hResponse := &types.Host{}
-	log.Info("URI", fmt.Sprintf(api.UnityApiGetResourceByNameWithFieldsUri, api.HostAction, hostName, HostfieldsToQuery))
-	err := h.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityApiGetResourceByNameWithFieldsUri, api.HostAction, hostName, HostfieldsToQuery), nil, hResponse)
+	log.Info("URI", fmt.Sprintf(api.UnityAPIGetResourceByNameWithFieldsURI, api.HostAction, hostName, HostfieldsToQuery))
+	err := h.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityAPIGetResourceByNameWithFieldsURI, api.HostAction, hostName, HostfieldsToQuery), nil, hResponse)
 	if err != nil {
 		//Using the multiple host found error code(MultipleHostFoundErrorCode) for comparison
 		if strings.Contains(err.Error(), MultipleHostFoundErrorCode) {
-			return nil, MultipleHostFoundError
-		} else if strings.Contains(err.Error(), HostNotFoundErrorCode){
-			return nil, HostNotFoundError
-		} else{
+			return nil, ErrorMultipleHostFound
+		} else if strings.Contains(err.Error(), HostNotFoundErrorCode) {
+			return nil, ErrorHostNotFound
+		} else {
 			return nil, err
 		}
 	}
 	return hResponse, nil
 }
 
-//Create a new Host
-func (h *host) CreateHost(ctx context.Context, hostName string, tenantId string) (*types.Host, error) {
+//CreateHost Create a new Host
+func (h *Host) CreateHost(ctx context.Context, hostName string, tenantID string) (*types.Host, error) {
 	if len(hostName) == 0 {
 		return nil, errors.New("hostname shouldn't be empty")
 	}
-	tenantIdStruct := types.Tenants{
-		TenantId: tenantId,
+	tenantIDStruct := types.Tenants{
+		TenantID: tenantID,
 	}
 	hostReq := &types.HostCreateParam{
 		Type:        "1", //Initiator type hardcoded as "1" for FC Initiator
@@ -69,78 +73,78 @@ func (h *host) CreateHost(ctx context.Context, hostName string, tenantId string)
 		OsType:      "Linux",
 	}
 
-	if tenantId != "" {
-		hostReq.Tenant=&tenantIdStruct
+	if tenantID != "" {
+		hostReq.Tenant = &tenantIDStruct
 	}
 
 	hostResp := &types.Host{}
-	err := h.client.executeWithRetryAuthenticate(ctx, http.MethodPost, fmt.Sprintf(api.UnityApiInstanceTypeResources, api.HostAction), hostReq, hostResp)
+	err := h.client.executeWithRetryAuthenticate(ctx, http.MethodPost, fmt.Sprintf(api.UnityAPIInstanceTypeResources, api.HostAction), hostReq, hostResp)
 	if err != nil {
 		return nil, err
 	}
 	return hostResp, nil
 }
 
-//Delete Host. This function is used only in unit tests
-func (h *host) DeleteHost(ctx context.Context, hostName string) error {
+//DeleteHost function is used only in unit tests
+func (h *Host) DeleteHost(ctx context.Context, hostName string) error {
 	if len(hostName) == 0 {
-		return errors.New(fmt.Sprintf("Hostname shouldn't be empty."))
+		return fmt.Errorf("hostname shouldn't be empty")
 	}
 
 	hostResp := &types.Host{}
-	err := h.client.executeWithRetryAuthenticate(ctx, http.MethodDelete, fmt.Sprintf(api.UnityApiGetResourceByNameUri, api.HostAction, hostName), nil, hostResp)
+	err := h.client.executeWithRetryAuthenticate(ctx, http.MethodDelete, fmt.Sprintf(api.UnityAPIGetResourceByNameURI, api.HostAction, hostName), nil, hostResp)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-//Create Host IP Port
-func (h *host) CreateHostIpPort(ctx context.Context, hostId, ip string) (*types.HostIpPort, error) {
-	if len(hostId) == 0 {
+//CreateHostIPPort - Create Host IP Port
+func (h *Host) CreateHostIPPort(ctx context.Context, hostID, ip string) (*types.HostIPPort, error) {
+	if len(hostID) == 0 {
 		return nil, errors.New("host ID shouldn't be empty")
 	}
 
-	hostIdContent := types.HostIdContent{
-		ID: hostId,
+	hostIDContent := types.HostIDContent{
+		ID: hostID,
 	}
 
-	hostIpReq := &types.HostIpPortCreateParam{
-		HostIdContent: &hostIdContent,
+	hostIPReq := &types.HostIPPortCreateParam{
+		HostIDContent: &hostIDContent,
 		Address:       ip,
 	}
 
-	hostIpResp := &types.HostIpPort{}
-	err := h.client.executeWithRetryAuthenticate(ctx, http.MethodPost, fmt.Sprintf(api.UnityApiInstanceTypeResources, api.HostIPPortAction), hostIpReq, hostIpResp)
+	hostIPResp := &types.HostIPPort{}
+	err := h.client.executeWithRetryAuthenticate(ctx, http.MethodPost, fmt.Sprintf(api.UnityAPIInstanceTypeResources, api.HostIPPortAction), hostIPReq, hostIPResp)
 	if err != nil {
 		return nil, err
 	}
-	return hostIpResp, nil
+	return hostIPResp, nil
 }
 
-// FindHostIpPortById method to get host Ip port object from Unity by cli ID
-func (h *host) FindHostIpPortById(ctx context.Context, hostIpID string) (*types.HostIpPort, error) {
-	hostIpResp := &types.HostIpPort{}
-	err := h.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityApiGetResourceWithFieldsUri, api.HostIPPortAction, hostIpID, HostIpPortDisplayFields), nil, hostIpResp)
+// FindHostIPPortByID method to get host Ip port object from Unity by cli ID
+func (h *Host) FindHostIPPortByID(ctx context.Context, hostIPID string) (*types.HostIPPort, error) {
+	hostIPResp := &types.HostIPPort{}
+	err := h.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityAPIGetResourceWithFieldsURI, api.HostIPPortAction, hostIPID, HostIPPortDisplayFields), nil, hostIPResp)
 	if err != nil {
 		return nil, err
 	}
-	return hostIpResp, nil
+	return hostIPResp, nil
 }
 
 // ListHostInitiators lists all host initiators
-func (h *host) ListHostInitiators(ctx context.Context) ([]types.HostInitiator, error) {
+func (h *Host) ListHostInitiators(ctx context.Context) ([]types.HostInitiator, error) {
 	listInitiatorResp := &types.ListHostInitiator{}
-	hostInitiatorUri := api.UnityListHostInitiatorsUri + HostInitiatorsDisplayFields
-	err := h.client.executeWithRetryAuthenticate(ctx, http.MethodGet, hostInitiatorUri, nil, listInitiatorResp)
+	hostInitiatorURI := api.UnityListHostInitiatorsURI + HostInitiatorsDisplayFields
+	err := h.client.executeWithRetryAuthenticate(ctx, http.MethodGet, hostInitiatorURI, nil, listInitiatorResp)
 	if err != nil {
 		return nil, err
 	}
 	return listInitiatorResp.HostInitiator, nil
 }
 
-//Find Host Initiator
-func (h *host) FindHostInitiatorByName(ctx context.Context, wwnOrIqn string) (*types.HostInitiator, error) {
+//FindHostInitiatorByName - Find Host Initiator by name
+func (h *Host) FindHostInitiatorByName(ctx context.Context, wwnOrIqn string) (*types.HostInitiator, error) {
 	if len(wwnOrIqn) == 0 {
 		return nil, errors.New("host Initiator Name shouldn't be empty")
 	}
@@ -151,14 +155,14 @@ func (h *host) FindHostInitiatorByName(ctx context.Context, wwnOrIqn string) (*t
 	}
 
 	for _, i := range list {
-		if strings.ToLower(i.HostInitiatorContent.InitiatorId) == strings.ToLower(wwnOrIqn) {
+		if strings.ToLower(i.HostInitiatorContent.InitiatorID) == strings.ToLower(wwnOrIqn) {
 			return &i, nil
 		}
 	}
 
-	// @TODO The following code should work. Unity rest api having a bug querying host initiators by host initiatorId
+	// @TODO The following code should work. Unity rest api having a bug querying host initiators by host initiatorID
 	//hostInitiatorResp := &types.HostInitiator{}
-	//err := h.client.executeWithRetryAuthenticate(http.MethodGet, fmt.Sprintf(api.UnityApiGetResourceByPropertyWithFieldsUri, "hostInitiator", "initiatorId" ,wwnOrIqn, api.HostInitiatorsDisplayFields), nil, hostInitiatorResp)
+	//err := h.client.executeWithRetryAuthenticate(http.MethodGet, fmt.Sprintf(api.UnityApiGetResourceByPropertyWithFieldsUri, "hostInitiator", "initiatorID" ,wwnOrIqn, api.HostInitiatorsDisplayFields), nil, hostInitiatorResp)
 	//if err != nil {
 	//	log.Info("Unable to find host initiator:", wwnOrIqn)
 	//	return nil, errors.New(fmt.Sprintf("Unable to find host %s", wwnOrIqn))
@@ -167,25 +171,25 @@ func (h *host) FindHostInitiatorByName(ctx context.Context, wwnOrIqn string) (*t
 	return nil, errors.New("wwn or iqn not found")
 }
 
-//Find Host Initiator
-func (h *host) FindHostInitiatorById(ctx context.Context, wwnOrIqn string) (*types.HostInitiator, error) {
+//FindHostInitiatorByID - Find Host Initiator
+func (h *Host) FindHostInitiatorByID(ctx context.Context, wwnOrIqn string) (*types.HostInitiator, error) {
 	hostInitiatorResp := &types.HostInitiator{}
-	err := h.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityApiGetResourceWithFieldsUri, api.HostInitiatorAction, wwnOrIqn, HostInitiatorsDisplayFields), nil, hostInitiatorResp)
+	err := h.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityAPIGetResourceWithFieldsURI, api.HostInitiatorAction, wwnOrIqn, HostInitiatorsDisplayFields), nil, hostInitiatorResp)
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("Unable to find host %s : %v", wwnOrIqn, err))
+		return nil, fmt.Errorf("unable to find host %s : %v", wwnOrIqn, err)
 	}
 	return hostInitiatorResp, nil
 }
 
-//Create Host Initiator
-func (h *host) CreateHostInitiator(ctx context.Context, hostId, wwnOrIqn string, initiatorType types.InitiatorType) (*types.HostInitiator, error) {
-	log := util.GetRunIdLogger(ctx)
-	if len(hostId) == 0 {
+//CreateHostInitiator - Create Host Initiator
+func (h *Host) CreateHostInitiator(ctx context.Context, hostID, wwnOrIqn string, initiatorType types.InitiatorType) (*types.HostInitiator, error) {
+	log := util.GetRunIDLogger(ctx)
+	if len(hostID) == 0 {
 		return nil, errors.New("host ID shouldn't be empty")
 	}
 
 	if len(wwnOrIqn) == 0 {
-		return nil, errors.New(fmt.Sprintf("WwnOrIqn shouldn't be empty."))
+		return nil, fmt.Errorf("wwnOrIqn shouldn't be empty")
 	}
 
 	hostInitiatorResp := &types.HostInitiator{}
@@ -194,30 +198,30 @@ func (h *host) CreateHostInitiator(ctx context.Context, hostId, wwnOrIqn string,
 	initiator, err := h.FindHostInitiatorByName(ctx, wwnOrIqn)
 	log.Debugf("FindHostInitiatorByName: %v Error: %v", initiator, err)
 	if err != nil {
-		log.Debugf("Initiator not found. Adding new Initiator: %s to host: %s \n", wwnOrIqn, hostId)
-		hostIdContent := types.HostIdContent{
-			ID: hostId,
+		log.Debugf("Initiator not found. Adding new Initiator: %s to host: %s \n", wwnOrIqn, hostID)
+		hostIDContent := types.HostIDContent{
+			ID: hostID,
 		}
 
 		hostInitiatorReq := &types.HostInitiatorCreateParam{
-			HostIdContent: &hostIdContent,
+			HostIDContent: &hostIDContent,
 			InitiatorType: initiatorType,
 			InitiatorWwn:  wwnOrIqn,
 		}
-		err := h.client.executeWithRetryAuthenticate(ctx, http.MethodPost, fmt.Sprintf(api.UnityApiInstanceTypeResources, api.HostInitiatorAction), hostInitiatorReq, hostInitiatorResp)
+		err := h.client.executeWithRetryAuthenticate(ctx, http.MethodPost, fmt.Sprintf(api.UnityAPIInstanceTypeResources, api.HostInitiatorAction), hostInitiatorReq, hostInitiatorResp)
 		if err != nil {
-			return nil, errors.New(fmt.Sprintf("Create Host Initiator %s Error: %v", wwnOrIqn, err))
+			return nil, fmt.Errorf("create Host Initiator %s Error: %v", wwnOrIqn, err)
 		}
 	} else if initiator.HostInitiatorContent.ParentHost.ID == "" {
-		log.Debugf("Initiator found, but parent host is not added. Updating the existing Initiator: %s to host: %s \n", wwnOrIqn, hostId)
-		initiator, err = h.ModifyHostInitiator(ctx, hostId, initiator)
+		log.Debugf("Initiator found, but parent host is not added. Updating the existing Initiator: %s to host: %s \n", wwnOrIqn, hostID)
+		initiator, err = h.ModifyHostInitiator(ctx, hostID, initiator)
 		if err != nil {
-			return nil, errors.New(fmt.Sprintf("Modify Host Initiator %s Error: %v", wwnOrIqn, err))
+			return nil, fmt.Errorf("modify Host Initiator %s Error: %v", wwnOrIqn, err)
 		}
-	} else if initiator.HostInitiatorContent.ParentHost.ID == hostId {
-		log.Debugf("Initiator found and already added to existing host Initiator: %s to host: %s \n", wwnOrIqn, hostId)
-	} else if initiator.HostInitiatorContent.ParentHost.ID != hostId {
-		return nil, errors.New(fmt.Sprintf("Initiator found (%s), and attached to someother host (%s) instead of host: %s", wwnOrIqn, initiator.HostInitiatorContent.ParentHost.ID, hostId))
+	} else if initiator.HostInitiatorContent.ParentHost.ID == hostID {
+		log.Debugf("Initiator found and already added to existing host Initiator: %s to host: %s \n", wwnOrIqn, hostID)
+	} else if initiator.HostInitiatorContent.ParentHost.ID != hostID {
+		return nil, fmt.Errorf("initiator found (%s), and attached to someother host (%s) instead of host: %s", wwnOrIqn, initiator.HostInitiatorContent.ParentHost.ID, hostID)
 	} else {
 		log.Error("Initiator unknown operation.")
 	}
@@ -225,65 +229,66 @@ func (h *host) CreateHostInitiator(ctx context.Context, hostId, wwnOrIqn string,
 	return hostInitiatorResp, nil
 }
 
-//Modify Host Initiator - WILL BE DEPRECATED
-func (h *host) ModifyHostInitiator(ctx context.Context, hostId string, initiator *types.HostInitiator) (*types.HostInitiator, error) {
+//ModifyHostInitiator - WILL BE DEPRECATED
+func (h *Host) ModifyHostInitiator(ctx context.Context, hostID string, initiator *types.HostInitiator) (*types.HostInitiator, error) {
 	if initiator == nil {
 		return nil, errors.New("HostInitiator shouldn't be null")
 	}
-	
-	return h.ModifyHostInitiatorById(ctx, hostId, initiator.HostInitiatorContent.Id)
+
+	return h.ModifyHostInitiatorByID(ctx, hostID, initiator.HostInitiatorContent.ID)
 }
 
-// ModifyHostInitiatorById
-func (h *host) ModifyHostInitiatorById(ctx context.Context, hostId , initiatorId string) (*types.HostInitiator, error) {
+//ModifyHostInitiatorByID function modifies host initiator by ID
+func (h *Host) ModifyHostInitiatorByID(ctx context.Context, hostID, initiatorID string) (*types.HostInitiator, error) {
 
-	if hostId == "" {
+	if hostID == "" {
 		return nil, errors.New("Host ID shouldn't be null")
 	}
 
-	if initiatorId == "" {
+	if initiatorID == "" {
 		return nil, errors.New("Initiator ID shouldn't be null")
 	}
 
-	hostIdContent := types.HostIdContent{
-		ID: hostId,
+	hostIDContent := types.HostIDContent{
+		ID: hostID,
 	}
 	hostInitiatorReq := &types.HostInitiatorModifyParam{
-		HostIdContent: &hostIdContent,
+		HostIDContent: &hostIDContent,
 	}
 	hostInitiatorResp := &types.HostInitiator{}
-	err := h.client.executeWithRetryAuthenticate(ctx, http.MethodPost, fmt.Sprintf(api.UnityModifyHostInitiators, initiatorId), hostInitiatorReq, hostInitiatorResp)
+	err := h.client.executeWithRetryAuthenticate(ctx, http.MethodPost, fmt.Sprintf(api.UnityModifyHostInitiators, initiatorID), hostInitiatorReq, hostInitiatorResp)
 	if err != nil {
 		return nil, err
 	}
 	return hostInitiatorResp, nil
 }
 
-//Find Host Initiator
-func (h *host) FindHostInitiatorPathById(ctx context.Context, initiatorPathId string) (*types.HostInitiatorPath, error) {
+//FindHostInitiatorPathByID Finds Host Initiator
+func (h *Host) FindHostInitiatorPathByID(ctx context.Context, initiatorPathID string) (*types.HostInitiatorPath, error) {
 	hostInitiatorPathResp := &types.HostInitiatorPath{}
-	err := h.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityApiGetResourceWithFieldsUri, api.HostInitiatorPathAction, initiatorPathId, HostInitiatorPathDisplayFields), nil, hostInitiatorPathResp)
+	err := h.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityAPIGetResourceWithFieldsURI, api.HostInitiatorPathAction, initiatorPathID, HostInitiatorPathDisplayFields), nil, hostInitiatorPathResp)
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("Unable to find host initiator path %s : %v", initiatorPathId, err))
+		return nil, fmt.Errorf("unable to find host initiator path %s : %v", initiatorPathID, err)
 	}
 	return hostInitiatorPathResp, nil
 }
 
-//Find FC Port
-func (h *host) FindFcPortById(ctx context.Context, fcPortId string) (*types.FcPort, error) {
+//FindFcPortByID Finds FC Port
+func (h *Host) FindFcPortByID(ctx context.Context, fcPortID string) (*types.FcPort, error) {
 	fcPortResp := &types.FcPort{}
-	err := h.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityApiGetResourceWithFieldsUri, HostInitiatorPathDisplayFields, fcPortId, FcPortDisplayFields), nil, fcPortResp)
+	err := h.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityAPIGetResourceWithFieldsURI, HostInitiatorPathDisplayFields, fcPortID, FcPortDisplayFields), nil, fcPortResp)
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("Unable to find Fc port %s : %v", fcPortId, err))
+		return nil, fmt.Errorf("unable to find Fc port %s : %v", fcPortID, err)
 	}
 	return fcPortResp, nil
 }
 
-func (h *host) FindTenants(ctx context.Context) (*types.TenantInfo, error) {
+//FindTenants finds tenants
+func (h *Host) FindTenants(ctx context.Context) (*types.TenantInfo, error) {
 	tenantsResp := &types.TenantInfo{}
-	err := h.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityApiGetTenantUri,api.TenantAction,TenantDisplayFields), nil, tenantsResp)
+	err := h.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityAPIGetTenantURI, api.TenantAction, TenantDisplayFields), nil, tenantsResp)
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("Unable to find tenants : %v", err))
+		return nil, fmt.Errorf("unable to find tenants : %v", err)
 	}
-	return  tenantsResp, nil
+	return tenantsResp, nil
 }

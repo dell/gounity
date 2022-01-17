@@ -2,11 +2,11 @@
 Copyright (c) 2019 Dell EMC Corporation
 All Rights Reserved
 */
+
 package gounity
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/http"
 
@@ -16,23 +16,25 @@ import (
 	"github.com/dell/gounity/types"
 )
 
-type ipinterface struct {
+//Ipinterface structure
+type Ipinterface struct {
 	client *Client
 }
 
-func NewIpInterface(client *Client) *ipinterface {
-	return &ipinterface{client}
+//NewIPInterface returns IP interface
+func NewIPInterface(client *Client) *Ipinterface {
+	return &Ipinterface{client}
 }
 
 //ListIscsiIPInterfaces - List the IpnInterfaces configured on the array
-func (f *ipinterface) ListIscsiIPInterfaces(ctx context.Context) ([]types.IPInterfaceEntries, error) {
+func (f *Ipinterface) ListIscsiIPInterfaces(ctx context.Context) ([]types.IPInterfaceEntries, error) {
 
-	log := util.GetRunIdLogger(ctx)
+	log := util.GetRunIDLogger(ctx)
 	hResponse := &types.ListIPInterfaces{}
-	log.Debugf("URI: "+api.UnityApiInstanceTypeResourcesWithFields, api.IPInterface, IscsiIPFields)
-	err := f.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityApiInstanceTypeResourcesWithFields, api.IPInterface, IscsiIPFields), nil, hResponse)
+	log.Debugf("URI: "+api.UnityAPIInstanceTypeResourcesWithFields, api.IPInterface, IscsiIPFields)
+	err := f.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityAPIInstanceTypeResourcesWithFields, api.IPInterface, IscsiIPFields), nil, hResponse)
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("Unable to list Ip Interfaces %v", err))
+		return nil, fmt.Errorf("unable to list Ip Interfaces %v", err)
 	}
 	var iscsiInterfaces []types.IPInterfaceEntries
 	for _, ipInterface := range hResponse.Entries {
