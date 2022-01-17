@@ -24,7 +24,7 @@ type Error struct {
 	ErrorContent ErrorContent `json:"error"`
 }
 
-//Error funtion returns the error message.
+//Error function returns the error message.
 func (e Error) Error() string {
 	return fmt.Sprintf("%v", e.ErrorContent.Message)
 }
