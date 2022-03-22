@@ -67,7 +67,7 @@ func (m *Metrics) GetAllRealTimeMetricPaths(ctx context.Context) error {
 func (m *Metrics) GetMetricsCollection(ctx context.Context, queryID int) (*types.MetricQueryResult, error) {
 	log := util.GetRunIDLogger(ctx)
 
-	filter := fmt.Sprintf("queryID eq %d", queryID)
+	filter := fmt.Sprintf("queryId eq %d", queryID)
 	queryURI := fmt.Sprintf(api.UnityInstancesFilter, api.UnityMetricQueryResult, url.QueryEscape(filter))
 	log.Info("GetMetricsCollection: ", queryURI)
 
