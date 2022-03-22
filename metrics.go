@@ -63,7 +63,7 @@ func (m *Metrics) GetAllRealTimeMetricPaths(ctx context.Context) error {
 
 //GetMetricsCollection gets Unity MetricsCollection of the provided 'queryID'.
 // - The MetricCollection should exist already or you can create one using CreateXXXMetricsQuery.
-// - Example: GET /api/types/metricQueryResult/instances?filter=queryID eq 37
+// - Example: GET /api/types/metricQueryResult/instances?filter=queryId eq 37
 func (m *Metrics) GetMetricsCollection(ctx context.Context, queryID int) (*types.MetricQueryResult, error) {
 	log := util.GetRunIDLogger(ctx)
 
