@@ -11,6 +11,9 @@ var fsName string
 var fsID string
 var nfsShareName string
 var nfsShareID string
+var storageResourceID string
+var snapshotID string
+var nfsShareIDBySnap string
 var ctx context.Context
 
 const (
@@ -23,6 +26,7 @@ func TestFilesystem(t *testing.T) {
 	now := time.Now()
 	timeStamp := now.Format("20060102150405")
 	fsName = "Unit-test-fs-" + timeStamp
+	snapName = "Unit-test-snapshot-" + timeStamp
 	ctx = context.Background()
 
 	findNasServerTest(t)
@@ -31,6 +35,7 @@ func TestFilesystem(t *testing.T) {
 	createNfsShareTest(t)
 	findNfsShareTest(t)
 	modifyNfsShareTest(t)
+	updateDescriptionTest(t)
 	deleteNfsShareTest(t)
 	expandFilesystemTest(t)
 	deleteFilesystemTest(t)
@@ -112,8 +117,13 @@ func findFilesystemTest(t *testing.T) {
 		t.Fatalf("Find filesystem by Id failed: %v", err)
 	}
 
-	fsID = filesystem.FileContent.ID
+	fsID, err = testConf.fileAPI.GetFilesystemIDFromResID(ctx, filesystem.FileContent.StorageResource.ID)
+	if err != nil {
+		t.Fatalf("Find filesystem by Resource Id failed: %v", err)
+	}
+
 	nfsShareName = NFSShareNamePrefix + filesystem.FileContent.Name
+	storageResourceID = filesystem.FileContent.StorageResource.ID
 
 	fmt.Println("Filesystem ID: " + fsID)
 
@@ -130,6 +140,11 @@ func findFilesystemTest(t *testing.T) {
 		t.Fatal("Find filesystem by Id - Negative case failed")
 	}
 
+	_, err = testConf.fileAPI.GetFilesystemIDFromResID(ctx, fsNameTemp)
+	if err == nil {
+		t.Fatalf("Find filesystem by Resource Id - Negative case failed")
+	}
+
 	//Test case :  GET using empty fsName/ID
 	fsNameTemp = ""
 
@@ -143,6 +158,11 @@ func findFilesystemTest(t *testing.T) {
 		t.Fatal("Find filesystem by Id using empty fsID - Negative case failed")
 	}
 
+	_, err = testConf.fileAPI.GetFilesystemIDFromResID(ctx, fsNameTemp)
+	if err == nil {
+		t.Fatalf("Find filesystem by Resource Id failed: %v", err)
+	}
+
 	fmt.Println("Find Filesystem test successul")
 }
 
@@ -154,6 +174,21 @@ func createNfsShareTest(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Create NFS Share failed: %v", err)
 	}
+
+	//Test case : Create NFS share using snapshot
+	snapshot, err := testConf.snapAPI.CreateSnapshot(ctx, storageResourceID, snapName, "Snapshot Description", "")
+	if err != nil {
+		t.Fatalf("Create snapshot of filesystem failed: %v", err)
+	}
+
+	snapshotID = snapshot.SnapshotContent.ResourceID
+
+	nfsShareBySnap, err := testConf.fileAPI.CreateNFSShareFromSnapshot(ctx, nfsShareName+"_by_snap", NFSShareLocalPath, snapshotID, NoneDefaultAccess)
+	if err != nil {
+		t.Fatalf("Create NFS Share from snapshot failed: %v", err)
+	}
+
+	nfsShareIDBySnap = nfsShareBySnap.NFSShareContent.ID
 
 	//Test case :  Create using invalid fsID
 	fsIDTemp := "dummy-fs-1"
@@ -172,6 +207,23 @@ func createNfsShareTest(t *testing.T) {
 	_, err = testConf.fileAPI.CreateNFSShare(ctx, nfsShareNameTemp, NFSShareLocalPath, fsID, NoneDefaultAccess)
 	if err == nil {
 		t.Fatalf("Create NFS Share with empty share name - Negative case failed")
+	}
+
+	snapshotIDTemp := ""
+	_, err = testConf.fileAPI.CreateNFSShareFromSnapshot(ctx, nfsShareName+"_by_snap", NFSShareLocalPath, snapshotIDTemp, NoneDefaultAccess)
+	if err == nil {
+		t.Fatalf("Create NFS Share from snapshot with empty snapshot Id case failed: %v", err)
+	}
+
+	snapshotIDTemp = "dummy_snap_1"
+	_, err = testConf.fileAPI.CreateNFSShareFromSnapshot(ctx, nfsShareName+"_by_snap", NFSShareLocalPath, snapshotIDTemp, NoneDefaultAccess)
+	if err == nil {
+		t.Fatalf("Create NFS Share from snapshot with invalid snapshot Id case failed: %v", err)
+	}
+
+	_, err = testConf.fileAPI.CreateNFSShareFromSnapshot(ctx, nfsShareName+"_by_snap", NFSShareLocalPath, snapshotID, NoneDefaultAccess)
+	if err == nil {
+		t.Fatalf("Create NFS Share from snapshot with an existisng nfs share name case failed: %v", err)
 	}
 
 	fmt.Println("Create NFS Share Test Successful")
@@ -256,6 +308,28 @@ func modifyNfsShareTest(t *testing.T) {
 		t.Fatalf("Modify NFS Share by name failed: %v", err)
 	}
 
+	//Test cases : Modify NFS share created from snapshot
+
+	err = testConf.fileAPI.ModifyNFSShareCreatedFromSnapshotHostAccess(ctx, nfsShareIDBySnap, hostIDList, ReadWriteRootAccessType)
+	if err != nil {
+		t.Fatalf("Modify NFS Share created by snapshot failed: %v", err)
+	}
+
+	err = testConf.fileAPI.ModifyNFSShareCreatedFromSnapshotHostAccess(ctx, nfsShareIDBySnap, hostIDList, ReadOnlyRootAccessType)
+	if err != nil {
+		t.Fatalf("Modify NFS Share created by snapshot failed: %v", err)
+	}
+
+	err = testConf.fileAPI.ModifyNFSShareCreatedFromSnapshotHostAccess(ctx, nfsShareIDBySnap, hostIDList, ReadWriteAccessType)
+	if err != nil {
+		t.Fatalf("Modify NFS Share created by snapshot failed: %v", err)
+	}
+
+	err = testConf.fileAPI.ModifyNFSShareCreatedFromSnapshotHostAccess(ctx, nfsShareIDBySnap, hostIDList, ReadOnlyAccessType)
+	if err != nil {
+		t.Fatalf("Modify NFS Share created by snapshot failed: %v", err)
+	}
+
 	fsIDTemp := "dummy-fs-1"
 	err = testConf.fileAPI.ModifyNFSShareHostAccess(ctx, fsIDTemp, nfsShareID, hostIDList, ReadWriteRootAccessType)
 	if err == nil {
@@ -268,7 +342,39 @@ func modifyNfsShareTest(t *testing.T) {
 		t.Fatalf("Modify NFS Share with empty fs ID - Negative case Failed")
 	}
 
+	nfsShareIDBySnapTemp := ""
+	err = testConf.fileAPI.ModifyNFSShareCreatedFromSnapshotHostAccess(ctx, nfsShareIDBySnapTemp, hostIDList, ReadOnlyAccessType)
+	if err == nil {
+		t.Fatalf("Modify NFS Share created by snapshot failed: %v", err)
+	}
+
+	nfsShareIDBySnapTemp = "dummy-nsf-share-1"
+	err = testConf.fileAPI.ModifyNFSShareCreatedFromSnapshotHostAccess(ctx, nfsShareIDBySnapTemp, hostIDList, ReadOnlyAccessType)
+	if err == nil {
+		t.Fatalf("Modify NFS Share created by snapshot failed: %v", err)
+	}
+
 	fmt.Println("Modify NFS Share Test Successful")
+
+}
+
+func updateDescriptionTest(t *testing.T) {
+	fmt.Println("Begin - Update Description of Filesystem Test")
+
+	//Positive scenario is covered under DeleteFilesystemTest()
+	//Negative test case
+
+	filesystemIDTemp := ""
+	err := testConf.fileAPI.updateDescription(ctx, filesystemIDTemp, "Description of filesystem")
+	if err == nil {
+		t.Fatalf("Update filesystem description failed: %v", err)
+	}
+
+	filesystemIDTemp = "dummy_fs_1"
+	err = testConf.fileAPI.updateDescription(ctx, filesystemIDTemp, "Description of filesystem")
+	if err == nil {
+		t.Fatalf("Update filesystem description failed: %v", err)
+	}
 
 }
 
@@ -279,6 +385,11 @@ func deleteNfsShareTest(t *testing.T) {
 	err := testConf.fileAPI.DeleteNFSShare(ctx, fsID, nfsShareID)
 	if err != nil {
 		t.Fatalf("Delete NFS Share failed: %v", err)
+	}
+
+	err = testConf.fileAPI.DeleteNFSShareCreatedFromSnapshot(ctx, nfsShareIDBySnap)
+	if err != nil {
+		t.Fatalf("Delete NFS Share created by Snapshot failed: %v", err)
 	}
 
 	//Test case :  Delete using invalid shareID and fsID
@@ -295,6 +406,11 @@ func deleteNfsShareTest(t *testing.T) {
 		t.Fatalf("Delete NFS Share with invalid fs ID failed")
 	}
 
+	err = testConf.fileAPI.DeleteNFSShareCreatedFromSnapshot(ctx, nfsShareIDTemp)
+	if err == nil {
+		t.Fatalf("Delete NFS Share created by snapshot with invalid nfs share ID failed")
+	}
+
 	//Test case :  Delete using empty shareID and fsID
 
 	nfsShareIDTemp = ""
@@ -308,6 +424,11 @@ func deleteNfsShareTest(t *testing.T) {
 	err = testConf.fileAPI.DeleteNFSShare(ctx, fsIDTemp, nfsShareIDTemp)
 	if err == nil {
 		t.Fatalf("Delete NFS Share with empty fsID failed")
+	}
+
+	err = testConf.fileAPI.DeleteNFSShareCreatedFromSnapshot(ctx, nfsShareIDTemp)
+	if err == nil {
+		t.Fatalf("Delete NFS Share created by snapshot with empty nfs share ID failed")
 	}
 
 	//@TODO: Check and Add negative test cases
@@ -349,9 +470,22 @@ func deleteFilesystemTest(t *testing.T) {
 
 	fmt.Println("Begin - Delete Filesystem Test")
 
+	//Test case : Delete fail if snapshot exists
+
 	err := testConf.fileAPI.DeleteFilesystem(ctx, fsID)
 	if err != nil {
 		t.Fatalf("Delete filesystem failed: %v", err)
+	}
+
+	filesystem, err := testConf.fileAPI.FindFilesystemByID(ctx, fsID)
+	if err != nil {
+		t.Fatalf("Find filesystem by resource Id failed: %v", err)
+	}
+	fmt.Println("filesystem values ", filesystem)
+
+	err = testConf.snapAPI.DeleteFilesystemAsSnapshot(ctx, snapshotID, filesystem)
+	if err != nil {
+		t.Fatalf("Delete snapshot failed: %v", err)
 	}
 
 	//@TODO: Add negative cases after export - before unexport

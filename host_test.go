@@ -17,13 +17,11 @@ var iqnInitiatorID string
 var wwnInitiatorPathID string
 var fcPortID string
 var iqnInitiator *types.HostInitiator
-var tenantID string
 
 func TestHost(t *testing.T) {
 	now := time.Now()
 	timeStamp := now.Format("20060102150405")
 	hostName = "Unit-test-host-" + timeStamp
-	tenantID = "tenant_1"
 	ctx = context.Background()
 
 	createHostTest(t)
@@ -38,6 +36,7 @@ func TestHost(t *testing.T) {
 	modifyHostInitiatorByIDTest(t)
 	findHostInitiatorPathByIDTest(t)
 	findFcPortByIDTest(t)
+	findTenantsTest(t)
 	deleteHostTest(t)
 }
 
@@ -45,7 +44,7 @@ func createHostTest(t *testing.T) {
 
 	fmt.Println("Begin - Create Host Test")
 
-	host, err := testConf.hostAPI.CreateHost(ctx, hostName, tenantID)
+	host, err := testConf.hostAPI.CreateHost(ctx, hostName, testConf.tenant)
 	if err != nil {
 		t.Fatalf("Create Host failed: %v", err)
 	}
@@ -53,9 +52,15 @@ func createHostTest(t *testing.T) {
 
 	//Negative test cases
 	hostNameTemp := ""
-	_, err = testConf.hostAPI.CreateHost(ctx, hostNameTemp, tenantID)
+	_, err = testConf.hostAPI.CreateHost(ctx, hostNameTemp, testConf.tenant)
 	if err == nil {
 		t.Fatalf("Create Host with empty hostName - Negative case failed")
+	}
+
+	tenantIDTemp := "tenant_invalid_1"
+	_, err = testConf.hostAPI.CreateHost(ctx, hostNameTemp, tenantIDTemp)
+	if err == nil {
+		t.Fatalf("Create Host with invalid tenant ID - Negative case failed")
 	}
 
 	fmt.Println("Create Host Test Successful")
@@ -331,7 +336,7 @@ func findHostInitiatorPathByIDTest(t *testing.T) {
 
 	fmt.Println("Begin - Find Initiator Path Test")
 
-	////initiatorPathID := iqnInitiator.HostInitiatorContent.Paths[0].Id
+	////initiatorPathID := iqnInitiator.HostInitiatorContent.Paths[0].ID
 	hostInitiatorPath, err := testConf.hostAPI.FindHostInitiatorPathByID(ctx, wwnInitiatorPathID)
 	if err != nil {
 		//Change to log if required for vm execution
@@ -369,6 +374,17 @@ func findFcPortByIDTest(t *testing.T) {
 	fmt.Println("Find FC Port Test Successful")
 }
 
+func findTenantsTest(t *testing.T) {
+	fmt.Println("Begin - Find Tenants Test")
+
+	_, err := testConf.hostAPI.FindTenants(ctx)
+	if err != nil {
+		t.Fatalf("Find Tenants failed: %v", err)
+	}
+
+	fmt.Println("Find Tenants Test Successful")
+}
+
 func deleteHostTest(t *testing.T) {
 
 	fmt.Println("Begin - Delete Host Test")
@@ -388,6 +404,25 @@ func deleteHostTest(t *testing.T) {
 	err = testConf.hostAPI.DeleteHost(ctx, hostNameTemp)
 	if err == nil {
 		t.Fatalf("Delete Host with invalid hostName - Negative case failed")
+	}
+
+	//Create hosts with same name
+	hostNameTemp = "test_host_duplicate_names"
+	for apiCall := 0; apiCall < 2; apiCall++ {
+		_, err = testConf.hostAPI.CreateHost(ctx, hostNameTemp, "")
+		if err != nil {
+			t.Fatalf("Create Host failed: %v", err)
+		}
+	}
+
+	_, err = testConf.hostAPI.FindHostByName(ctx, hostNameTemp)
+	if err == nil {
+		t.Fatalf("Find Host with multiple instances with same name case failed: %v", err)
+	}
+
+	err = testConf.hostAPI.DeleteHost(ctx, hostNameTemp)
+	if err == nil {
+		t.Fatalf("Delete Host with multiple instances with same name case failed: %v", err)
 	}
 
 	fmt.Println("Delete Host Test Successful")

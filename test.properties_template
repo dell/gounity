@@ -12,4 +12,6 @@ UNITY_POOLID=
 UNITY_NAS_SERVER=
 GOUNITY_DEBUG=true
 HOST_IO_LIMIT_NAME=
+HOST_LIST_NAME= #Comma separated host names to be exported to volumes. Ex: test_host_1,test_host_2 
+TENANT_ID= #Single Tenant ID to be mapped to a host. Ex: tenant_1
 GOUNITY_ENDPOINT=

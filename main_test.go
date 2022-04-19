@@ -26,6 +26,8 @@ type testConfig struct {
 	iqn             string
 	hostIOLimitName string
 	nasServer       string
+	tenant          string
+	hostList        []string
 	volumeAPI       *Volume
 	hostAPI         *Host
 	poolAPI         *Storagepool
@@ -66,6 +68,8 @@ func TestMain(m *testing.M) {
 	testConf.nasServer = testProp["UNITY_NAS_SERVER"]
 	testConf.iqn = testProp["NODE_IQN"]
 	wwnStr := testProp["NODE_WWNS"]
+	hostListStr := testProp["HOST_LIST_NAME"]
+	testConf.tenant = testProp["TENANT_ID"]
 
 	os.Setenv("GOUNITY_ENDPOINT", testConf.unityEndPoint)
 	os.Setenv("X_CSI_UNITY_USER", testConf.username)
@@ -76,6 +80,7 @@ func TestMain(m *testing.M) {
 
 	testClient := getTestClient(ctx, testConf.unityEndPoint, testConf.username, testConf.password, testConf.unityEndPoint, insecure)
 	testConf.wwns = strings.Split(wwnStr, ",")
+	testConf.hostList = strings.Split(hostListStr, ",")
 
 	testConf.hostAPI = NewHost(testClient)
 	testConf.poolAPI = NewStoragePool(testClient)
