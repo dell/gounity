@@ -223,7 +223,7 @@ func createNfsShareTest(t *testing.T) {
 
 	_, err = testConf.fileAPI.CreateNFSShareFromSnapshot(ctx, nfsShareName+"_by_snap", NFSShareLocalPath, snapshotID, NoneDefaultAccess)
 	if err == nil {
-		t.Fatalf("Create NFS Share from snapshot with an existisng nfs share name case failed: %v", err)
+		t.Fatalf("Create NFS Share from snapshot with an existing nfs share name case failed: %v", err)
 	}
 
 	fmt.Println("Create NFS Share Test Successful")
