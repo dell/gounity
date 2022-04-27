@@ -29,6 +29,7 @@ func TestVolume(t *testing.T) {
 	unexportVolumeTest(t)
 	expandVolumeTest(t)
 	createCloneFromVolumeTest(t)
+	modifyVolumeExportTest(t)
 	deleteVolumeTest(t)
 	//creteLunThinCloneTest(t) - Will be added to snapshot_test
 
@@ -245,19 +246,75 @@ func createCloneFromVolumeTest(t *testing.T) {
 
 	cloneVolumeID = vol.VolumeContent.ResourceID
 
+	//Negative Test Case
+	//Creating clone with same name
+	_, err = testConf.volumeAPI.CreateCloneFromVolume(ctx, cloneVolumeName, volID)
+	if err == nil {
+		t.Fatalf("Clone volume with a same existing volume name test case failed: %v", err)
+	}
+
+	//Creating clone with invalid volume ID
+	volIDTemp := "dummy-vol-1"
+	_, err = testConf.volumeAPI.CreateCloneFromVolume(ctx, cloneVolumeName, volIDTemp)
+	if err == nil {
+		t.Fatalf("Clone volume with invalid volume ID test case failed: %v", err)
+	}
+
 	fmt.Println("Create clone from Volume Test - Successful")
+}
+
+func modifyVolumeExportTest(t *testing.T) {
+	fmt.Println("Begin - Modify Volume Export Test")
+
+	hostIDList := []string{}
+	for _, hostName := range testConf.hostList {
+		host, err := testConf.hostAPI.FindHostByName(ctx, hostName)
+		if err != nil {
+			t.Fatalf("Find host by name %s failed. Error: %v", hostName, err)
+		}
+		hostIDList = append(hostIDList, host.HostContent.ID)
+	}
+
+	err := testConf.volumeAPI.ModifyVolumeExport(ctx, volID, hostIDList)
+	if err != nil {
+		t.Fatalf("Modify Volume Export failed: %v", err)
+	}
+
+	// Modify Volume name
+	volName = volName + "_renamed"
+	err = testConf.volumeAPI.RenameVolume(ctx, volName, volID)
+	if err != nil {
+		t.Fatalf("Rename existing volume failed. Error: %v", err)
+	}
+
+	//Negative Test case
+
+	volIDTemp := "dummy_vol_1"
+	err = testConf.volumeAPI.RenameVolume(ctx, volName, volIDTemp)
+	if err == nil {
+		t.Fatalf("Rename existing volume failed. Error: %v", err)
+	}
+
+	// Unexport volume from host
+	err = testConf.volumeAPI.UnexportVolume(ctx, volID)
+	if err != nil {
+		t.Fatalf("Unexport volume failed. Error: %v", err)
+	}
+	fmt.Println("Modify Volume Export Test Successful")
 }
 
 func deleteVolumeTest(t *testing.T) {
 
 	fmt.Println("Begin - Delete Volume Test")
 
-	err := testConf.volumeAPI.DeleteVolume(ctx, cloneVolumeID)
+	//Deletion of volume, Volume won't get deleted as clone exists
+	err := testConf.volumeAPI.DeleteVolume(ctx, volID)
 	if err != nil {
 		t.Fatalf("Delete volume failed: %v", err)
 	}
 
-	err = testConf.volumeAPI.DeleteVolume(ctx, volID)
+	//Deletion of clone and volume
+	err = testConf.volumeAPI.DeleteVolume(ctx, cloneVolumeID)
 	if err != nil {
 		t.Fatalf("Delete volume failed: %v", err)
 	}

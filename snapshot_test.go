@@ -13,6 +13,9 @@ var snapName string
 var snapID string
 var snap2Name string
 var snap2ID string
+var snapByFsAccessTypeName string
+var snapByFsAccessTypeID string
+var snapCopyID string
 var cloneVolName string
 var cloneVolID string
 
@@ -23,6 +26,7 @@ func TestSnapshot(t *testing.T) {
 	snapVolName = "Unit-test-snap-vol-" + timeStamp
 	snapName = "Unit-test-snapshot-" + timeStamp
 	snap2Name = "Unit-test-snapshot2-" + timeStamp
+	snapByFsAccessTypeName = "Unit-test-snapshot-by-fsxstype-" + timeStamp
 	cloneVolName = "Unit-test-clone-vol-" + timeStamp
 	ctx = context.Background()
 
@@ -31,6 +35,7 @@ func TestSnapshot(t *testing.T) {
 	findSnapshotByIDTest(t)
 	listSnapshotsTest(t)
 	modifySnapshotAutoDeleteParameterTest(t)
+	copySnapshotTest(t)
 	creteLunThinCloneTest(t) //create thin clone
 	deleteSnapshot(t)
 }
@@ -62,11 +67,24 @@ func createSnapshotTest(t *testing.T) {
 		t.Fatalf("Create Snapshot 2failed: %v", err)
 	}
 
+	snapFsAccess, err := testConf.snapAPI.CreateSnapshotWithFsAccesType(ctx, snapVolID, snapByFsAccessTypeName, "Snapshot Description", "", BlockAccessType)
+	fmt.Println("Create Snapshot With FsAccessType:", prettyPrintJSON(snapFsAccess), err)
+	if err != nil {
+		t.Fatalf("Create Snapshot With FsAccessType failed: %v", err)
+	}
+
+	snapByFsAccessTypeID = snapFsAccess.SnapshotContent.ResourceID
+
 	//Negative cases
 	snapVolIDTemp := ""
 	_, err = testConf.snapAPI.CreateSnapshot(ctx, snapVolIDTemp, snap2Name, "Snapshot Description", "")
 	if err == nil {
 		t.Fatalf("Create Snapshot with empty volume Id case failed: %v", err)
+	}
+
+	_, err = testConf.snapAPI.CreateSnapshotWithFsAccesType(ctx, snapVolIDTemp, snapByFsAccessTypeName, "Snapshot Description", "", BlockAccessType)
+	if err == nil {
+		t.Fatalf("Create Snapshot With FsAccessType by passing empty volume Id case failed: %v", err)
 	}
 
 	snapNameTemp := "snap-name-max-length-12345678901234567890123456789012345678901234567890"
@@ -75,9 +93,19 @@ func createSnapshotTest(t *testing.T) {
 		t.Fatalf("Create Snapshot with max name characters case failed: %v", err)
 	}
 
+	_, err = testConf.snapAPI.CreateSnapshotWithFsAccesType(ctx, snapVolIDTemp, snapNameTemp, "Snapshot Description", "", BlockAccessType)
+	if err == nil {
+		t.Fatalf("Create Snapshot With FsAccessType by passing max name characters case failed: %v", err)
+	}
+
 	_, err = testConf.snapAPI.CreateSnapshot(ctx, snapVolID, snap2Name, "Snapshot Description", "1:23:99:99")
 	if err == nil {
 		t.Fatalf("Create Snapshot with invalid retention duration case failed: %v", err)
+	}
+
+	_, err = testConf.snapAPI.CreateSnapshotWithFsAccesType(ctx, snapVolIDTemp, snapNameTemp, "Snapshot Description", "1:23:99:99", BlockAccessType)
+	if err == nil {
+		t.Fatalf("Create Snapshot With FsAccessType by passing invalid retention duration case failed: %v", err)
 	}
 
 	_, err = testConf.snapAPI.CreateSnapshot(ctx, snapVolID, snap2Name, "Snapshot Description", "1:23:52:50")
@@ -188,6 +216,11 @@ func modifySnapshotAutoDeleteParameterTest(t *testing.T) {
 		t.Fatalf("Modify Snapshot failed: %v", err)
 	}
 
+	err = testConf.snapAPI.ModifySnapshot(ctx, snapByFsAccessTypeID, "Modify Description", "1:22:02:50")
+	if err != nil {
+		t.Fatalf("Modify Snapshot failed: %v", err)
+	}
+
 	//Negative test cases
 	snapIDTemp := ""
 	err = testConf.snapAPI.ModifySnapshotAutoDeleteParameter(ctx, snapIDTemp)
@@ -195,10 +228,19 @@ func modifySnapshotAutoDeleteParameterTest(t *testing.T) {
 		t.Fatalf("Modify snapshot with empty Id case failed: %v", err)
 	}
 
+	err = testConf.snapAPI.ModifySnapshot(ctx, snapIDTemp, "Modify Description", "1:22:02:50")
+	if err == nil {
+		t.Fatalf("Modify Snapshot description and retention Duration with empty ID case failed: %v", err)
+	}
+
 	snapIDTemp = "dummy_snap_id_1"
 	err = testConf.snapAPI.ModifySnapshotAutoDeleteParameter(ctx, snapIDTemp)
 	if err == nil {
 		t.Fatalf("Modify snapshot with invalid Id case failed: %v", err)
+	}
+	err = testConf.snapAPI.ModifySnapshot(ctx, snapIDTemp, "Modify Description", "1:22:02:50")
+	if err == nil {
+		t.Fatalf("Modify Snapshot description and retention Duration with invalid ID case failed: %v", err)
 	}
 
 	fmt.Println("Modify Snapshot Test - Successful")
@@ -221,6 +263,43 @@ func creteLunThinCloneTest(t *testing.T) {
 	fmt.Println("Create LUN thin clone Test - Successful")
 }
 
+func copySnapshotTest(t *testing.T) {
+
+	fmt.Println("Begin - Copy Snapshot Test")
+
+	snapCopy, err := testConf.snapAPI.CopySnapshot(ctx, snapByFsAccessTypeID, snapName+"_copy")
+	if err != nil {
+		t.Fatalf("Copy Snapshot failed: %v", err)
+	}
+
+	snapCopyID = snapCopy.SnapshotContent.ResourceID
+
+	//Negative test cases
+
+	snapNameTemp := ""
+
+	_, err = testConf.snapAPI.CopySnapshot(ctx, snapByFsAccessTypeID, snapNameTemp)
+	if err == nil {
+		t.Fatalf("Copy Snapshot with empty snapshot name test case failed: %v", err)
+	}
+
+	snapIDTemp := ""
+
+	_, err = testConf.snapAPI.CopySnapshot(ctx, snapIDTemp, snapName)
+	if err == nil {
+		t.Fatalf("Copy Snapshot with empty snapshot ID test case failed: %v", err)
+	}
+
+	snapIDTemp = "dummy_snap_id_1"
+
+	_, err = testConf.snapAPI.CopySnapshot(ctx, snapIDTemp, snapName)
+	if err == nil {
+		t.Fatalf("Copy Snapshot with invalid snapshot ID test case failed: %v", err)
+	}
+	fmt.Println("Copy Snapshot Test - Successful")
+
+}
+
 func deleteSnapshot(t *testing.T) {
 
 	fmt.Println("Begin - Delete Snapshot Test")
@@ -233,6 +312,16 @@ func deleteSnapshot(t *testing.T) {
 	err = testConf.snapAPI.DeleteSnapshot(ctx, snap2ID)
 	if err != nil {
 		t.Fatalf("Delete Snapshot2 failed: %v", err)
+	}
+
+	err = testConf.snapAPI.DeleteSnapshot(ctx, snapByFsAccessTypeID)
+	if err != nil {
+		t.Fatalf("Delete Snapshot created with Fs Access Type failed: %v", err)
+	}
+
+	err = testConf.snapAPI.DeleteSnapshot(ctx, snapCopyID)
+	if err != nil {
+		t.Fatalf("Delete copy of Snapshot failed: %v", err)
 	}
 
 	//Delete thin clone volume
@@ -261,15 +350,3 @@ func deleteSnapshot(t *testing.T) {
 
 	fmt.Println("Delete Snapshot Test - Successful")
 }
-
-/*
-func deleteSnapshot(t *testing.T) {
-
-	fmt.Println("Begin - Delete Snapshot Test")
-
-
-	//Add Negative test cases
-	fmt.Println("Delete Snapshot Test - Successful")
-}
-
-*/

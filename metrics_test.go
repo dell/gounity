@@ -51,6 +51,11 @@ func getVolumeMetrics(t *testing.T) {
 
 	var err error
 
+	err = testConf.metricsAPI.GetAllRealTimeMetricPaths(ctx)
+	if err != nil {
+		t.Fatalf("Get all real time Metric Paths failed: %v", err)
+	}
+
 	paths := []string{
 		"sp.*.storage.lun.*.reads",
 		"sp.*.storage.lun.*.writes",
