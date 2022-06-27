@@ -10,11 +10,11 @@ import (
 	"net/http"
 )
 
-type RemoteSystem struct {
+type Replication struct {
 	client *Client
 }
 
-func (r *RemoteSystem) FindRemoteSystemByName(ctx context.Context, remoteSystemName string) (*types.RemoteSystem, error) {
+func (r *Replication) FindRemoteSystemByName(ctx context.Context, remoteSystemName string) (*types.RemoteSystem, error) {
 	log := util.GetRunIDLogger(ctx)
 	remoteSystemName, err := util.ValidateResourceName(remoteSystemName, api.MaxResourceNameLength)
 	if err != nil {
@@ -29,7 +29,7 @@ func (r *RemoteSystem) FindRemoteSystemByName(ctx context.Context, remoteSystemN
 	return remoteSystemNameResp, nil
 }
 
-func (r *RemoteSystem) CreateReplicationSession(ctx context.Context, replicationSessionName, srcResourceId, remoteStoragePool, FsName, remoteSystemName string, maxTimeOutOfSync int32) (*types.ReplicationSession, error) {
+func (r *Replication) CreateReplicationSession(ctx context.Context, replicationSessionName, srcResourceId, remoteStoragePool, FsName, remoteSystemName string, maxTimeOutOfSync int32) (*types.ReplicationSession, error) {
 	var createRS types.CreateReplicationSessionParam
 	if len(srcResourceId) == 0 {
 		return nil, errors.New("storage Resource ID cannot be empty")
