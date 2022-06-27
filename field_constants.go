@@ -51,4 +51,7 @@ const (
 
 	//RemoteSystemFields to display remote system fields
 	RemoteSystemFields = "id,name"
+
+	//ReplicationSessionFields to display
+	ReplicationSessionFields = "id,name,status,maxTimeOutOfSync,srcStatus,dstStatus,syncState,srcResourceId,dstResourceId,localRole"
 )

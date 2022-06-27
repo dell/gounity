@@ -8,6 +8,7 @@ import (
 	"github.com/dell/gounity/types"
 	"github.com/dell/gounity/util"
 	"net/http"
+	"net/url"
 )
 
 type Replication struct {
@@ -33,7 +34,7 @@ func (r *Replication) FindRemoteSystemByName(ctx context.Context, remoteSystemNa
 	return remoteSystemNameResp, nil
 }
 
-func (r *Replication) CreateReplicationSession(ctx context.Context, replicationSessionName, srcResourceId, remoteStoragePool, FsName, remoteSystemName string, maxTimeOutOfSync int32) (*types.ReplicationSession, error) {
+func (r *Replication) CreateReplicationSession(ctx context.Context, replicationSessionName, srcResourceId, dstResourceId, FsName, remoteSystemName string, maxTimeOutOfSync int32) (*types.ReplicationSession, error) {
 	var createRS types.CreateReplicationSessionParam
 	if len(srcResourceId) == 0 {
 		return nil, errors.New("storage Resource ID cannot be empty")
@@ -51,13 +52,39 @@ func (r *Replication) CreateReplicationSession(ctx context.Context, replicationS
 		RemoteSystemId: remoteSystemId.RemoteSystemContent.RemoteSystemId,
 	}
 	createRS.RemoteSystemId = &remoteSystem
-	createRS.DstResourceConfig.StoragePool.PoolID = remoteStoragePool
 	createRS.DstResourceConfig.Name = FsName
 	createRS.MaxTimeOutOfSync = maxTimeOutOfSync
+	createRS.SrcResourceId = srcResourceId
+	createRS.DstResourceId = dstResourceId
 	rsResp := &types.ReplicationSession{}
 	err = r.client.executeWithRetryAuthenticate(ctx, http.MethodPost, fmt.Sprintf(api.UnityAPIInstanceTypeResources, api.ReplicationSessionAction), createRS, rsResp)
 	if err != nil {
 		return nil, err
 	}
+	return rsResp, nil
+}
+
+func (r *Replication) FindReplicationSessionIdBySrcResourceID(ctx context.Context, srcResourceId string) (*types.ReplicationSession, error) {
+	filter := fmt.Sprintf("srcResourceId eq %s", srcResourceId)
+	queryURI := fmt.Sprintf(api.UnityInstancesFilter, api.ReplicationSessionAction, url.QueryEscape(filter))
+	rsIdResult := &types.ReplicationSession{}
+	err := r.client.executeWithRetryAuthenticate(ctx, http.MethodGet, queryURI, nil, rsIdResult)
+	if err != nil {
+		return nil, err
+	}
+	return rsIdResult, nil
+}
+
+func (r *Replication) FindReplicationSessionById(ctx context.Context, rsId string) (*types.ReplicationSession, error) {
+	log := util.GetRunIDLogger(ctx)
+	if rsId == "" {
+		return nil, errors.New("Replication session ID cannot be empty")
+	}
+	rsResp := &types.ReplicationSession{}
+	err := r.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityAPIGetResourceWithFieldsURI, api.ReplicationSessionAction, rsId, ReplicationSessionFields), nil, rsResp)
+	if err != nil {
+		return nil, fmt.Errorf("unable to find Replication Session id %s Error: %v", rsId, err)
+	}
+	log.Debugf("Replcation Session name: %s Id: %s", rsResp.ReplicationSessionContent.Name, rsResp.ReplicationSessionContent.ReplicationSessionId)
 	return rsResp, nil
 }

@@ -469,7 +469,26 @@ type ReplicationSession struct {
 	ReplicationSessionContent *ReplicationSessionContent `json:"content"`
 }
 
-//SnapshotContent struct to capture snapshot parameters
 type ReplicationSessionContent struct {
 	ReplicationSessionId string `json:"id"`
+	Name                 string `json:"name"`
+	Status               int    `json:"status"`
+	MaxTimeOutOfSync     int32  `json:"maxTimeOutOfSync"`
+	SrcResourceId        string `json:"srcResourceId"`
+	DstResourceId        string `json:"dstResourceId"`
+	SrcStatus            string `json:"srcStatus"`
+	DstStatus            string `json:"dstStatus"`
+	LocalRole            string `json:"localRole"`
+}
+
+type ListReplicationSession struct {
+	ReplicationSessions []ReplicationSession `json:"entries"`
+}
+
+type RemoteSystem struct {
+	RemoteSystemContent RemoteSystemContent `json:"content"`
+}
+
+type RemoteSystemContent struct {
+	RemoteSystemId string `json:"id"`
 }
