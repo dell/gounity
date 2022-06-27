@@ -85,9 +85,11 @@ const (
 	UnityMetricRealTimeQuery = "metricRealTimeQuery"
 
 	//Action types for URL's
+	// /api/types/storageResource/action/createConsistencyGroup?language=en-US
 
 	LunAction               = "lun"
 	CreateLunAction         = "createLun"
+	CreateCGAction        	= "createConsistencyGroup"
 	FileSystemAction        = "filesystem"
 	CreateFSAction          = "createFilesystem"
 	NfsShareAction          = "nfsShare"

@@ -124,7 +124,7 @@ func (c *Client) executeWithRetryAuthenticate(ctx context.Context, method, uri s
 	} else {
 		log.Error("Error is not a type of \"*types.Error\". Error:", err)
 	}
-	log.WithError(err).Error("failed to invoke Unity REST API server")
+	// log.WithError(err).Error("failed to invoke Unity REST API server")
 
 	return err
 }
