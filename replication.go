@@ -14,6 +14,10 @@ type Replication struct {
 	client *Client
 }
 
+func NewReplicationSession(client *Client) *Replication {
+	return &Replication{client}
+}
+
 func (r *Replication) FindRemoteSystemByName(ctx context.Context, remoteSystemName string) (*types.RemoteSystem, error) {
 	log := util.GetRunIDLogger(ctx)
 	remoteSystemName, err := util.ValidateResourceName(remoteSystemName, api.MaxResourceNameLength)
