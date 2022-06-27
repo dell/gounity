@@ -19,7 +19,6 @@ func TestCG(t *testing.T) {
 	cgName = "Unit-test-cg-" + timeStamp
 	cgCreateParams = &types.ConsistencyGroupCreate{
 					Name:               cgName,
-					ProtectionPolicyID: "",
 				}
 	ctx = context.Background()
 

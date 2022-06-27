@@ -114,15 +114,15 @@ func (c *ConsistencyGroup) DeleteConsistencyGroup(ctx context.Context, cgID stri
 }
 
 // UpdateConsistencyGroupProtectionPolicy
-func (c *ConsistencyGroup) UpdateConsistencyGroupProtectionPolicy(ctx context.Context, id string, params *ConsistencyGroupChangePolicy) (resp EmptyResponse, err error) {
-	_, err = c.APIClient().Query(
-		ctx,
-		RequestConfig{
-			Method:   "PATCH",
-			Endpoint: ConsistencyGroupURL,
-			ID:       id,
-			Body:     params,
-		},
-		&resp)
-	return resp, nil
-}
+// func (c *ConsistencyGroup) UpdateConsistencyGroupProtectionPolicy(ctx context.Context, id string, params *ConsistencyGroupChangePolicy) (resp EmptyResponse, err error) {
+// 	_, err = c.APIClient().Query(
+// 		ctx,
+// 		RequestConfig{
+// 			Method:   "PATCH",
+// 			Endpoint: ConsistencyGroupURL,
+// 			ID:       id,
+// 			Body:     params,
+// 		},
+// 		&resp)
+// 	return resp, nil
+// }

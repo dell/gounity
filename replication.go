@@ -4,11 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
+	"net/url"
+
 	"github.com/dell/gounity/api"
 	"github.com/dell/gounity/types"
 	"github.com/dell/gounity/util"
-	"net/http"
-	"net/url"
 )
 
 type Replication struct {
@@ -52,7 +53,7 @@ func (r *Replication) CreateReplicationSession(ctx context.Context, replicationS
 		RemoteSystemId: remoteSystemId.RemoteSystemContent.RemoteSystemId,
 	}
 	createRS.RemoteSystemId = &remoteSystem
-	createRS.DstResourceConfig.Name = FsName
+	// createRS.DstResourceConfig.Name = FsName
 	createRS.MaxTimeOutOfSync = maxTimeOutOfSync
 	createRS.SrcResourceId = srcResourceId
 	createRS.DstResourceId = dstResourceId

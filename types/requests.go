@@ -69,12 +69,12 @@ type ConsistencyGroupCreate struct {
 	// characters long and should not have any unprintable characters.
 	Description string `json:"description,omitempty"`
 	// Unique identifier of an optional protection policy to assign to the consistency group.
-	ProtectionPolicyID string `json:"protection_policy_id,omitempty"`
+	// ProtectionPolicyID string `json:"protection_policy_id,omitempty"`
 	// A list of identifiers of existing volumes that should be added to the consistency group.
 	// All the volumes must be on the same appliance and should not be part of another consistency group.
 	// If a list of volumes is not specified or if the specified list is empty, an
 	// empty consistency group of type Volume will be created.
-	VolumeIds []string `json:"lun_ids,omitempty"`
+	// VolumeIds []string `json:"lun_ids,omitempty"`
 }
 
 type ConsistencyGroupChangePolicy struct {
