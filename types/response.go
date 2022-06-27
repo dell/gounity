@@ -464,3 +464,12 @@ type MetricInstance struct {
 	Updated string     `json:"updated"`
 	Content MetricInfo `json:"content"`
 }
+
+type ReplicationSession struct {
+	ReplicationSessionContent *ReplicationSessionContent `json:"content"`
+}
+
+//SnapshotContent struct to capture snapshot parameters
+type ReplicationSessionContent struct {
+	ReplicationSessionId string `json:"id"`
+}

@@ -5,7 +5,9 @@ All Rights Reserved
 
 package types
 
-import "fmt"
+import (
+	"fmt"
+)
 
 //ErrorContent Struct to capture the Error information.
 type ErrorContent struct {
@@ -273,3 +275,25 @@ type CreateLunThinCloneParam struct {
 
 //InitiatorType is string Type
 type InitiatorType string
+
+type RemoteSystem struct {
+	RemoteSystemContent RemoteSystemContent `json:"content"`
+}
+
+type RemoteSystemContent struct {
+	RemoteSystemId string `json:"id"`
+}
+
+type TargetResourceConfig struct {
+	Name        string         `json:"name,omitempty"`
+	StoragePool *StoragePoolID `json:"pool,omitempty"`
+}
+
+type CreateReplicationSessionParam struct {
+	Name              string                `json:"name"`
+	DstResourceConfig *TargetResourceConfig `json:"dstResourceConfig"`
+	MaxTimeOutOfSync  int32                 `json:"maxTimeOutOfSync"`
+	SrcResourceId     string                `json:"SrcResourceId"`
+	DstResourceId     string                `json:"dstResourceId"`
+	RemoteSystemId    *RemoteSystemContent  `json:"id,omitempty"`
+}

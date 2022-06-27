@@ -48,4 +48,7 @@ const (
 
 	//StoragePoolFields to display Storage Pool fields
 	StoragePoolFields = "id,name,description,sizeFree,sizeTotal,sizeUsed,sizeSubscribed,hasDataReductionEnabledLuns,hasDataReductionEnabledFs,isFASTCacheEnabled,type,isAllFlash,poolFastVP"
+
+	//RemoteSystemFields to display remote system fields
+	RemoteSystemFields = "id,name"
 )
