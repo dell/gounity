@@ -58,6 +58,29 @@ type LunCreateParam struct {
 	LunParameters *LunParameters `json:"lunParameters"`
 }
 
+// ConsistencyGroupCreate create consistency group request
+type ConsistencyGroupCreate struct {
+	// Unique name for the consistency group.
+	// The name should contain no special HTTP characters and no unprintable characters.
+	// Although the case of the name provided is reserved, uniqueness check is case-insensitive,
+	// so the same name in two different cases is not considered unique.
+	Name string `json:"name"`
+	// Description for the consistency group. The description should not be more than 256
+	// characters long and should not have any unprintable characters.
+	Description string `json:"description,omitempty"`
+	// Unique identifier of an optional protection policy to assign to the consistency group.
+	ProtectionPolicyID string `json:"protection_policy_id,omitempty"`
+	// A list of identifiers of existing volumes that should be added to the consistency group.
+	// All the volumes must be on the same appliance and should not be part of another consistency group.
+	// If a list of volumes is not specified or if the specified list is empty, an
+	// empty consistency group of type Volume will be created.
+	VolumeIds []string `json:"lun_ids,omitempty"`
+}
+
+type ConsistencyGroupChangePolicy struct {
+	ProtectionPolicyID string `json:"protection_policy_id"`
+}
+
 //Tenants Struct to capture the Tenants
 type Tenants struct {
 	TenantID string `json:"id"`

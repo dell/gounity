@@ -85,7 +85,7 @@ const (
 	UnityMetricRealTimeQuery = "metricRealTimeQuery"
 
 	//Action types for URL's
-
+	// /api/types/storageResource/action/createConsistencyGroup?language=en-US
 	LunAction                = "lun"
 	CreateLunAction          = "createLun"
 	FileSystemAction         = "filesystem"
@@ -105,4 +105,6 @@ const (
 	TenantAction             = "tenant"
 	RemoteSystemAction       = "remoteSystem"
 	ReplicationSessionAction = "replicationSession"
+	CreateCGAction        	 = "createConsistencyGroup"
+
 )

@@ -66,6 +66,33 @@ type VolumeContent struct {
 	Health                 HealthContent        `json:"health,omitempty"`
 }
 
+//ConsistencyGroup struct to capture response of ConsistencyGroup
+type ConsistencyGroup struct {
+	ConsistencyGroupContent ConsistencyGroupContent `json:"content"`
+}
+
+//ConsistencyGroupContent struct to capture ConsistencyGroup properties
+type ConsistencyGroupContent struct {
+	ResourceID             string               `json:"id"`
+	Name                   string               `json:"name,omitempty"`
+	Description            string               `json:"description,omitempty"`
+	Type                   int                  `json:"type,omitempty"`
+	SizeTotal              uint64               `json:"sizeTotal,omitempty"`
+	SizeUsed               uint64               `json:"sizeUsed,omitempty"`
+	SizeAllocated          uint64               `json:"sizeAllocated,omitempty"`
+	Pools                  []Pool              	`json:"pools,omitempty"`
+	IsThinClone            bool                 `json:"isThinClone"`
+	ParentSnap             ParentSnap           `json:"parentSnap,omitempty"`
+	TieringPolicy          int                  `json:"tieringPolicy,omitempty"`
+	Health                 HealthContent        `json:"health,omitempty"`
+
+	isReplicationDestination bool 				`json:"isReplicationDestination"`
+	replicationType 		int 				`json:"replicationType,omitempty"`
+	syncReplicationType 	int 				`json:"syncReplicationType,omitempty"`
+
+	Volumes 				[]Volume			`json:"luns,omitempty"`
+}
+
 //ParentSnap to capture Source Snapshot ID
 type ParentSnap struct {
 	ID string `json:"id"`
