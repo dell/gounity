@@ -4,11 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
+	"net/url"
+
 	"github.com/dell/gounity/api"
 	"github.com/dell/gounity/types"
 	"github.com/dell/gounity/util"
-	"net/http"
-	"net/url"
 )
 
 type Replication struct {
