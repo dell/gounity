@@ -34,7 +34,7 @@ func (r *Replication) FindRemoteSystemByName(ctx context.Context, remoteSystemNa
 	return remoteSystemNameResp, nil
 }
 
-func (r *Replication) CreateReplicationSession(ctx context.Context, replicationSessionName, srcResourceId, dstResourceId, FsName, remoteSystemName string, maxTimeOutOfSync int32) (*types.ReplicationSession, error) {
+func (r *Replication) CreateReplicationSession(ctx context.Context, replicationSessionName, srcResourceId, dstResourceId, remoteSystemName string, maxTimeOutOfSync int32) (*types.ReplicationSession, error) {
 	var createRS types.CreateReplicationSessionParam
 	if len(srcResourceId) == 0 {
 		return nil, errors.New("storage Resource ID cannot be empty")
@@ -52,7 +52,6 @@ func (r *Replication) CreateReplicationSession(ctx context.Context, replicationS
 		RemoteSystemId: remoteSystemId.RemoteSystemContent.RemoteSystemId,
 	}
 	createRS.RemoteSystemId = &remoteSystem
-	createRS.DstResourceConfig.Name = FsName
 	createRS.MaxTimeOutOfSync = maxTimeOutOfSync
 	createRS.SrcResourceId = srcResourceId
 	createRS.DstResourceId = dstResourceId
