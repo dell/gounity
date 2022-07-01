@@ -118,7 +118,7 @@ func (f *Filesystem) GetFilesystemIDFromResID(ctx context.Context, filesystemRes
 }
 
 //CreateFilesystem - Create a new filesystem on the array
-func (f *Filesystem) CreateFilesystem(ctx context.Context, name, storagepool, description, nasServer string, size uint64, tieringPolicy, hostIOSize, supportedProtocol int, isThinEnabled, isDataReductionEnabled bool) (*types.Filesystem, error) {
+func (f *Filesystem) CreateFilesystem(ctx context.Context, name, storagepool, description, nasServer string, size uint64, tieringPolicy, hostIOSize, supportedProtocol int, isThinEnabled, isDataReductionEnabled bool, isReplicationDestination bool) (*types.Filesystem, error) {
 	log := util.GetRunIDLogger(ctx)
 	if name == "" {
 		return nil, errors.New("filesystem name should not be empty")
@@ -155,6 +155,10 @@ func (f *Filesystem) CreateFilesystem(ctx context.Context, name, storagepool, de
 		HostIOSize:        hostIOSize,
 		NasServer:         &nas,
 		FileEventSettings: fileEventSettings,
+	}
+
+	replParameters := types.ReplicationParameters{
+		IsReplicationDestination: isReplicationDestination,
 	}
 
 	volAPI := NewVolume(f.client)
@@ -194,9 +198,10 @@ func (f *Filesystem) CreateFilesystem(ctx context.Context, name, storagepool, de
 	}
 
 	fileReqParam := types.FsCreateParam{
-		Name:         name,
-		Description:  description,
-		FsParameters: &fsParams,
+		Name:                  name,
+		Description:           description,
+		FsParameters:          &fsParams,
+		ReplicationParameters: &replParameters,
 	}
 
 	fileResp := &types.Filesystem{}

@@ -74,7 +74,7 @@ func createFilesystemTest(t *testing.T) {
 
 	fmt.Println("Begin - Create Filesystem Test")
 
-	_, err := testConf.fileAPI.CreateFilesystem(ctx, fsName, testConf.poolID, "Unit test resource", testConf.nasServer, 5368709120, 0, 8192, 0, true, false)
+	_, err := testConf.fileAPI.CreateFilesystem(ctx, fsName, testConf.poolID, "Unit test resource", testConf.nasServer, 5368709120, 0, 8192, 0, true, false, false)
 	if err != nil {
 		t.Fatalf("Create filesystem failed: %v", err)
 	}
@@ -82,19 +82,19 @@ func createFilesystemTest(t *testing.T) {
 	//Negative cases
 
 	fsNameTemp := ""
-	_, err = testConf.fileAPI.CreateFilesystem(ctx, fsNameTemp, testConf.poolID, "Unit test resource", testConf.nasServer, 5368709120, 0, 8192, 0, true, false)
+	_, err = testConf.fileAPI.CreateFilesystem(ctx, fsNameTemp, testConf.poolID, "Unit test resource", testConf.nasServer, 5368709120, 0, 8192, 0, true, false, false)
 	if err == nil {
 		t.Fatal("Create filesystem with empty name - Negative case failed")
 	}
 
 	fsNameTemp = "dummy-fs-1234567890123456789012345678901234567890123456789012345678"
-	_, err = testConf.fileAPI.CreateFilesystem(ctx, fsNameTemp, testConf.poolID, "Unit test resource", testConf.nasServer, 5368709120, 0, 8192, 0, true, false)
+	_, err = testConf.fileAPI.CreateFilesystem(ctx, fsNameTemp, testConf.poolID, "Unit test resource", testConf.nasServer, 5368709120, 0, 8192, 0, true, false, false)
 	if err == nil {
 		t.Fatal("Create filesystem with fs name more than 63 characters - Negative case failed")
 	}
 
 	poolIDTemp := "dummy_pool_1"
-	_, err = testConf.fileAPI.CreateFilesystem(ctx, fsName, poolIDTemp, "Unit test resource", testConf.nasServer, 5368709120, 0, 8192, 0, true, false)
+	_, err = testConf.fileAPI.CreateFilesystem(ctx, fsName, poolIDTemp, "Unit test resource", testConf.nasServer, 5368709120, 0, 8192, 0, true, false, false)
 	if err == nil {
 		t.Fatal("Create filesystem with invalid storage pool - Negative case failed")
 	}

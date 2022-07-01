@@ -77,9 +77,10 @@ type LunParameters struct {
 
 //FsCreateParam Struct to capture the Filesystem create Params
 type FsCreateParam struct {
-	Name         string        `json:"name"`
-	Description  string        `json:"description,omitempty"`
-	FsParameters *FsParameters `json:"fsParameters"`
+	Name                  string                 `json:"name"`
+	Description           string                 `json:"description,omitempty"`
+	FsParameters          *FsParameters          `json:"fsParameters"`
+	ReplicationParameters *ReplicationParameters `json:"replicationParameters,omitempty"`
 }
 
 //FsParameters Struct to capture the File system properties
@@ -95,6 +96,11 @@ type FsParameters struct {
 	IoLimitParameters      *HostIoLimitParameters `json:"ioLimitParameters,omitempty"`
 	NasServer              *NasServerID           `json:"nasServer"`
 	FileEventSettings      FileEventSettings      `json:"fileEventSettings,omitempty"`
+}
+
+//ReplicationParameters Struct for setting replication destination parameters
+type ReplicationParameters struct {
+	IsReplicationDestination bool `json:"isReplicationDestination"`
 }
 
 //FsExpandParameters Struct to capture expand Filesystem parameters
@@ -277,9 +283,9 @@ type CreateLunThinCloneParam struct {
 type InitiatorType string
 
 type CreateReplicationSessionParam struct {
-	Name              string                `json:"name"`
-	MaxTimeOutOfSync  int32                 `json:"maxTimeOutOfSync"`
-	SrcResourceId     string                `json:"srcResourceId"`
-	DstResourceId     string                `json:"dstResourceId"`
-	RemoteSystemId    *RemoteSystemContent  `json:"id,omitempty"`
+	Name             string              `json:"name"`
+	MaxTimeOutOfSync string              `json:"maxTimeOutOfSync"`
+	SrcResourceId    string              `json:"srcResourceId"`
+	DstResourceId    string              `json:"dstResourceId"`
+	RemoteSystem     RemoteSystemContent `json:"remoteSystem,omitempty"`
 }

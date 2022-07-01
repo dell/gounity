@@ -31,11 +31,11 @@ func (r *Replication) FindRemoteSystemByName(ctx context.Context, remoteSystemNa
 	if err != nil {
 		return nil, fmt.Errorf("unable to find Remote system %v. Error: %v", remoteSystemName, err)
 	}
-	log.Debugf("Remote system name: %s Id: %s", remoteSystemName, remoteSystemNameResp.RemoteSystemContent.RemoteSystemId)
+	log.Debugf("Remote system name: %s Id: %s", remoteSystemName, remoteSystemNameResp.RemoteSystemContent.Id)
 	return remoteSystemNameResp, nil
 }
 
-func (r *Replication) CreateReplicationSession(ctx context.Context, replicationSessionName, srcResourceId, dstResourceId, remoteSystemName string, maxTimeOutOfSync int32) (*types.ReplicationSession, error) {
+func (r *Replication) CreateReplicationSession(ctx context.Context, replicationSessionName, srcResourceId, dstResourceId, remoteSystemName string, maxTimeOutOfSync string) (*types.ReplicationSession, error) {
 	var createRS types.CreateReplicationSessionParam
 	if len(srcResourceId) == 0 {
 		return nil, errors.New("storage Resource ID cannot be empty")
@@ -45,14 +45,14 @@ func (r *Replication) CreateReplicationSession(ctx context.Context, replicationS
 	if err != nil {
 		return nil, fmt.Errorf("invalid replication session name. Error:%v", err)
 	}
-	remoteSystemId, err := r.FindRemoteSystemByName(ctx, remoteSystemName)
+	remoteSystem, err := r.FindRemoteSystemByName(ctx, remoteSystemName)
 	if err != nil {
-		return nil, fmt.Errorf("can't find remote system %v. Error:%v", remoteSystemId, err)
+		return nil, fmt.Errorf("can't find remote system %v. Error:%v", remoteSystem, err)
 	}
-	remoteSystem := types.RemoteSystemContent{
-		RemoteSystemId: remoteSystemId.RemoteSystemContent.RemoteSystemId,
-	}
-	createRS.RemoteSystemId = &remoteSystem
+	//remoteSystem := types.RemoteSystemContent{
+	//	Id: remoteSystemId.RemoteSystemContent.Id,
+	//}
+	createRS.RemoteSystem = remoteSystem.RemoteSystemContent
 	createRS.MaxTimeOutOfSync = maxTimeOutOfSync
 	createRS.SrcResourceId = srcResourceId
 	createRS.DstResourceId = dstResourceId
@@ -65,14 +65,18 @@ func (r *Replication) CreateReplicationSession(ctx context.Context, replicationS
 }
 
 func (r *Replication) FindReplicationSessionIdBySrcResourceID(ctx context.Context, srcResourceId string) (*types.ReplicationSession, error) {
-	filter := fmt.Sprintf("srcResourceId eq %s", srcResourceId)
+	filter := fmt.Sprintf("srcResourceId eq %s", "\""+srcResourceId+"\"")
 	queryURI := fmt.Sprintf(api.UnityInstancesFilter, api.ReplicationSessionAction, url.QueryEscape(filter))
-	rsIdResult := &types.ReplicationSession{}
-	err := r.client.executeWithRetryAuthenticate(ctx, http.MethodGet, queryURI, nil, rsIdResult)
+	//rsIdResult := &types.ReplicationSession{}
+	listReplSession := &types.ListReplicationSession{}
+	err := r.client.executeWithRetryAuthenticate(ctx, http.MethodGet, queryURI, nil, listReplSession)
 	if err != nil {
 		return nil, err
 	}
-	return rsIdResult, nil
+	if len(listReplSession.ReplicationSessions) == 0 {
+		return nil, nil
+	}
+	return &listReplSession.ReplicationSessions[0], nil
 }
 
 func (r *Replication) FindReplicationSessionById(ctx context.Context, rsId string) (*types.ReplicationSession, error) {

@@ -35,6 +35,7 @@ type testConfig struct {
 	ipinterfaceAPI  *Ipinterface
 	fileAPI         *Filesystem
 	metricsAPI      *Metrics
+	replicationAPI  *Replication
 }
 
 var testConf *testConfig
@@ -89,6 +90,7 @@ func TestMain(m *testing.M) {
 	testConf.ipinterfaceAPI = NewIPInterface(testClient)
 	testConf.fileAPI = NewFilesystem(testClient)
 	testConf.metricsAPI = NewMetrics(testClient)
+	testConf.replicationAPI = NewReplicationSession(testClient)
 
 	code := m.Run()
 	fmt.Println("------------End of TestMain--------------")

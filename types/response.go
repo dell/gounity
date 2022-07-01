@@ -473,7 +473,7 @@ type ReplicationSessionContent struct {
 	ReplicationSessionId string `json:"id"`
 	Name                 string `json:"name"`
 	Status               int    `json:"status"`
-	MaxTimeOutOfSync     int32  `json:"maxTimeOutOfSync"`
+	MaxTimeOutOfSync     string `json:"maxTimeOutOfSync"`
 	SrcResourceId        string `json:"srcResourceId"`
 	DstResourceId        string `json:"dstResourceId"`
 	SrcStatus            string `json:"srcStatus"`
@@ -490,5 +490,5 @@ type RemoteSystem struct {
 }
 
 type RemoteSystemContent struct {
-	RemoteSystemId string `json:"id"`
+	Id string `json:"id"`
 }
