@@ -61,6 +61,9 @@ const (
 	//UnityModifyLunURI Modify Lun URIs
 	UnityModifyLunURI = UnityAPIModifyStorageResourceURI + "/action/modifyLun"
 
+	//UnityModifyCGURI Modify Consistency Group URIs
+	UnityModifyCGURI = UnityAPIModifyStorageResourceURI + "/action/modifyConsistencyGroup"
+
 	//UnityModifyFilesystemURI Modify Filesystem URIs
 	UnityModifyFilesystemURI = UnityAPIModifyStorageResourceURI + "/action/modifyFilesystem"
 
@@ -79,6 +82,9 @@ const (
 
 	//UnityInstancesFilter does Unity Instance Filter
 	UnityInstancesFilter = UnityAPIInstanceTypeResources + "?filter=%s"
+
+	//UnityInstancesFilter does Unity Instance Filter with fields
+	UnityInstancesFilterWithFields = UnityAPIInstanceTypeResourcesWithFields + "&filter=%s"
 
 	UnityMetric              = "metric"
 	UnityMetricQueryResult   = "metricQueryResult"
@@ -105,4 +111,6 @@ const (
 	TenantAction             = "tenant"
 	RemoteSystemAction       = "remoteSystem"
 	ReplicationSessionAction = "replicationSession"
+	CreateCGAction        	 = "createConsistencyGroup"
+	ModifyCGAction        	 = "modifyConsistencyGroup/%s"
 )

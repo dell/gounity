@@ -104,6 +104,7 @@ func (c *Client) executeWithRetryAuthenticate(ctx context.Context, method, uri s
 	headers[api.HeaderKeyContentType] = conHeader
 	headers[api.XEmcRestClient] = "true"
 	log.Debug("Invoking REST API server info Method: ", method, ", URI: ", uri)
+	fmt.Println("Method: ", method, ", URI: ", uri)
 	err := c.api.DoWithHeaders(ctx, method, uri, headers, body, resp)
 	if err == nil {
 		log.Debug("Execution successful on Method: ", method, ", URI: ", uri)

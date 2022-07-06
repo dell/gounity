@@ -47,7 +47,7 @@ type Volume struct {
 //VolumeContent struct to capture volume properties
 type VolumeContent struct {
 	ResourceID             string               `json:"id"`
-	Name                   string               `json:"name,omitempty"`
+	Name                   string               `json:"name"`
 	Description            string               `json:"description,omitempty"`
 	Type                   int                  `json:"type,omitempty"`
 	SizeTotal              uint64               `json:"sizeTotal,omitempty"`
@@ -73,6 +73,7 @@ type ConsistencyGroup struct {
 
 //ConsistencyGroupContent struct to capture ConsistencyGroup properties
 type ConsistencyGroupContent struct {
+
 	ResourceID    string        `json:"id"`
 	Name          string        `json:"name,omitempty"`
 	Description   string        `json:"description,omitempty"`
@@ -86,11 +87,15 @@ type ConsistencyGroupContent struct {
 	TieringPolicy int           `json:"tieringPolicy,omitempty"`
 	Health        HealthContent `json:"health,omitempty"`
 
-	isReplicationDestination bool `json:"isReplicationDestination"`
-	replicationType          int  `json:"replicationType,omitempty"`
-	syncReplicationType      int  `json:"syncReplicationType,omitempty"`
-
-	Volumes []Volume `json:"luns,omitempty"`
+	IsReplicationDestination bool 				`json:"isReplicationDestination"`
+	ReplicationType 		int 				`json:"replicationType,omitempty"`
+	SyncReplicationType 	int 				`json:"syncReplicationType,omitempty"`
+	
+	SnapSchedule    		*SnapSchedule   	`json:"snapSchedule,omitempty"`
+	IsSnapSchedulePaused	bool 				`json:"isSnapSchedulePaused,omitempty"`
+	IsSyncReplicated		bool				`json:"isSyncReplicated,omitempty"`
+	
+	Volumes 				[]*VolumeContent	`json:"luns,omitempty"`
 }
 
 //ParentSnap to capture Source Snapshot ID
@@ -518,5 +523,7 @@ type RemoteSystem struct {
 }
 
 type RemoteSystemContent struct {
-	Id string `json:"id"`
+	Id 	string 	`json:"id"`
+	Name string `json:"name"`
 }
+

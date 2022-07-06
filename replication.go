@@ -34,6 +34,7 @@ func (r *Replication) FindRemoteSystemByName(ctx context.Context, remoteSystemNa
 	log.Debugf("Remote system name: %s Id: %s", remoteSystemName, remoteSystemNameResp.RemoteSystemContent.Id)
 	return remoteSystemNameResp, nil
 }
+// https://10.230.24.51/api/types/replicationSession/action/recommendDestResourceConfigurations?compact=true&visibility=Engineering
 
 func (r *Replication) CreateReplicationSession(ctx context.Context, replicationSessionName, srcResourceId, dstResourceId, remoteSystemName string, maxTimeOutOfSync string) (*types.ReplicationSession, error) {
 	var createRS types.CreateReplicationSessionParam
@@ -49,13 +50,16 @@ func (r *Replication) CreateReplicationSession(ctx context.Context, replicationS
 	if err != nil {
 		return nil, fmt.Errorf("can't find remote system %v. Error:%v", remoteSystem, err)
 	}
-	//remoteSystem := types.RemoteSystemContent{
-	//	Id: remoteSystemId.RemoteSystemContent.Id,
-	//}
-	createRS.RemoteSystem = remoteSystem.RemoteSystemContent
+
+	// remoteSystem = &types.RemoteSystemContent{
+	// 	Id: remoteSystemId.RemoteSystemContent.Id,
+	// }
+
+	createRS.RemoteSystem = &remoteSystem.RemoteSystemContent
 	createRS.MaxTimeOutOfSync = maxTimeOutOfSync
 	createRS.SrcResourceId = srcResourceId
 	createRS.DstResourceId = dstResourceId
+	createRS.OverwriteDestination = true
 	rsResp := &types.ReplicationSession{}
 	err = r.client.executeWithRetryAuthenticate(ctx, http.MethodPost, fmt.Sprintf(api.UnityAPIInstanceTypeResources, api.ReplicationSessionAction), createRS, rsResp)
 	if err != nil {
@@ -63,6 +67,7 @@ func (r *Replication) CreateReplicationSession(ctx context.Context, replicationS
 	}
 	return rsResp, nil
 }
+
 
 func (r *Replication) FindReplicationSessionIdBySrcResourceID(ctx context.Context, srcResourceId string) (*types.ReplicationSession, error) {
 	filter := fmt.Sprintf("srcResourceId eq %s", "\""+srcResourceId+"\"")
@@ -77,6 +82,56 @@ func (r *Replication) FindReplicationSessionIdBySrcResourceID(ctx context.Contex
 		return nil, nil
 	}
 	return &listReplSession.ReplicationSessions[0], nil
+}
+
+//DeleteConsistencyGroup - Delete ReplicationSession by ID. 
+func (r *Replication) DeleteReplicationSession(ctx context.Context, rID string) error {
+	if len(rID) == 0 {
+		return errors.New("ReplicationSession Id cannot be empty")
+	}
+
+	_, err := r.FindReplicationSessionById(ctx, rID)
+
+	if err != nil {
+		return err
+	}
+
+	deleteErr := r.client.executeWithRetryAuthenticate(ctx, http.MethodDelete, fmt.Sprintf(api.UnityAPIGetResourceURI, api.ReplicationSessionAction, rID), nil, nil)
+
+	if deleteErr != nil {
+		return fmt.Errorf("delete ReplicationSession %s Failed. Error: %v", rID, deleteErr)
+	}
+
+	return nil
+}
+
+func (r *Replication) FindReplicationSessionBySrcResourceID(ctx context.Context, srcResourceId string) (*types.ReplicationSession, error) {
+	if len(srcResourceId) == 0 {
+		return nil, fmt.Errorf("SrcResourceId shouldn't be empty")
+	}
+	filter := fmt.Sprintf("srcResourceId eq \"%s\"", srcResourceId)
+	queryURI := fmt.Sprintf(api.UnityInstancesFilterWithFields, api.ReplicationSessionAction, ReplicationSessionFields, url.QueryEscape(filter))
+	rsResp := &types.ListReplicationSession{}
+	err := r.client.executeWithRetryAuthenticate(ctx, http.MethodGet, queryURI, nil, rsResp)
+	if err != nil {
+		return nil, err
+	}
+	rs := &rsResp.ReplicationSessions[0]
+	return rs, nil
+}
+
+func (r *Replication) FindReplicationSessionByName(ctx context.Context, rsName string) (*types.ReplicationSession, error) {
+	log := util.GetRunIDLogger(ctx)
+	if rsName == "" {
+		return nil, errors.New("Replication session name cannot be empty")
+	}
+	rsResp := &types.ReplicationSession{}
+	err := r.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityAPIGetResourceByNameWithFieldsURI, api.ReplicationSessionAction, rsName, ReplicationSessionFields), nil, rsResp)
+	if err != nil {
+		return nil, fmt.Errorf("unable to find Replication Session name %s Error: %v", rsName, err)
+	}
+	log.Debugf("Replcation Session name: %s Id: %s", rsResp.ReplicationSessionContent.Name, rsResp.ReplicationSessionContent.ReplicationSessionId)
+	return rsResp, nil
 }
 
 func (r *Replication) FindReplicationSessionById(ctx context.Context, rsId string) (*types.ReplicationSession, error) {

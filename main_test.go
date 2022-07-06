@@ -29,6 +29,8 @@ type testConfig struct {
 	tenant          string
 	hostList        []string
 	volumeAPI       *Volume
+	cgAPI       	*ConsistencyGroup
+	rAPI       		*Replication
 	hostAPI         *Host
 	poolAPI         *Storagepool
 	snapAPI         *Snapshot
@@ -87,6 +89,10 @@ func TestMain(m *testing.M) {
 	testConf.poolAPI = NewStoragePool(testClient)
 	testConf.snapAPI = NewSnapshot(testClient)
 	testConf.volumeAPI = NewVolume(testClient)
+
+	testConf.cgAPI = NewConsistencyGroup(testClient)
+	testConf.rAPI = NewReplicationSession(testClient)
+
 	testConf.ipinterfaceAPI = NewIPInterface(testClient)
 	testConf.fileAPI = NewFilesystem(testClient)
 	testConf.metricsAPI = NewMetrics(testClient)

@@ -60,25 +60,72 @@ type LunCreateParam struct {
 
 // ConsistencyGroupCreate create consistency group request
 type ConsistencyGroupCreate struct {
-	// Unique name for the consistency group.
-	// The name should contain no special HTTP characters and no unprintable characters.
-	// Although the case of the name provided is reserved, uniqueness check is case-insensitive,
-	// so the same name in two different cases is not considered unique.
-	Name string `json:"name"`
-	// Description for the consistency group. The description should not be more than 256
-	// characters long and should not have any unprintable characters.
-	Description string `json:"description,omitempty"`
-	// Unique identifier of an optional protection policy to assign to the consistency group.
-	// ProtectionPolicyID string `json:"protection_policy_id,omitempty"`
-	// A list of identifiers of existing volumes that should be added to the consistency group.
-	// All the volumes must be on the same appliance and should not be part of another consistency group.
-	// If a list of volumes is not specified or if the specified list is empty, an
-	// empty consistency group of type Volume will be created.
-	// VolumeIds []string `json:"lun_ids,omitempty"`
+	Name 						string 						`json:"name"`
+	Description 				string 						`json:"description,omitempty"`
+	ReplicationParameters 		*CGReplicationParameters 	`json:"replicationParameters,omitempty"`
+	LunAdd						*[]CGLunAdd					`json:"lunAdd,omitempty"`
+	LunCreate					*[]CGLunCreate				`json:"lunCreate,omitempty"`
+	SnapScheduleParameters 		*SnapScheduleParameters 	`json:"snapScheduleParameters,omitempty"`
 }
 
-type ConsistencyGroupChangePolicy struct {
-	ProtectionPolicyID string `json:"protection_policy_id"`
+// ConsistencyGroupModify create consistency group request
+type ConsistencyGroupModify struct {
+	Name 						string 						`json:"name,omitempty"`
+	Description 				string 						`json:"description,omitempty"`
+	LunAdd						*[]CGLunAdd					`json:"lunAdd,omitempty"`
+	LunCreate					*[]CGLunModify			`json:"lunCreate,omitempty"`
+	SnapScheduleParameters 		*SnapScheduleParameters 	`json:"snapScheduleParameters,omitempty"`
+}
+
+type CGReplicationParameters struct {
+	IsReplicationDestination	bool 						`json:"isReplicationDestination,omitempty"`
+}
+
+type CGLunAdd struct {
+	Lun *CGLun `json:"lun,omitempty"`
+}
+
+// type CGLunCreate struct {
+// 	LunCreateEl *CGLunCreateEl `json:"lunCreate,omitempty"`
+// }
+
+type CGLun struct {
+	Id string `json:"id,omitempty"`
+}
+
+type CGLunCreate struct {
+	Name string `json:"name"`
+	LunParams *CGLunCreateParams `json:"lunParameters"`
+}
+
+type CGLunModify struct {
+	Name string `json:"name"`
+	LunParams *CGLunModifyParams `json:"lunParameters"`
+}
+
+type CGLunCreateParams struct {
+	Size uint64 `json:"size"`
+	// (Applies only to create requests.)
+	Pool *CGLunCretePool `json:"pool"`
+}
+
+type CGLunModifyParams struct {
+	Size uint64 `json:"size"`
+}
+
+type CGLunCretePool struct {
+	Id string `json:"id"`
+}
+
+
+type SnapScheduleParameters struct {
+	SnapSchedule    		*SnapSchedule   `json:"snapSchedule,omitempty"`
+	IsSnapSchedulePaused 	bool 			`json:"isSnapSchedulePaused,omitempty"`
+}
+
+type SnapSchedule struct {
+	ID 		string 	`json:"id,omitempty"`
+	Name 	string 	`json:"name,omitempty"`
 }
 
 //Tenants Struct to capture the Tenants
@@ -306,9 +353,10 @@ type CreateLunThinCloneParam struct {
 type InitiatorType string
 
 type CreateReplicationSessionParam struct {
-	Name             string              `json:"name"`
-	MaxTimeOutOfSync string              `json:"maxTimeOutOfSync"`
-	SrcResourceId    string              `json:"srcResourceId"`
-	DstResourceId    string              `json:"dstResourceId"`
-	RemoteSystem     RemoteSystemContent `json:"remoteSystem,omitempty"`
+	Name             		string              `json:"name"`
+	MaxTimeOutOfSync 		string              `json:"maxTimeOutOfSync"`
+	SrcResourceId    		string              `json:"srcResourceId"`
+	DstResourceId    		string              `json:"dstResourceId"`
+	RemoteSystem     		*RemoteSystemContent `json:"remoteSystem,omitempty"`
+	OverwriteDestination    bool 				`json:"overwriteDestination,omitempty"`
 }

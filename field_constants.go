@@ -4,6 +4,9 @@ const (
 	//LunDisplayFields to display the Volume fields
 	LunDisplayFields = "id,name,description,type,wwn,sizeTotal,sizeUsed,sizeAllocated,hostAccess,pool,tieringPolicy,ioLimitPolicy,isThinEnabled,isDataReductionEnabled,isThinClone,parentSnap,originalParentLun?fields,health"
 
+	//ConsistencyGroupDisplayFields to display the ConsistencyGroup fields
+	ConsistencyGroupDisplayFields = "id,name,description,type,sizeTotal,sizeUsed,sizeAllocated,pools,isThinClone,parentSnap,health,isReplicationDestination,replicationType,syncReplicationType,luns,snapSchedule"
+
 	//FileSystemDisplayFields to display the File System fields
 	FileSystemDisplayFields = "id,name,description,type,sizeTotal,isThinEnabled,isDataReductionEnabled,pool,nasServer,storageResource,nfsShare?fields,cifsShare,tieringPolicy,hostIOSize,health"
 
