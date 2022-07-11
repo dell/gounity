@@ -4,12 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"net/http"
-	"net/url"
-
 	"github.com/dell/gounity/api"
 	"github.com/dell/gounity/types"
 	"github.com/dell/gounity/util"
+	"net/http"
+	"net/url"
 )
 
 type Replication struct {
@@ -34,6 +33,22 @@ func (r *Replication) FindRemoteSystemByName(ctx context.Context, remoteSystemNa
 	log.Debugf("Remote system name: %s Id: %s", remoteSystemName, remoteSystemNameResp.RemoteSystemContent.Id)
 	return remoteSystemNameResp, nil
 }
+
+func (r *Replication) FindRemoteSystemById(ctx context.Context, remoteSystemId string) (*types.RemoteSystem, error) {
+	log := util.GetRunIDLogger(ctx)
+	remoteSystemId, err := util.ValidateResourceName(remoteSystemId, api.MaxResourceNameLength)
+	if err != nil {
+		return nil, err
+	}
+	remoteSystem := &types.RemoteSystem{}
+	err = r.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityAPIGetResourceWithFieldsURI, api.RemoteSystemAction, remoteSystemId, RemoteSystemFields), nil, remoteSystem)
+	if err != nil {
+		return nil, fmt.Errorf("unable to find Remote system %v. Error: %v", remoteSystemId, err)
+	}
+	log.Debugf("Remote system Id: %s", remoteSystemId)
+	return remoteSystem, nil
+}
+
 // https://10.230.24.51/api/types/replicationSession/action/recommendDestResourceConfigurations?compact=true&visibility=Engineering
 
 func (r *Replication) CreateReplicationSession(ctx context.Context, replicationSessionName, srcResourceId, dstResourceId, remoteSystemName string, maxTimeOutOfSync string) (*types.ReplicationSession, error) {
@@ -68,23 +83,22 @@ func (r *Replication) CreateReplicationSession(ctx context.Context, replicationS
 	return rsResp, nil
 }
 
+//func (r *Replication) FindReplicationSessionIdBySrcResourceID(ctx context.Context, srcResourceId string) (*types.ReplicationSession, error) {
+//	filter := fmt.Sprintf("srcResourceId eq %s", "\""+srcResourceId+"\"")
+//	queryURI := fmt.Sprintf(api.UnityInstancesFilter, api.ReplicationSessionAction, url.QueryEscape(filter))
+//	//rsIdResult := &types.ReplicationSession{}
+//	listReplSession := &types.ListReplicationSession{}
+//	err := r.client.executeWithRetryAuthenticate(ctx, http.MethodGet, queryURI, nil, listReplSession)
+//	if err != nil {
+//		return nil, err
+//	}
+//	if len(listReplSession.ReplicationSessions) == 0 {
+//		return nil, nil
+//	}
+//	return &listReplSession.ReplicationSessions[0], nil
+//}
 
-func (r *Replication) FindReplicationSessionIdBySrcResourceID(ctx context.Context, srcResourceId string) (*types.ReplicationSession, error) {
-	filter := fmt.Sprintf("srcResourceId eq %s", "\""+srcResourceId+"\"")
-	queryURI := fmt.Sprintf(api.UnityInstancesFilter, api.ReplicationSessionAction, url.QueryEscape(filter))
-	//rsIdResult := &types.ReplicationSession{}
-	listReplSession := &types.ListReplicationSession{}
-	err := r.client.executeWithRetryAuthenticate(ctx, http.MethodGet, queryURI, nil, listReplSession)
-	if err != nil {
-		return nil, err
-	}
-	if len(listReplSession.ReplicationSessions) == 0 {
-		return nil, nil
-	}
-	return &listReplSession.ReplicationSessions[0], nil
-}
-
-//DeleteConsistencyGroup - Delete ReplicationSession by ID. 
+//DeleteConsistencyGroup - Delete ReplicationSession by ID.
 func (r *Replication) DeleteReplicationSession(ctx context.Context, rID string) error {
 	if len(rID) == 0 {
 		return errors.New("ReplicationSession Id cannot be empty")
@@ -109,14 +123,17 @@ func (r *Replication) FindReplicationSessionBySrcResourceID(ctx context.Context,
 	if len(srcResourceId) == 0 {
 		return nil, fmt.Errorf("SrcResourceId shouldn't be empty")
 	}
-	filter := fmt.Sprintf("srcResourceId eq \"%s\"", srcResourceId)
+	filter := fmt.Sprintf("srcResourceId eq %s", "\""+srcResourceId+"\"")
 	queryURI := fmt.Sprintf(api.UnityInstancesFilterWithFields, api.ReplicationSessionAction, ReplicationSessionFields, url.QueryEscape(filter))
-	rsResp := &types.ListReplicationSession{}
-	err := r.client.executeWithRetryAuthenticate(ctx, http.MethodGet, queryURI, nil, rsResp)
+	listReplSession := &types.ListReplicationSession{}
+	err := r.client.executeWithRetryAuthenticate(ctx, http.MethodGet, queryURI, nil, listReplSession)
 	if err != nil {
 		return nil, err
 	}
-	rs := &rsResp.ReplicationSessions[0]
+	if len(listReplSession.ReplicationSessions) == 0 {
+		return nil, nil
+	}
+	rs := &listReplSession.ReplicationSessions[0]
 	return rs, nil
 }
 
@@ -146,4 +163,24 @@ func (r *Replication) FindReplicationSessionById(ctx context.Context, rsId strin
 	}
 	log.Debugf("Replcation Session name: %s Id: %s", rsResp.ReplicationSessionContent.Name, rsResp.ReplicationSessionContent.ReplicationSessionId)
 	return rsResp, nil
+}
+
+func (r *Replication) DeleteReplicationSessionById(ctx context.Context, sessionId string) error {
+	log := util.GetRunIDLogger(ctx)
+	if len(sessionId) == 0 {
+		return errors.New("Replication session Id cannot be empty")
+	}
+
+	_, err := r.FindReplicationSessionById(ctx, sessionId)
+	if err != nil {
+		return err
+	}
+
+	deleteErr := r.client.executeWithRetryAuthenticate(ctx, http.MethodDelete, fmt.Sprintf(api.UnityAPIGetResourceURI, api.ReplicationSessionAction, sessionId), nil, nil)
+	if deleteErr != nil {
+		return fmt.Errorf("delete replication session %s Failed. Error: %v", sessionId, deleteErr)
+	}
+	log.Debugf("Delete Replication session %s Successful", sessionId)
+
+	return nil
 }
