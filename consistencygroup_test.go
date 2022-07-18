@@ -1,4 +1,4 @@
-﻿package gounity
+package gounity
 
 import (
 	"context"
@@ -46,7 +46,6 @@ func TestCG(t *testing.T) {
 
 	// 				}},
 	// 			}
-
 
 	// cgName = "Unit-test-cg-20220629165615"
 
@@ -142,7 +141,6 @@ func createConsistencyGroupTest(t *testing.T) {
 		t.Fatalf("Create cg exceeding max name length case failed: %v", err)
 	}
 
-
 	fmt.Println("Create cg Test - Successful")
 }
 
@@ -169,5 +167,5 @@ func deleteCGTest(t *testing.T) {
 	}
 
 	fmt.Println("Delete ConsistencyGroup Test - Successful")
-	
+
 }

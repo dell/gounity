@@ -49,8 +49,6 @@ func (r *Replication) FindRemoteSystemById(ctx context.Context, remoteSystemId s
 	return remoteSystem, nil
 }
 
-// https://10.230.24.51/api/types/replicationSession/action/recommendDestResourceConfigurations?compact=true&visibility=Engineering
-
 func (r *Replication) CreateReplicationSession(ctx context.Context, replicationSessionName, srcResourceId, dstResourceId, remoteSystemName string, maxTimeOutOfSync string) (*types.ReplicationSession, error) {
 	var createRS types.CreateReplicationSessionParam
 	if len(srcResourceId) == 0 {
@@ -66,10 +64,6 @@ func (r *Replication) CreateReplicationSession(ctx context.Context, replicationS
 		return nil, fmt.Errorf("can't find remote system %v. Error:%v", remoteSystem, err)
 	}
 
-	// remoteSystem = &types.RemoteSystemContent{
-	// 	Id: remoteSystemId.RemoteSystemContent.Id,
-	// }
-
 	createRS.RemoteSystem = &remoteSystem.RemoteSystemContent
 	createRS.MaxTimeOutOfSync = maxTimeOutOfSync
 	createRS.SrcResourceId = srcResourceId
@@ -82,21 +76,6 @@ func (r *Replication) CreateReplicationSession(ctx context.Context, replicationS
 	}
 	return rsResp, nil
 }
-
-//func (r *Replication) FindReplicationSessionIdBySrcResourceID(ctx context.Context, srcResourceId string) (*types.ReplicationSession, error) {
-//	filter := fmt.Sprintf("srcResourceId eq %s", "\""+srcResourceId+"\"")
-//	queryURI := fmt.Sprintf(api.UnityInstancesFilter, api.ReplicationSessionAction, url.QueryEscape(filter))
-//	//rsIdResult := &types.ReplicationSession{}
-//	listReplSession := &types.ListReplicationSession{}
-//	err := r.client.executeWithRetryAuthenticate(ctx, http.MethodGet, queryURI, nil, listReplSession)
-//	if err != nil {
-//		return nil, err
-//	}
-//	if len(listReplSession.ReplicationSessions) == 0 {
-//		return nil, nil
-//	}
-//	return &listReplSession.ReplicationSessions[0], nil
-//}
 
 //DeleteConsistencyGroup - Delete ReplicationSession by ID.
 func (r *Replication) DeleteReplicationSession(ctx context.Context, rID string) error {

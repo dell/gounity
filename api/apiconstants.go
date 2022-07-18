@@ -111,6 +111,6 @@ const (
 	TenantAction             = "tenant"
 	RemoteSystemAction       = "remoteSystem"
 	ReplicationSessionAction = "replicationSession"
-	CreateCGAction        	 = "createConsistencyGroup"
-	ModifyCGAction        	 = "modifyConsistencyGroup/%s"
+	CreateCGAction           = "createConsistencyGroup"
+	ModifyCGAction           = "modifyConsistencyGroup/%s"
 )

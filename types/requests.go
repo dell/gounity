@@ -60,25 +60,25 @@ type LunCreateParam struct {
 
 // ConsistencyGroupCreate create consistency group request
 type ConsistencyGroupCreate struct {
-	Name 						string 						`json:"name"`
-	Description 				string 						`json:"description,omitempty"`
-	ReplicationParameters 		*CGReplicationParameters 	`json:"replicationParameters,omitempty"`
-	LunAdd						*[]CGLunAdd					`json:"lunAdd,omitempty"`
-	LunCreate					*[]CGLunCreate				`json:"lunCreate,omitempty"`
-	SnapScheduleParameters 		*SnapScheduleParameters 	`json:"snapScheduleParameters,omitempty"`
+	Name                   string                   `json:"name"`
+	Description            string                   `json:"description,omitempty"`
+	ReplicationParameters  *CGReplicationParameters `json:"replicationParameters,omitempty"`
+	LunAdd                 *[]CGLunAdd              `json:"lunAdd,omitempty"`
+	LunCreate              *[]CGLunCreate           `json:"lunCreate,omitempty"`
+	SnapScheduleParameters *SnapScheduleParameters  `json:"snapScheduleParameters,omitempty"`
 }
 
 // ConsistencyGroupModify create consistency group request
 type ConsistencyGroupModify struct {
-	Name 						string 						`json:"name,omitempty"`
-	Description 				string 						`json:"description,omitempty"`
-	LunAdd						*[]CGLunAdd					`json:"lunAdd,omitempty"`
-	LunCreate					*[]CGLunModify			`json:"lunCreate,omitempty"`
-	SnapScheduleParameters 		*SnapScheduleParameters 	`json:"snapScheduleParameters,omitempty"`
+	Name                   string                  `json:"name,omitempty"`
+	Description            string                  `json:"description,omitempty"`
+	LunAdd                 *[]CGLunAdd             `json:"lunAdd,omitempty"`
+	LunCreate              *[]CGLunModify          `json:"lunCreate,omitempty"`
+	SnapScheduleParameters *SnapScheduleParameters `json:"snapScheduleParameters,omitempty"`
 }
 
 type CGReplicationParameters struct {
-	IsReplicationDestination	bool 						`json:"isReplicationDestination,omitempty"`
+	IsReplicationDestination bool `json:"isReplicationDestination,omitempty"`
 }
 
 type CGLunAdd struct {
@@ -94,12 +94,12 @@ type CGLun struct {
 }
 
 type CGLunCreate struct {
-	Name string `json:"name"`
+	Name      string             `json:"name"`
 	LunParams *CGLunCreateParams `json:"lunParameters"`
 }
 
 type CGLunModify struct {
-	Name string `json:"name"`
+	Name      string             `json:"name"`
 	LunParams *CGLunModifyParams `json:"lunParameters"`
 }
 
@@ -117,15 +117,14 @@ type CGLunCretePool struct {
 	Id string `json:"id"`
 }
 
-
 type SnapScheduleParameters struct {
-	SnapSchedule    		*SnapSchedule   `json:"snapSchedule,omitempty"`
-	IsSnapSchedulePaused 	bool 			`json:"isSnapSchedulePaused,omitempty"`
+	SnapSchedule         *SnapSchedule `json:"snapSchedule,omitempty"`
+	IsSnapSchedulePaused bool          `json:"isSnapSchedulePaused,omitempty"`
 }
 
 type SnapSchedule struct {
-	ID 		string 	`json:"id,omitempty"`
-	Name 	string 	`json:"name,omitempty"`
+	ID   string `json:"id,omitempty"`
+	Name string `json:"name,omitempty"`
 }
 
 //Tenants Struct to capture the Tenants
@@ -185,8 +184,9 @@ type FsExpandModifyParam struct {
 
 //FsModifyParameters Struct to modify Filesystem parameters
 type FsModifyParameters struct {
-	NFSShares   *[]NFSShareCreateParam `json:"nfsShareCreate,omitempty"`
-	Description string                 `json:"description,omitempty"`
+	NFSShares             *[]NFSShareCreateParam `json:"nfsShareCreate,omitempty"`
+	Description           string                 `json:"description,omitempty"`
+	ReplicationParameters ReplicationParameters  `json:"replicationParameters"`
 }
 
 //NFSShareCreateParam Struct to capture NFS Share Create parameters
@@ -353,10 +353,10 @@ type CreateLunThinCloneParam struct {
 type InitiatorType string
 
 type CreateReplicationSessionParam struct {
-	Name             		string              `json:"name"`
-	MaxTimeOutOfSync 		string              `json:"maxTimeOutOfSync"`
-	SrcResourceId    		string              `json:"srcResourceId"`
-	DstResourceId    		string              `json:"dstResourceId"`
-	RemoteSystem     		*RemoteSystemContent `json:"remoteSystem,omitempty"`
-	OverwriteDestination    bool 				`json:"overwriteDestination,omitempty"`
+	Name                 string               `json:"name"`
+	MaxTimeOutOfSync     string               `json:"maxTimeOutOfSync"`
+	SrcResourceId        string               `json:"srcResourceId"`
+	DstResourceId        string               `json:"dstResourceId"`
+	RemoteSystem         *RemoteSystemContent `json:"remoteSystem,omitempty"`
+	OverwriteDestination bool                 `json:"overwriteDestination,omitempty"`
 }

@@ -1,4 +1,4 @@
-﻿/*
+/*
 Copyright (c) 2021 Dell Corporation
 All Rights Reserved
 */
@@ -19,17 +19,16 @@ import (
 
 //Constants
 const (
-	ConsistencyGroupNameMaxLength             = 95
+	ConsistencyGroupNameMaxLength     = 95
 	ConsistencyGroupNotFoundErrorCode = "0x7d13005"
 )
-
 
 //ErrorConsistencyGroupNotFound stores ConsistencyGroup not found error
 var ErrorConsistencyGroupNotFound = errors.New("Unable to find ConsistencyGroup")
 
 //ConsistencyGroup structure
 type ConsistencyGroup struct {
-	client *Client 
+	client *Client
 }
 
 //NewConsistencyGroup function returns ConsistencyGroup
@@ -39,7 +38,7 @@ func NewConsistencyGroup(client *Client) *ConsistencyGroup {
 
 // GetConsistencyGroup query returns ConsistencyGroup by id
 func (c *ConsistencyGroup) GetConsistencyGroup(ctx context.Context, id string) (*types.ConsistencyGroup, error) {
-	cgResp  := &types.ConsistencyGroup{}
+	cgResp := &types.ConsistencyGroup{}
 	log := util.GetRunIDLogger(ctx)
 
 	err := c.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityAPIGetResourceWithFieldsURI, api.StorageResourceAction, id, ConsistencyGroupDisplayFields), nil, cgResp)
@@ -51,7 +50,7 @@ func (c *ConsistencyGroup) GetConsistencyGroup(ctx context.Context, id string) (
 		}
 		return nil, err
 	}
-	
+
 	return cgResp, nil
 }
 
@@ -60,7 +59,7 @@ func (c *ConsistencyGroup) GetConsistencyGroupByName(ctx context.Context, cgName
 	if len(cgName) == 0 {
 		return nil, fmt.Errorf("ConsistencyGroup Name shouldn't be empty")
 	}
-	cgResp  := &types.ConsistencyGroup{}
+	cgResp := &types.ConsistencyGroup{}
 	err := c.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityAPIGetResourceByNameWithFieldsURI, api.StorageResourceAction, cgName, ConsistencyGroupDisplayFields), nil, cgResp)
 	if err != nil {
 		return nil, fmt.Errorf("unable to find ConsistencyGroup by name %s", cgName)
@@ -92,7 +91,7 @@ func (c *ConsistencyGroup) CreateConsistencyGroup(ctx context.Context, createPar
 	return cgResp, nil
 }
 
-//DeleteConsistencyGroup - Delete ConsistencyGroup by ID. 
+//DeleteConsistencyGroup - Delete ConsistencyGroup by ID.
 func (c *ConsistencyGroup) DeleteConsistencyGroup(ctx context.Context, cgID string) error {
 	if len(cgID) == 0 {
 		return errors.New("ConsistencyGroup Id cannot be empty")
@@ -113,7 +112,7 @@ func (c *ConsistencyGroup) DeleteConsistencyGroup(ctx context.Context, cgID stri
 	return nil
 }
 
-//ModifyConsistencyGroup - Modify ConsistencyGroup by ID. 
+//ModifyConsistencyGroup - Modify ConsistencyGroup by ID.
 func (c *ConsistencyGroup) ModifyConsistencyGroup(ctx context.Context, cgID string, modifyParams *types.ConsistencyGroupModify) error {
 
 	err := c.client.executeWithRetryAuthenticate(ctx, http.MethodPost, fmt.Sprintf(api.UnityModifyCGURI, cgID), modifyParams, nil)
@@ -123,4 +122,3 @@ func (c *ConsistencyGroup) ModifyConsistencyGroup(ctx context.Context, cgID stri
 
 	return nil
 }
-

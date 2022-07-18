@@ -29,8 +29,8 @@ type testConfig struct {
 	tenant          string
 	hostList        []string
 	volumeAPI       *Volume
-	cgAPI       	*ConsistencyGroup
-	rAPI       		*Replication
+	cgAPI           *ConsistencyGroup
+	rAPI            *Replication
 	hostAPI         *Host
 	poolAPI         *Storagepool
 	snapAPI         *Snapshot
