@@ -298,6 +298,11 @@ type Filesystem struct {
 	FileContent FileContent `json:"content"`
 }
 
+type ListFilesystem struct{
+	Filesystems []Filesystem `json:"entries"`
+
+}
+
 //FileContent struct to capture filesystem parameters
 type FileContent struct {
 	ID                     string        `json:"id"`

@@ -10,6 +10,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 
@@ -533,4 +534,18 @@ func (f *Filesystem) ExpandFilesystem(ctx context.Context, filesystemID string, 
 		FsParameters: &fsExpandParams,
 	}
 	return f.client.executeWithRetryAuthenticate(ctx, http.MethodPost, fmt.Sprintf(api.UnityModifyFilesystemURI, filesystem.FileContent.StorageResource.ID), fsExpandReqParam, nil)
+}
+
+func (f *Filesystem) FindFileSystemGroupByPrefix(ctx context.Context, prefix string) ([]types.Filesystem, error) {
+	fsResp := &types.ListFilesystem{}
+	if prefix == "" {
+		return nil, errors.New("Filesystem prefix cannot be empty")
+	}
+	filter := fmt.Sprintf("name lk %s", "\""+prefix+ "%" + "\"")
+	queryURI := fmt.Sprintf(api.UnityInstancesFilterWithFields, api.FileSystemAction, FileSystemDisplayFields, url.QueryEscape(filter))
+	err := f.client.executeWithRetryAuthenticate(ctx, http.MethodGet, queryURI, nil, fsResp)
+	if err != nil {
+		return nil, err
+	}
+	return fsResp.Filesystems, nil
 }
