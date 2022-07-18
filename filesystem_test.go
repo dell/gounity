@@ -465,7 +465,6 @@ func expandFilesystemTest(t *testing.T) {
 
 	fmt.Println("Expand Filesystem Test Successful")
 }
-
 func deleteFilesystemTest(t *testing.T) {
 
 	fmt.Println("Begin - Delete Filesystem Test")

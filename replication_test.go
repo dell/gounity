@@ -17,23 +17,9 @@ func TestReplication(t *testing.T) {
 	now := time.Now()
 	timeStamp := now.Format("20060102150405")
 	rsName = "Unit-test-cg-" + timeStamp
-
-	// resourceTestID := "res_3298"
-	// rsID = "171798790213_APM00213404194_0000_171798707121_APM00213404195_0000"
-	// rsName = "repl_sess_res_res_90942_res_res_3473"
-	// rsysName = "APM00213404194 "
-
-	// findRSBySrcResourceID(t, resourceTestID)
-	// findRSByID(t)
-	// findRSysByName(t)
-	// findRSessionByName(t)
-	
-
-	// createRS(t)
-	// deleteRS(t)
 }
 
-func createRS(t *testing.T){
+func createRS(t *testing.T) {
 	fmt.Println("Begin - Create RS Test")
 
 	replicationSessionName := "newRStest"
@@ -48,12 +34,10 @@ func createRS(t *testing.T){
 		t.Fatalf("Create RS failed: %v", err)
 	}
 
-
-
 	fmt.Println("Create RS Test - Successful")
 }
 
-func deleteRS(t *testing.T){
+func deleteRS(t *testing.T) {
 	fmt.Println("Begin - Delete RS Test")
 
 	replicationSessionId := "81604379415_APM00213404195_0000_81604379592_APM00213404194_0000"

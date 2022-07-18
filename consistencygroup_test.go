@@ -19,44 +19,6 @@ func TestCG(t *testing.T) {
 	now := time.Now()
 	timeStamp := now.Format("20060102150405")
 	cgName = "Unit-test-cg-" + timeStamp
-
-	// cgCreateParams = &types.ConsistencyGroupCreate{
-	// 				Name:               cgName,
-	// 				LunAdd: &[]types.CGLunAdd{{
-	// 					Lun: &types.CGLun{
-	// 						Id: "sv_27379",
-	// 					},
-	// 				}},
-	// 			}
-	// create ReplicationDestination CG + Volume
-	// cgCreateParams = &types.ConsistencyGroupCreate{
-	// 				Name:               "dm-cg-copy",
-	// 				ReplicationParameters: &types.CGReplicationParameters{
-	// 					IsReplicationDestination: true,
-	// 				},
-	// 				LunCreate: &[]types.CGLunCreate{{
-
-	// 						Name: "dm-v-copy",
-	// 						LunParams: &types.CGLunCreateParams{
-	// 							Size: 7516192768,
-	// 							Pool: &types.CGLunCretePool{
-	// 								Id: "pool_14",
-	// 							},
-	// 						},
-
-	// 				}},
-	// 			}
-
-	// cgName = "Unit-test-cg-20220629165615"
-
-	// createConsistencyGroupTest(t)
-
-	// findCGByNameTest(t)
-
-	// getCGByIDTest(t)
-
-	// deleteCGTest(t)
-
 }
 
 func findCGByNameTest(t *testing.T) {
