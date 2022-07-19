@@ -33,7 +33,7 @@ func (r *Replication) FindRemoteSystemByName(ctx context.Context, remoteSystemNa
 	if err != nil {
 		return nil, fmt.Errorf("unable to find Remote system %v. Error: %v", remoteSystemName, err)
 	}
-	log.Debugf("Remote system name: %s Id: %s", remoteSystemName, remoteSystemNameResp.RemoteSystemContent.Id)
+	log.Debugf("Remote system name: %s Id: %s", remoteSystemName, remoteSystemNameResp.RemoteSystemContent.ID)
 	return remoteSystemNameResp, nil
 }
 
