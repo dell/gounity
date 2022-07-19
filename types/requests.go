@@ -87,10 +87,6 @@ type CGLunAdd struct {
 	Lun *CGLun `json:"lun,omitempty"`
 }
 
-// type CGLunCreate struct {
-// 	LunCreateEl *CGLunCreateEl `json:"lunCreate,omitempty"`
-// }
-
 // CGLun structure
 type CGLun struct {
 	ID string `json:"id,omitempty"`
