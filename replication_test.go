@@ -23,31 +23,18 @@ func createRS(t *testing.T) {
 	fmt.Println("Begin - Create RS Test")
 
 	replicationSessionName := "newRStest"
-	srcResourceId := "res_3585"
-	dstResourceId := "res_90957"
+	srcResourceID := "res_3585"
+	dstResourceID := "res_90957"
 	remoteSystemName := "APM00213404194"
 	maxTimeOutOfSync := "0"
 
-	rs, err := testConf.rAPI.CreateReplicationSession(ctx, replicationSessionName, srcResourceId, dstResourceId, remoteSystemName, maxTimeOutOfSync)
+	rs, err := testConf.rAPI.CreateReplicationSession(ctx, replicationSessionName, srcResourceID, dstResourceID, remoteSystemName, maxTimeOutOfSync)
 	fmt.Println("Create RS :", prettyPrintJSON(rs), err)
 	if err != nil {
 		t.Fatalf("Create RS failed: %v", err)
 	}
 
 	fmt.Println("Create RS Test - Successful")
-}
-
-func deleteRS(t *testing.T) {
-	fmt.Println("Begin - Delete RS Test")
-
-	replicationSessionId := "81604379415_APM00213404195_0000_81604379592_APM00213404194_0000"
-
-	err := testConf.rAPI.DeleteReplicationSession(ctx, replicationSessionId)
-	if err != nil {
-		t.Fatalf("Delete RS failed: %v", err)
-	}
-
-	fmt.Println("Delete RS Test - Successful")
 }
 
 func findRSBySrcResourceID(t *testing.T, resourceTestID string) {
@@ -59,11 +46,11 @@ func findRSBySrcResourceID(t *testing.T, resourceTestID string) {
 	if err != nil {
 		t.Fatalf("Find RS By ResourceID failed: %v", err)
 	}
-	rsID = rs.ReplicationSessionContent.ReplicationSessionId
+	rsID = rs.ReplicationSessionContent.ReplicationSessionID
 
 	//Negative cases
-	emptyId := ""
-	rs, err = testConf.rAPI.FindReplicationSessionBySrcResourceID(ctx, emptyId)
+	emptyID := ""
+	rs, err = testConf.rAPI.FindReplicationSessionBySrcResourceID(ctx, emptyID)
 	if err == nil {
 		t.Fatalf("Find RS By ResourceID with empty Id case failed: %v", err)
 	}
@@ -75,15 +62,15 @@ func findRSByID(t *testing.T) {
 
 	fmt.Println("Begin - Find RS By ID Test")
 
-	rs, err := testConf.rAPI.FindReplicationSessionById(ctx, rsID)
+	rs, err := testConf.rAPI.FindReplicationSessionByID(ctx, rsID)
 	fmt.Println("RS By ID:", prettyPrintJSON(rs), err)
 	if err != nil {
 		t.Fatalf("Find RS By ID failed: %v", err)
 	}
 
 	//Negative cases
-	emptyId := ""
-	rs, err = testConf.rAPI.FindReplicationSessionById(ctx, emptyId)
+	emptyID := ""
+	rs, err = testConf.rAPI.FindReplicationSessionByID(ctx, emptyID)
 	if err == nil {
 		t.Fatalf("Find RS By ID with empty Id case failed: %v", err)
 	}

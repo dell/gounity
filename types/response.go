@@ -297,6 +297,7 @@ type Filesystem struct {
 	FileContent FileContent `json:"content"`
 }
 
+//ListFileSystem list of file systems
 type ListFileSystem struct {
 	Filesystems []Filesystem `json:"entries"`
 }
@@ -500,32 +501,37 @@ type MetricInstance struct {
 	Content MetricInfo `json:"content"`
 }
 
+//ReplicationSession struct to capture replication session object
 type ReplicationSession struct {
 	ReplicationSessionContent *ReplicationSessionContent `json:"content"`
 }
 
+//ReplicationSessionContent struct to capture replication session parameters
 type ReplicationSessionContent struct {
-	ReplicationSessionId string              `json:"id"`
+	ReplicationSessionID string              `json:"id"`
 	Name                 string              `json:"name"`
 	Status               int                 `json:"status"`
 	MaxTimeOutOfSync     int                 `json:"maxTimeOutOfSync"`
-	SrcResourceId        string              `json:"srcResourceId"`
-	DstResourceId        string              `json:"dstResourceId"`
+	SrcResourceID        string              `json:"srcResourceId"`
+	DstResourceID        string              `json:"dstResourceId"`
 	SrcStatus            int                 `json:"srcStatus,omitempty"`
 	DstStatus            int                 `json:"dstStatus"`
 	LocalRole            int                 `json:"localRole"`
 	RemoteSystem         RemoteSystemContent `json:"remoteSystem"`
 }
 
+//ListReplicationSession list of replication sessions
 type ListReplicationSession struct {
 	ReplicationSessions []ReplicationSession `json:"entries"`
 }
 
+//RemoteSystem struct to capture remote filesystem object
 type RemoteSystem struct {
 	RemoteSystemContent RemoteSystemContent `json:"content"`
 }
 
+//RemoteSystemContent struct to capture remote filesystem parameters
 type RemoteSystemContent struct {
-	Id   string `json:"id"`
+	ID   string `json:"id"`
 	Name string `json:"name"`
 }

@@ -45,7 +45,7 @@ func (c *ConsistencyGroup) GetConsistencyGroup(ctx context.Context, id string) (
 
 	if err != nil {
 		if strings.Contains(err.Error(), ConsistencyGroupNotFoundErrorCode) {
-			log.Debugf("Unable to get ConsistencyGroup by Id %s Error: %v", id, err)
+			log.Debugf("Unable to get ConsistencyGroup by ID %s Error: %v", id, err)
 			return nil, ErrorConsistencyGroupNotFound
 		}
 		return nil, err
@@ -68,9 +68,7 @@ func (c *ConsistencyGroup) GetConsistencyGroupByName(ctx context.Context, cgName
 	return cgResp, nil
 }
 
-// CreateLun API create a ConsistencyGroup with the given arguments.
-// Pre-validations: 1. Name is not empty.
-//                  2. Length of the ConsistencyGroup name should not exceed ConsistencyGroupNameMaxLength characters
+// CreateConsistencyGroup - CreateLun API create a consistency group with the given arguments.
 func (c *ConsistencyGroup) CreateConsistencyGroup(ctx context.Context, createParams *types.ConsistencyGroupCreate) (*types.ConsistencyGroup, error) {
 
 	if createParams.Name == "" {
@@ -94,7 +92,7 @@ func (c *ConsistencyGroup) CreateConsistencyGroup(ctx context.Context, createPar
 //DeleteConsistencyGroup - Delete ConsistencyGroup by ID.
 func (c *ConsistencyGroup) DeleteConsistencyGroup(ctx context.Context, cgID string) error {
 	if len(cgID) == 0 {
-		return errors.New("ConsistencyGroup Id cannot be empty")
+		return errors.New("ConsistencyGroup ID cannot be empty")
 	}
 
 	_, err := c.GetConsistencyGroup(ctx, cgID)

@@ -77,10 +77,12 @@ type ConsistencyGroupModify struct {
 	SnapScheduleParameters *SnapScheduleParameters `json:"snapScheduleParameters,omitempty"`
 }
 
+// CGReplicationParameters to work with IsReplicationDestination parameter
 type CGReplicationParameters struct {
 	IsReplicationDestination bool `json:"isReplicationDestination,omitempty"`
 }
 
+// CGLunAdd structure
 type CGLunAdd struct {
 	Lun *CGLun `json:"lun,omitempty"`
 }
@@ -89,39 +91,47 @@ type CGLunAdd struct {
 // 	LunCreateEl *CGLunCreateEl `json:"lunCreate,omitempty"`
 // }
 
+// CGLun structure
 type CGLun struct {
-	Id string `json:"id,omitempty"`
+	ID string `json:"id,omitempty"`
 }
 
+// CGLunCreate structure
 type CGLunCreate struct {
 	Name      string             `json:"name"`
 	LunParams *CGLunCreateParams `json:"lunParameters"`
 }
 
+// CGLunModify structure
 type CGLunModify struct {
 	Name      string             `json:"name"`
 	LunParams *CGLunModifyParams `json:"lunParameters"`
 }
 
+// CGLunCreateParams structure
 type CGLunCreateParams struct {
 	Size uint64 `json:"size"`
 	// (Applies only to create requests.)
 	Pool *CGLunCretePool `json:"pool"`
 }
 
+// CGLunModifyParams structure
 type CGLunModifyParams struct {
 	Size uint64 `json:"size"`
 }
 
+// CGLunCretePool structure
 type CGLunCretePool struct {
-	Id string `json:"id"`
+	ID string `json:"id"`
 }
 
+// SnapScheduleParameters structure
 type SnapScheduleParameters struct {
 	SnapSchedule         *SnapSchedule `json:"snapSchedule,omitempty"`
 	IsSnapSchedulePaused bool          `json:"isSnapSchedulePaused,omitempty"`
 }
 
+// SnapSchedule structure
 type SnapSchedule struct {
 	ID   string `json:"id,omitempty"`
 	Name string `json:"name,omitempty"`
@@ -352,11 +362,12 @@ type CreateLunThinCloneParam struct {
 //InitiatorType is string Type
 type InitiatorType string
 
+// CreateReplicationSessionParam structure
 type CreateReplicationSessionParam struct {
 	Name                 string               `json:"name"`
 	MaxTimeOutOfSync     string               `json:"maxTimeOutOfSync"`
-	SrcResourceId        string               `json:"srcResourceId"`
-	DstResourceId        string               `json:"dstResourceId"`
+	SrcResourceID        string               `json:"srcResourceId"`
+	DstResourceID        string               `json:"dstResourceId"`
 	RemoteSystem         *RemoteSystemContent `json:"remoteSystem,omitempty"`
 	OverwriteDestination bool                 `json:"overwriteDestination,omitempty"`
 }

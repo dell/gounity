@@ -263,7 +263,7 @@ func (f *Filesystem) updateDescription(ctx context.Context, filesystemID, descri
 	return nil
 }
 
-//Updates IsReplicationDestination parameter of filesystem
+//UpdateReplicationDestinationParameter updates IsReplicationDestination parameter of filesystem
 func (f *Filesystem) UpdateReplicationDestinationParameter(ctx context.Context, resourceID string, isReplicationDestination bool) error {
 	log := util.GetRunIDLogger(ctx)
 	log.Debugf("Updating Filesystem %s, isReplicationDestination parameter is %v", resourceID, isReplicationDestination)
@@ -556,8 +556,8 @@ func (f *Filesystem) ExpandFilesystem(ctx context.Context, filesystemID string, 
 	return f.client.executeWithRetryAuthenticate(ctx, http.MethodPost, fmt.Sprintf(api.UnityModifyFilesystemURI, filesystem.FileContent.StorageResource.ID), fsExpandReqParam, nil)
 }
 
+//FindFileSystemGroupByPrefix get list of file systems of one volume group
 func (f *Filesystem) FindFileSystemGroupByPrefix(ctx context.Context, prefix string) (*types.ListFileSystem, error) {
-	//log := util.GetRunIDLogger(ctx)
 	if len(prefix) == 0 {
 		return nil, fmt.Errorf("Filesystem prefix cannot be empty")
 	}
@@ -569,9 +569,5 @@ func (f *Filesystem) FindFileSystemGroupByPrefix(ctx context.Context, prefix str
 	if err != nil {
 		return nil, err
 	}
-	// if len(listFileSystems.Filesystems) == 0 {
-	// 	log.Info("List of File Systems is empty")
-	// 	return nil, nil
-	// }
 	return listFileSystems, nil
 }
