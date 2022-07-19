@@ -263,26 +263,6 @@ func (f *Filesystem) updateDescription(ctx context.Context, filesystemID, descri
 	return nil
 }
 
-//UpdateReplicationDestinationParameter updates IsReplicationDestination parameter of filesystem
-func (f *Filesystem) UpdateReplicationDestinationParameter(ctx context.Context, resourceID string, isReplicationDestination bool) error {
-	log := util.GetRunIDLogger(ctx)
-	log.Debugf("Updating Filesystem %s, isReplicationDestination parameter is %v", resourceID, isReplicationDestination)
-	if len(resourceID) == 0 {
-		return errors.New("Filesystem Id cannot be empty")
-	}
-
-	filesystemModifyParam := types.FsModifyParameters{
-		ReplicationParameters: types.ReplicationParameters{
-			isReplicationDestination,
-		},
-	}
-	err := f.client.executeWithRetryAuthenticate(ctx, http.MethodPost, fmt.Sprintf(api.UnityModifyFilesystemURI, resourceID), filesystemModifyParam, nil)
-	if err != nil {
-		return fmt.Errorf("update filesystem: %s isReplicationDestination failed with error: %v", resourceID, err)
-	}
-	return nil
-}
-
 //CreateNFSShare - Create NFS Share for a File system
 func (f *Filesystem) CreateNFSShare(ctx context.Context, name, path, filesystemID string, nfsShareDefaultAccess NFSShareDefaultAccess) (*types.Filesystem, error) {
 	if len(filesystemID) == 0 {

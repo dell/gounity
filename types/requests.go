@@ -194,9 +194,8 @@ type FsExpandModifyParam struct {
 
 //FsModifyParameters Struct to modify Filesystem parameters
 type FsModifyParameters struct {
-	NFSShares             *[]NFSShareCreateParam `json:"nfsShareCreate,omitempty"`
-	Description           string                 `json:"description,omitempty"`
-	ReplicationParameters ReplicationParameters  `json:"replicationParameters"`
+	NFSShares   *[]NFSShareCreateParam `json:"nfsShareCreate,omitempty"`
+	Description string                 `json:"description,omitempty"`
 }
 
 //NFSShareCreateParam Struct to capture NFS Share Create parameters
