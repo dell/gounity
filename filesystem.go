@@ -557,7 +557,7 @@ func (f *Filesystem) ExpandFilesystem(ctx context.Context, filesystemID string, 
 }
 
 func (f *Filesystem) FindFileSystemGroupByPrefix(ctx context.Context, prefix string) (*types.ListFileSystem, error) {
-	log := util.GetRunIDLogger(ctx)
+	//log := util.GetRunIDLogger(ctx)
 	if len(prefix) == 0 {
 		return nil, fmt.Errorf("Filesystem prefix cannot be empty")
 	}
@@ -569,9 +569,9 @@ func (f *Filesystem) FindFileSystemGroupByPrefix(ctx context.Context, prefix str
 	if err != nil {
 		return nil, err
 	}
-	if len(listFileSystems.Filesystems) == 0 {
-		log.Info("List of File Systems is empty")
-		return nil, nil
-	}
+	// if len(listFileSystems.Filesystems) == 0 {
+	// 	log.Info("List of File Systems is empty")
+	// 	return nil, nil
+	// }
 	return listFileSystems, nil
 }
