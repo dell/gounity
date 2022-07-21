@@ -47,7 +47,7 @@ type Volume struct {
 //VolumeContent struct to capture volume properties
 type VolumeContent struct {
 	ResourceID             string               `json:"id"`
-	Name                   string               `json:"name,omitempty"`
+	Name                   string               `json:"name"`
 	Description            string               `json:"description,omitempty"`
 	Type                   int                  `json:"type,omitempty"`
 	SizeTotal              uint64               `json:"sizeTotal,omitempty"`
@@ -64,6 +64,37 @@ type VolumeContent struct {
 	TieringPolicy          int                  `json:"tieringPolicy,omitempty"`
 	ParentVolume           StorageResource      `json:"originalParentLun,omitempty"`
 	Health                 HealthContent        `json:"health,omitempty"`
+}
+
+//ConsistencyGroup struct to capture response of ConsistencyGroup
+type ConsistencyGroup struct {
+	ConsistencyGroupContent ConsistencyGroupContent `json:"content"`
+}
+
+//ConsistencyGroupContent struct to capture ConsistencyGroup properties
+type ConsistencyGroupContent struct {
+	ResourceID    string        `json:"id"`
+	Name          string        `json:"name,omitempty"`
+	Description   string        `json:"description,omitempty"`
+	Type          int           `json:"type,omitempty"`
+	SizeTotal     uint64        `json:"sizeTotal,omitempty"`
+	SizeUsed      uint64        `json:"sizeUsed,omitempty"`
+	SizeAllocated uint64        `json:"sizeAllocated,omitempty"`
+	Pools         []Pool        `json:"pools,omitempty"`
+	IsThinClone   bool          `json:"isThinClone"`
+	ParentSnap    ParentSnap    `json:"parentSnap,omitempty"`
+	TieringPolicy int           `json:"tieringPolicy,omitempty"`
+	Health        HealthContent `json:"health,omitempty"`
+
+	IsReplicationDestination bool `json:"isReplicationDestination"`
+	ReplicationType          int  `json:"replicationType,omitempty"`
+	SyncReplicationType      int  `json:"syncReplicationType,omitempty"`
+
+	SnapSchedule         *SnapSchedule `json:"snapSchedule,omitempty"`
+	IsSnapSchedulePaused bool          `json:"isSnapSchedulePaused,omitempty"`
+	IsSyncReplicated     bool          `json:"isSyncReplicated,omitempty"`
+
+	Volumes []*VolumeContent `json:"luns,omitempty"`
 }
 
 //ParentSnap to capture Source Snapshot ID
@@ -266,6 +297,11 @@ type Filesystem struct {
 	FileContent FileContent `json:"content"`
 }
 
+//ListFileSystem list of file systems
+type ListFileSystem struct {
+	Filesystems []Filesystem `json:"entries"`
+}
+
 //FileContent struct to capture filesystem parameters
 type FileContent struct {
 	ID                     string        `json:"id"`
@@ -463,4 +499,39 @@ type MetricInstance struct {
 	Base    string     `json:"base"`
 	Updated string     `json:"updated"`
 	Content MetricInfo `json:"content"`
+}
+
+//ReplicationSession struct to capture replication session object
+type ReplicationSession struct {
+	ReplicationSessionContent *ReplicationSessionContent `json:"content"`
+}
+
+//ReplicationSessionContent struct to capture replication session parameters
+type ReplicationSessionContent struct {
+	ReplicationSessionID string              `json:"id"`
+	Name                 string              `json:"name"`
+	Status               int                 `json:"status"`
+	MaxTimeOutOfSync     int                 `json:"maxTimeOutOfSync"`
+	SrcResourceID        string              `json:"srcResourceId"`
+	DstResourceID        string              `json:"dstResourceId"`
+	SrcStatus            int                 `json:"srcStatus,omitempty"`
+	DstStatus            int                 `json:"dstStatus"`
+	LocalRole            int                 `json:"localRole"`
+	RemoteSystem         RemoteSystemContent `json:"remoteSystem"`
+}
+
+//ListReplicationSession list of replication sessions
+type ListReplicationSession struct {
+	ReplicationSessions []ReplicationSession `json:"entries"`
+}
+
+//RemoteSystem struct to capture remote filesystem object
+type RemoteSystem struct {
+	RemoteSystemContent RemoteSystemContent `json:"content"`
+}
+
+//RemoteSystemContent struct to capture remote filesystem parameters
+type RemoteSystemContent struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
 }

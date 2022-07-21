@@ -61,6 +61,9 @@ const (
 	//UnityModifyLunURI Modify Lun URIs
 	UnityModifyLunURI = UnityAPIModifyStorageResourceURI + "/action/modifyLun"
 
+	//UnityModifyCGURI Modify Consistency Group URIs
+	UnityModifyCGURI = UnityAPIModifyStorageResourceURI + "/action/modifyConsistencyGroup"
+
 	//UnityModifyFilesystemURI Modify Filesystem URIs
 	UnityModifyFilesystemURI = UnityAPIModifyStorageResourceURI + "/action/modifyFilesystem"
 
@@ -80,27 +83,34 @@ const (
 	//UnityInstancesFilter does Unity Instance Filter
 	UnityInstancesFilter = UnityAPIInstanceTypeResources + "?filter=%s"
 
+	//UnityInstancesFilter does Unity Instance Filter with fields
+	UnityInstancesFilterWithFields = UnityAPIInstanceTypeResourcesWithFields + "&filter=%s"
+
 	UnityMetric              = "metric"
 	UnityMetricQueryResult   = "metricQueryResult"
 	UnityMetricRealTimeQuery = "metricRealTimeQuery"
 
 	//Action types for URL's
 
-	LunAction               = "lun"
-	CreateLunAction         = "createLun"
-	FileSystemAction        = "filesystem"
-	CreateFSAction          = "createFilesystem"
-	NfsShareAction          = "nfsShare"
-	StorageResourceAction   = "storageResource"
-	HostAction              = "host"
-	IPInterface             = "ipInterface"
-	SnapAction              = "snap"
-	PoolAction              = "pool"
-	IOLimitPolicy           = "ioLimitPolicy"
-	LicenseAction           = "license"
-	HostInitiatorPathAction = "hostInitiatorPath"
-	HostInitiatorAction     = "hostInitiator"
-	HostIPPortAction        = "hostIPPort"
-	NasServerAction         = "nasServer"
-	TenantAction            = "tenant"
+	LunAction                = "lun"
+	CreateLunAction          = "createLun"
+	FileSystemAction         = "filesystem"
+	CreateFSAction           = "createFilesystem"
+	NfsShareAction           = "nfsShare"
+	StorageResourceAction    = "storageResource"
+	HostAction               = "host"
+	IPInterface              = "ipInterface"
+	SnapAction               = "snap"
+	PoolAction               = "pool"
+	IOLimitPolicy            = "ioLimitPolicy"
+	LicenseAction            = "license"
+	HostInitiatorPathAction  = "hostInitiatorPath"
+	HostInitiatorAction      = "hostInitiator"
+	HostIPPortAction         = "hostIPPort"
+	NasServerAction          = "nasServer"
+	TenantAction             = "tenant"
+	RemoteSystemAction       = "remoteSystem"
+	ReplicationSessionAction = "replicationSession"
+	CreateCGAction           = "createConsistencyGroup"
+	ModifyCGAction           = "modifyConsistencyGroup/%s"
 )

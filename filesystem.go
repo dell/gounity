@@ -10,6 +10,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 
@@ -118,7 +119,7 @@ func (f *Filesystem) GetFilesystemIDFromResID(ctx context.Context, filesystemRes
 }
 
 //CreateFilesystem - Create a new filesystem on the array
-func (f *Filesystem) CreateFilesystem(ctx context.Context, name, storagepool, description, nasServer string, size uint64, tieringPolicy, hostIOSize, supportedProtocol int, isThinEnabled, isDataReductionEnabled bool) (*types.Filesystem, error) {
+func (f *Filesystem) CreateFilesystem(ctx context.Context, name, storagepool, description, nasServer string, size uint64, tieringPolicy, hostIOSize, supportedProtocol int, isThinEnabled, isDataReductionEnabled bool, isReplicationDestination bool) (*types.Filesystem, error) {
 	log := util.GetRunIDLogger(ctx)
 	if name == "" {
 		return nil, errors.New("filesystem name should not be empty")
@@ -155,6 +156,10 @@ func (f *Filesystem) CreateFilesystem(ctx context.Context, name, storagepool, de
 		HostIOSize:        hostIOSize,
 		NasServer:         &nas,
 		FileEventSettings: fileEventSettings,
+	}
+
+	replParameters := types.ReplicationParameters{
+		IsReplicationDestination: isReplicationDestination,
 	}
 
 	volAPI := NewVolume(f.client)
@@ -194,9 +199,10 @@ func (f *Filesystem) CreateFilesystem(ctx context.Context, name, storagepool, de
 	}
 
 	fileReqParam := types.FsCreateParam{
-		Name:         name,
-		Description:  description,
-		FsParameters: &fsParams,
+		Name:                  name,
+		Description:           description,
+		FsParameters:          &fsParams,
+		ReplicationParameters: &replParameters,
 	}
 
 	fileResp := &types.Filesystem{}
@@ -528,4 +534,20 @@ func (f *Filesystem) ExpandFilesystem(ctx context.Context, filesystemID string, 
 		FsParameters: &fsExpandParams,
 	}
 	return f.client.executeWithRetryAuthenticate(ctx, http.MethodPost, fmt.Sprintf(api.UnityModifyFilesystemURI, filesystem.FileContent.StorageResource.ID), fsExpandReqParam, nil)
+}
+
+//FindFileSystemGroupByPrefix get list of file systems of one volume group
+func (f *Filesystem) FindFileSystemGroupByPrefix(ctx context.Context, prefix string) (*types.ListFileSystem, error) {
+	if len(prefix) == 0 {
+		return nil, fmt.Errorf("Filesystem prefix cannot be empty")
+	}
+
+	filter := fmt.Sprintf("name lk %s", "\""+prefix+"%\"")
+	queryURI := fmt.Sprintf(api.UnityInstancesFilterWithFields, api.StorageResourceAction, StorageResourceDisplayFields, url.QueryEscape(filter))
+	listFileSystems := &types.ListFileSystem{}
+	err := f.client.executeWithRetryAuthenticate(ctx, http.MethodGet, queryURI, nil, listFileSystems)
+	if err != nil {
+		return nil, err
+	}
+	return listFileSystems, nil
 }
