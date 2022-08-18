@@ -5,9 +5,7 @@ All Rights Reserved
 
 package types
 
-import (
-	"fmt"
-)
+import "fmt"
 
 //ErrorContent Struct to capture the Error information.
 type ErrorContent struct {
@@ -58,81 +56,6 @@ type LunCreateParam struct {
 	LunParameters *LunParameters `json:"lunParameters"`
 }
 
-// ConsistencyGroupCreate create consistency group request
-type ConsistencyGroupCreate struct {
-	Name                   string                   `json:"name"`
-	Description            string                   `json:"description,omitempty"`
-	ReplicationParameters  *CGReplicationParameters `json:"replicationParameters,omitempty"`
-	LunAdd                 *[]CGLunAdd              `json:"lunAdd,omitempty"`
-	LunCreate              *[]CGLunCreate           `json:"lunCreate,omitempty"`
-	SnapScheduleParameters *SnapScheduleParameters  `json:"snapScheduleParameters,omitempty"`
-}
-
-// ConsistencyGroupModify create consistency group request
-type ConsistencyGroupModify struct {
-	Name                   string                  `json:"name,omitempty"`
-	Description            string                  `json:"description,omitempty"`
-	LunAdd                 *[]CGLunAdd             `json:"lunAdd,omitempty"`
-	LunCreate              *[]CGLunModify          `json:"lunCreate,omitempty"`
-	SnapScheduleParameters *SnapScheduleParameters `json:"snapScheduleParameters,omitempty"`
-}
-
-// CGReplicationParameters to work with IsReplicationDestination parameter
-type CGReplicationParameters struct {
-	IsReplicationDestination bool `json:"isReplicationDestination,omitempty"`
-}
-
-// CGLunAdd structure
-type CGLunAdd struct {
-	Lun *CGLun `json:"lun,omitempty"`
-}
-
-// CGLun structure
-type CGLun struct {
-	ID string `json:"id,omitempty"`
-}
-
-// CGLunCreate structure
-type CGLunCreate struct {
-	Name      string             `json:"name"`
-	LunParams *CGLunCreateParams `json:"lunParameters"`
-}
-
-// CGLunModify structure
-type CGLunModify struct {
-	Name      string             `json:"name"`
-	LunParams *CGLunModifyParams `json:"lunParameters"`
-}
-
-// CGLunCreateParams structure
-type CGLunCreateParams struct {
-	Size uint64 `json:"size"`
-	// (Applies only to create requests.)
-	Pool *CGLunCretePool `json:"pool"`
-}
-
-// CGLunModifyParams structure
-type CGLunModifyParams struct {
-	Size uint64 `json:"size"`
-}
-
-// CGLunCretePool structure
-type CGLunCretePool struct {
-	ID string `json:"id"`
-}
-
-// SnapScheduleParameters structure
-type SnapScheduleParameters struct {
-	SnapSchedule         *SnapSchedule `json:"snapSchedule,omitempty"`
-	IsSnapSchedulePaused bool          `json:"isSnapSchedulePaused,omitempty"`
-}
-
-// SnapSchedule structure
-type SnapSchedule struct {
-	ID   string `json:"id,omitempty"`
-	Name string `json:"name,omitempty"`
-}
-
 //Tenants Struct to capture the Tenants
 type Tenants struct {
 	TenantID string `json:"id"`
@@ -152,10 +75,9 @@ type LunParameters struct {
 
 //FsCreateParam Struct to capture the Filesystem create Params
 type FsCreateParam struct {
-	Name                  string                 `json:"name"`
-	Description           string                 `json:"description,omitempty"`
-	FsParameters          *FsParameters          `json:"fsParameters"`
-	ReplicationParameters *ReplicationParameters `json:"replicationParameters,omitempty"`
+	Name         string        `json:"name"`
+	Description  string        `json:"description,omitempty"`
+	FsParameters *FsParameters `json:"fsParameters"`
 }
 
 //FsParameters Struct to capture the File system properties
@@ -171,11 +93,6 @@ type FsParameters struct {
 	IoLimitParameters      *HostIoLimitParameters `json:"ioLimitParameters,omitempty"`
 	NasServer              *NasServerID           `json:"nasServer"`
 	FileEventSettings      FileEventSettings      `json:"fileEventSettings,omitempty"`
-}
-
-//ReplicationParameters Struct for setting replication destination parameters
-type ReplicationParameters struct {
-	IsReplicationDestination bool `json:"isReplicationDestination"`
 }
 
 //FsExpandParameters Struct to capture expand Filesystem parameters
@@ -356,13 +273,3 @@ type CreateLunThinCloneParam struct {
 
 //InitiatorType is string Type
 type InitiatorType string
-
-// CreateReplicationSessionParam structure
-type CreateReplicationSessionParam struct {
-	Name                 string               `json:"name"`
-	MaxTimeOutOfSync     string               `json:"maxTimeOutOfSync"`
-	SrcResourceID        string               `json:"srcResourceId"`
-	DstResourceID        string               `json:"dstResourceId"`
-	RemoteSystem         *RemoteSystemContent `json:"remoteSystem,omitempty"`
-	OverwriteDestination bool                 `json:"overwriteDestination,omitempty"`
-}
