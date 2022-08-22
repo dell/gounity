@@ -29,15 +29,12 @@ type testConfig struct {
 	tenant          string
 	hostList        []string
 	volumeAPI       *Volume
-	cgAPI           *ConsistencyGroup
-	rAPI            *Replication
 	hostAPI         *Host
 	poolAPI         *Storagepool
 	snapAPI         *Snapshot
 	ipinterfaceAPI  *Ipinterface
 	fileAPI         *Filesystem
 	metricsAPI      *Metrics
-	replicationAPI  *Replication
 }
 
 var testConf *testConfig
@@ -89,14 +86,9 @@ func TestMain(m *testing.M) {
 	testConf.poolAPI = NewStoragePool(testClient)
 	testConf.snapAPI = NewSnapshot(testClient)
 	testConf.volumeAPI = NewVolume(testClient)
-
-	testConf.cgAPI = NewConsistencyGroup(testClient)
-	testConf.rAPI = NewReplicationSession(testClient)
-
 	testConf.ipinterfaceAPI = NewIPInterface(testClient)
 	testConf.fileAPI = NewFilesystem(testClient)
 	testConf.metricsAPI = NewMetrics(testClient)
-	testConf.replicationAPI = NewReplicationSession(testClient)
 
 	code := m.Run()
 	fmt.Println("------------End of TestMain--------------")
