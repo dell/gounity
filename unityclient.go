@@ -131,10 +131,8 @@ func (c *Client) executeWithRetryAuthenticate(ctx context.Context, method, uri s
 			log.Debug("need to re-authenticate")
 			// Authenticate then try again
 			configConnect := c.configConnect
-			// insecure, _ := strconv.ParseBool(os.Getenv("GOUNITY_INSECURE"))
-			log.Info("insecure flag when response code is 401: %t", configConnect.Insecure)
 			c, err = NewClientWithArgs(ctx, configConnect.Endpoint, configConnect.Insecure)
-			log.Info("config connect info during reauth when response code: %v", configConnect)
+			log.Info("insecure flag when response code is 401: %t", configConnect.Insecure)
 
 			if err != nil {
 				log.Debug("Failed creating a new goUnity client during reauth when response code is 401 ")
