@@ -45,17 +45,18 @@ var (
 	showHTTP, _ = strconv.ParseBool(os.Getenv("GOUNITY_SHOWHTTP"))
 )
 
-//Client Struct holds the configuration & REST Client.
+// Client Struct holds the configuration & REST Client.
 type Client struct {
 	configConnect *ConfigConnect
 	api           api.Client
 }
 
-//ConfigConnect Struct holds the endpoint & credential info.
+// ConfigConnect Struct holds the endpoint & credential info.
 type ConfigConnect struct {
 	Endpoint string
 	Username string
 	Password string
+	Insecure bool
 }
 
 // Authenticate make a REST API call [/loginSessionInfo] to Unity to get authenticate the given credentials.
@@ -129,7 +130,15 @@ func (c *Client) executeWithRetryAuthenticate(ctx context.Context, method, uri s
 		if e.ErrorContent.HTTPStatusCode == 401 {
 			log.Debug("need to re-authenticate")
 			// Authenticate then try again
-			if err := c.Authenticate(ctx, c.configConnect); err != nil {
+			configConnect := c.configConnect
+			c, err = NewClientWithArgs(ctx, configConnect.Endpoint, configConnect.Insecure)
+
+			if err != nil {
+				log.Debug("Failed creating a new goUnity client during reauth when response code is 401 ")
+				return err
+			}
+
+			if err := c.Authenticate(ctx, configConnect); err != nil {
 				return fmt.Errorf("authentication failure due to: %v", err)
 			}
 			log.Debug("Authentication success")
@@ -143,12 +152,12 @@ func (c *Client) executeWithRetryAuthenticate(ctx context.Context, method, uri s
 	return err
 }
 
-//SetToken function sets token
+// SetToken function sets token
 func (c *Client) SetToken(token string) {
 	c.api.SetToken(token)
 }
 
-//GetToken function gets token
+// GetToken function gets token
 func (c *Client) GetToken() string {
 	return c.api.GetToken()
 }
