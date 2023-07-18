@@ -478,3 +478,28 @@ type MetricInstance struct {
 	Updated string     `json:"updated"`
 	Content MetricInfo `json:"content"`
 }
+
+// SystemCapacityMetricResult is part of response of a SystemCapacityMetricsQueryResult query
+type SystemCapacityMetricResult struct {
+	ID               string `json:"id"`
+	SizeFree         int    `json:"sizeFree"`
+	SizeTotal        int    `json:"sizeTotal"`
+	SizeUsed         int    `json:"sizeUsed"`
+	SizePreallocated int    `json:"sizePreallocated"`
+	SizeSubscribed   int    `json:"sizeSubscribed"`
+	TotalLogicalSize int    `json:"totalLogicalSize"`
+}
+
+// SystemCapacityMetricsResultEntry is part of response of a SystemCapacityMetricsQueryResult query
+type SystemCapacityMetricsResultEntry struct {
+	Base    string                     `json:"base"`
+	Updated string                     `json:"updated"`
+	Content SystemCapacityMetricResult `json:"content"`
+}
+
+// SystemCapacityMetricsResult is response from querying systemCapacity
+type SystemCapacityMetricsQueryResult struct {
+	Base    string                             `json:"base"`
+	Updated string                             `json:"updated"`
+	Entries []SystemCapacityMetricsResultEntry `json:"entries"`
+}

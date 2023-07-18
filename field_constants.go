@@ -62,4 +62,7 @@ const (
 
 	//StoragePoolFields to display Storage Pool fields
 	StoragePoolFields = "id,name,description,sizeFree,sizeTotal,sizeUsed,sizeSubscribed,hasDataReductionEnabledLuns,hasDataReductionEnabledFs,isFASTCacheEnabled,type,isAllFlash,poolFastVP"
+
+	// SystemCapacityFields to display system capacity details
+	SystemCapacityFields = "id,sizeFree,sizeTotal,sizeUsed,sizePreallocated,sizeSubscribed,totalLogicalSize"
 )
