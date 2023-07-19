@@ -106,9 +106,11 @@ func getVolumeMetrics(t *testing.T) {
 	}
 
 	// Checking GetCapacity function
-	err = testConf.metricsAPI.GetCapacity(ctx)
-	if err != nil {
-		t.Fatal(err)
+	systemCapacityResult, testErr := testConf.metricsAPI.GetCapacity(ctx)
+	if testErr != nil {
+		t.Fatal(testErr)
 		return
+	} else {
+		fmt.Println(systemCapacityResult)
 	}
 }
