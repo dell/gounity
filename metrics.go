@@ -23,18 +23,18 @@ import (
 	"github.com/dell/gounity/util"
 )
 
-//Metrics structure
+// Metrics structure
 type Metrics struct {
 	client *Client
 }
 
-//NewMetrics returns a new instance of the Unity Metric query interface.
+// NewMetrics returns a new instance of the Unity Metric query interface.
 func NewMetrics(client *Client) *Metrics {
 	return &Metrics{client}
 }
 
-//GetAllRealTimeMetricPaths gets all the Unity Metric paths. Consider using for debugging
-//or enumerating metrics. This will take a bit of time to complete.
+// GetAllRealTimeMetricPaths gets all the Unity Metric paths. Consider using for debugging
+// or enumerating metrics. This will take a bit of time to complete.
 // - /api/types/metric/instances?compact=true&filter=isRealtimeAvailable eq true
 func (m *Metrics) GetAllRealTimeMetricPaths(ctx context.Context) error {
 	log := util.GetRunIDLogger(ctx)
@@ -61,7 +61,7 @@ func (m *Metrics) GetAllRealTimeMetricPaths(ctx context.Context) error {
 	return nil
 }
 
-//GetMetricsCollection gets Unity MetricsCollection of the provided 'queryID'.
+// GetMetricsCollection gets Unity MetricsCollection of the provided 'queryID'.
 // - The MetricCollection should exist already or you can create one using CreateXXXMetricsQuery.
 // - Example: GET /api/types/metricQueryResult/instances?filter=queryId eq 37
 func (m *Metrics) GetMetricsCollection(ctx context.Context, queryID int) (*types.MetricQueryResult, error) {
@@ -80,13 +80,13 @@ func (m *Metrics) GetMetricsCollection(ctx context.Context, queryID int) (*types
 	return metricsQueryResult, nil
 }
 
-//CreateRealTimeMetricsQuery create an MetricRealTime Collection of the given metric paths and collection interval.
-// - The GetMetricsCollection interface can be called to retrieve results.
-// - Example: POST api/types/metricRealTimeQuery/instances
-//            BODY:  {
-//               "paths": ["sp.*.cpu.summary.busyTicks" ,"sp.*.cpu.summary.idleTicks"],
-//               "interval": 5
-//            }
+// CreateRealTimeMetricsQuery create an MetricRealTime Collection of the given metric paths and collection interval.
+//   - The GetMetricsCollection interface can be called to retrieve results.
+//   - Example: POST api/types/metricRealTimeQuery/instances
+//     BODY:  {
+//     "paths": ["sp.*.cpu.summary.busyTicks" ,"sp.*.cpu.summary.idleTicks"],
+//     "interval": 5
+//     }
 func (m *Metrics) CreateRealTimeMetricsQuery(ctx context.Context, metricPaths []string, interval int) (*types.MetricQueryCreateResponse, error) {
 	log := util.GetRunIDLogger(ctx)
 
@@ -106,7 +106,7 @@ func (m *Metrics) CreateRealTimeMetricsQuery(ctx context.Context, metricPaths []
 	return metricQueryResponse, nil
 }
 
-//DeleteRealTimeMetricsQuery deletes the MetricRealTime Collection of the given queryID.
+// DeleteRealTimeMetricsQuery deletes the MetricRealTime Collection of the given queryID.
 // - Example: DELETE /api/instances/metricRealTimeQuery/37
 func (m *Metrics) DeleteRealTimeMetricsQuery(ctx context.Context, queryID int) error {
 	log := util.GetRunIDLogger(ctx)

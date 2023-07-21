@@ -16,13 +16,13 @@ package api
 
 import "github.com/dell/gounity/types"
 
-//InitiatorType constants
+// InitiatorType constants
 const (
 	FCInitiatorType     types.InitiatorType = "1"
 	ISCSCIInitiatorType types.InitiatorType = "2"
 )
 
-//constants and URIs
+// constants and URIs
 const (
 	MaxResourceNameLength = 63
 

@@ -18,12 +18,12 @@ import (
 	"github.com/dell/gounity/types"
 )
 
-//Host Structure
+// Host Structure
 type Host struct {
 	client *Client
 }
 
-//Host not found error variables
+// Host not found error variables
 var (
 	ErrorHostNotFound          = errors.New("unable to find host")
 	ErrorMultipleHostFound     = errors.New("Found multiple hosts with same name. Delete the duplicate entries on the array")
@@ -31,12 +31,12 @@ var (
 	HostNotFoundErrorCode      = "0x7d13005"
 )
 
-//NewHost function returns new host
+// NewHost function returns new host
 func NewHost(client *Client) *Host {
 	return &Host{client}
 }
 
-//FindHostByName Finds the Host by it's name. If the Host is not found, an error will be returned.
+// FindHostByName Finds the Host by it's name. If the Host is not found, an error will be returned.
 func (h *Host) FindHostByName(ctx context.Context, hostName string) (*types.Host, error) {
 	log := util.GetRunIDLogger(ctx)
 	if len(hostName) == 0 {
@@ -58,7 +58,7 @@ func (h *Host) FindHostByName(ctx context.Context, hostName string) (*types.Host
 	return hResponse, nil
 }
 
-//CreateHost Create a new Host
+// CreateHost Create a new Host
 func (h *Host) CreateHost(ctx context.Context, hostName string, tenantID string) (*types.Host, error) {
 	if len(hostName) == 0 {
 		return nil, errors.New("hostname shouldn't be empty")
@@ -85,7 +85,7 @@ func (h *Host) CreateHost(ctx context.Context, hostName string, tenantID string)
 	return hostResp, nil
 }
 
-//DeleteHost function is used only in unit tests
+// DeleteHost function is used only in unit tests
 func (h *Host) DeleteHost(ctx context.Context, hostName string) error {
 	if len(hostName) == 0 {
 		return fmt.Errorf("hostname shouldn't be empty")
@@ -99,7 +99,7 @@ func (h *Host) DeleteHost(ctx context.Context, hostName string) error {
 	return nil
 }
 
-//CreateHostIPPort - Create Host IP Port
+// CreateHostIPPort - Create Host IP Port
 func (h *Host) CreateHostIPPort(ctx context.Context, hostID, ip string) (*types.HostIPPort, error) {
 	if len(hostID) == 0 {
 		return nil, errors.New("host ID shouldn't be empty")
@@ -143,7 +143,7 @@ func (h *Host) ListHostInitiators(ctx context.Context) ([]types.HostInitiator, e
 	return listInitiatorResp.HostInitiator, nil
 }
 
-//FindHostInitiatorByName - Find Host Initiator by name
+// FindHostInitiatorByName - Find Host Initiator by name
 func (h *Host) FindHostInitiatorByName(ctx context.Context, wwnOrIqn string) (*types.HostInitiator, error) {
 	if len(wwnOrIqn) == 0 {
 		return nil, errors.New("host Initiator Name shouldn't be empty")
@@ -171,7 +171,7 @@ func (h *Host) FindHostInitiatorByName(ctx context.Context, wwnOrIqn string) (*t
 	return nil, errors.New("wwn or iqn not found")
 }
 
-//FindHostInitiatorByID - Find Host Initiator
+// FindHostInitiatorByID - Find Host Initiator
 func (h *Host) FindHostInitiatorByID(ctx context.Context, wwnOrIqn string) (*types.HostInitiator, error) {
 	hostInitiatorResp := &types.HostInitiator{}
 	err := h.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityAPIGetResourceWithFieldsURI, api.HostInitiatorAction, wwnOrIqn, HostInitiatorsDisplayFields), nil, hostInitiatorResp)
@@ -181,7 +181,7 @@ func (h *Host) FindHostInitiatorByID(ctx context.Context, wwnOrIqn string) (*typ
 	return hostInitiatorResp, nil
 }
 
-//CreateHostInitiator - Create Host Initiator
+// CreateHostInitiator - Create Host Initiator
 func (h *Host) CreateHostInitiator(ctx context.Context, hostID, wwnOrIqn string, initiatorType types.InitiatorType) (*types.HostInitiator, error) {
 	log := util.GetRunIDLogger(ctx)
 	if len(hostID) == 0 {
@@ -229,7 +229,7 @@ func (h *Host) CreateHostInitiator(ctx context.Context, hostID, wwnOrIqn string,
 	return hostInitiatorResp, nil
 }
 
-//ModifyHostInitiator - WILL BE DEPRECATED
+// ModifyHostInitiator - WILL BE DEPRECATED
 func (h *Host) ModifyHostInitiator(ctx context.Context, hostID string, initiator *types.HostInitiator) (*types.HostInitiator, error) {
 	if initiator == nil {
 		return nil, errors.New("HostInitiator shouldn't be null")
@@ -238,7 +238,7 @@ func (h *Host) ModifyHostInitiator(ctx context.Context, hostID string, initiator
 	return h.ModifyHostInitiatorByID(ctx, hostID, initiator.HostInitiatorContent.ID)
 }
 
-//ModifyHostInitiatorByID function modifies host initiator by ID
+// ModifyHostInitiatorByID function modifies host initiator by ID
 func (h *Host) ModifyHostInitiatorByID(ctx context.Context, hostID, initiatorID string) (*types.HostInitiator, error) {
 
 	if hostID == "" {
@@ -263,7 +263,7 @@ func (h *Host) ModifyHostInitiatorByID(ctx context.Context, hostID, initiatorID 
 	return hostInitiatorResp, nil
 }
 
-//FindHostInitiatorPathByID Finds Host Initiator
+// FindHostInitiatorPathByID Finds Host Initiator
 func (h *Host) FindHostInitiatorPathByID(ctx context.Context, initiatorPathID string) (*types.HostInitiatorPath, error) {
 	hostInitiatorPathResp := &types.HostInitiatorPath{}
 	err := h.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityAPIGetResourceWithFieldsURI, api.HostInitiatorPathAction, initiatorPathID, HostInitiatorPathDisplayFields), nil, hostInitiatorPathResp)
@@ -273,7 +273,7 @@ func (h *Host) FindHostInitiatorPathByID(ctx context.Context, initiatorPathID st
 	return hostInitiatorPathResp, nil
 }
 
-//FindFcPortByID Finds FC Port
+// FindFcPortByID Finds FC Port
 func (h *Host) FindFcPortByID(ctx context.Context, fcPortID string) (*types.FcPort, error) {
 	fcPortResp := &types.FcPort{}
 	err := h.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityAPIGetResourceWithFieldsURI, HostInitiatorPathDisplayFields, fcPortID, FcPortDisplayFields), nil, fcPortResp)
@@ -283,7 +283,7 @@ func (h *Host) FindFcPortByID(ctx context.Context, fcPortID string) (*types.FcPo
 	return fcPortResp, nil
 }
 
-//FindTenants finds tenants
+// FindTenants finds tenants
 func (h *Host) FindTenants(ctx context.Context) (*types.TenantInfo, error) {
 	tenantsResp := &types.TenantInfo{}
 	err := h.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityAPIGetTenantURI, api.TenantAction, TenantDisplayFields), nil, tenantsResp)
