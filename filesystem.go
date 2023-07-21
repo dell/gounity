@@ -19,20 +19,20 @@ import (
 	"github.com/dell/gounity/types"
 )
 
-//Filesystem structure
+// Filesystem structure
 type Filesystem struct {
 	client *Client
 }
 
-//FsNameMaxLength provides the allowed max length for filesystem name
+// FsNameMaxLength provides the allowed max length for filesystem name
 const (
 	FsNameMaxLength = 63
 )
 
-//AccessType type is string
+// AccessType type is string
 type AccessType string
 
-//AccessType constants
+// AccessType constants
 const (
 	ReadOnlyAccessType      = AccessType("READ_ONLY")
 	ReadWriteAccessType     = AccessType("READ_WRITE")
@@ -40,10 +40,10 @@ const (
 	ReadWriteRootAccessType = AccessType("READ_WRITE_ROOT")
 )
 
-//NFSShareDefaultAccess is string
+// NFSShareDefaultAccess is string
 type NFSShareDefaultAccess string
 
-//NFSShareDefaultAccess constants
+// NFSShareDefaultAccess constants
 const (
 	NoneDefaultAccess          = NFSShareDefaultAccess("0")
 	ReadOnlyDefaultAccess      = NFSShareDefaultAccess("1")
@@ -52,24 +52,24 @@ const (
 	ReadWriteRootDefaultAccess = NFSShareDefaultAccess("4")
 )
 
-//ErrorFilesystemNotFound stores error for filesystem not found
+// ErrorFilesystemNotFound stores error for filesystem not found
 var ErrorFilesystemNotFound = errors.New("Unable to find filesystem")
 
-//FilesystemNotFoundErrorCode stores error code for filesystem not found
+// FilesystemNotFoundErrorCode stores error code for filesystem not found
 var FilesystemNotFoundErrorCode = "0x7d13005"
 
-//AttachedSnapshotsErrorCode stores error code for attached snapshots
+// AttachedSnapshotsErrorCode stores error code for attached snapshots
 var AttachedSnapshotsErrorCode = "0x6000c17"
 
-//MarkFilesystemForDeletion stores filesystem for deletion mark
+// MarkFilesystemForDeletion stores filesystem for deletion mark
 var MarkFilesystemForDeletion = "csi-marked-filesystem-for-deletion(do not remove this from description)"
 
-//NewFilesystem function returns filesystem
+// NewFilesystem function returns filesystem
 func NewFilesystem(client *Client) *Filesystem {
 	return &Filesystem{client}
 }
 
-//FindFilesystemByName - Find the Filesystem by it's name. If the Filesystem is not found, an error will be returned.
+// FindFilesystemByName - Find the Filesystem by it's name. If the Filesystem is not found, an error will be returned.
 func (f *Filesystem) FindFilesystemByName(ctx context.Context, filesystemName string) (*types.Filesystem, error) {
 	if len(filesystemName) == 0 {
 		return nil, errors.New("Filesystem Name shouldn't be empty")
@@ -85,7 +85,7 @@ func (f *Filesystem) FindFilesystemByName(ctx context.Context, filesystemName st
 	return fileSystemResp, nil
 }
 
-//FindFilesystemByID - Find the Filesystem by it's Id. If the Filesystem is not found, an error will be returned.
+// FindFilesystemByID - Find the Filesystem by it's Id. If the Filesystem is not found, an error will be returned.
 func (f *Filesystem) FindFilesystemByID(ctx context.Context, filesystemID string) (*types.Filesystem, error) {
 	log := util.GetRunIDLogger(ctx)
 	if len(filesystemID) == 0 {
@@ -103,7 +103,7 @@ func (f *Filesystem) FindFilesystemByID(ctx context.Context, filesystemID string
 	return fileSystemResp, nil
 }
 
-//GetFilesystemIDFromResID - Returns the filesystem ID for the filesystem
+// GetFilesystemIDFromResID - Returns the filesystem ID for the filesystem
 func (f *Filesystem) GetFilesystemIDFromResID(ctx context.Context, filesystemResID string) (string, error) {
 	if filesystemResID == "" {
 		return "", errors.New("Filesystem Resource Id shouldn't be empty")
@@ -117,7 +117,7 @@ func (f *Filesystem) GetFilesystemIDFromResID(ctx context.Context, filesystemRes
 	return fileSystemResp.StorageResourceContent.Filesystem.ID, nil
 }
 
-//CreateFilesystem - Create a new filesystem on the array
+// CreateFilesystem - Create a new filesystem on the array
 func (f *Filesystem) CreateFilesystem(ctx context.Context, name, storagepool, description, nasServer string, size uint64, tieringPolicy, hostIOSize, supportedProtocol int, isThinEnabled, isDataReductionEnabled bool) (*types.Filesystem, error) {
 	log := util.GetRunIDLogger(ctx)
 	if name == "" {
@@ -209,7 +209,7 @@ func (f *Filesystem) CreateFilesystem(ctx context.Context, name, storagepool, de
 	return fileResp, nil
 }
 
-//DeleteFilesystem delete by its ID. If the Filesystem is not present on the array, an error will be returned.
+// DeleteFilesystem delete by its ID. If the Filesystem is not present on the array, an error will be returned.
 func (f *Filesystem) DeleteFilesystem(ctx context.Context, filesystemID string) error {
 	log := util.GetRunIDLogger(ctx)
 	if len(filesystemID) == 0 {
@@ -236,7 +236,7 @@ func (f *Filesystem) DeleteFilesystem(ctx context.Context, filesystemID string) 
 	return nil
 }
 
-//Update description of filesystem
+// Update description of filesystem
 func (f *Filesystem) updateDescription(ctx context.Context, filesystemID, description string) error {
 	if len(filesystemID) == 0 {
 		return errors.New("Filesystem Id cannot be empty")
@@ -257,7 +257,7 @@ func (f *Filesystem) updateDescription(ctx context.Context, filesystemID, descri
 	return nil
 }
 
-//CreateNFSShare - Create NFS Share for a File system
+// CreateNFSShare - Create NFS Share for a File system
 func (f *Filesystem) CreateNFSShare(ctx context.Context, name, path, filesystemID string, nfsShareDefaultAccess NFSShareDefaultAccess) (*types.Filesystem, error) {
 	if len(filesystemID) == 0 {
 		return nil, errors.New("Filesystem Id cannot be empty")
@@ -296,7 +296,7 @@ func (f *Filesystem) CreateNFSShare(ctx context.Context, name, path, filesystemI
 	return filesystemResp, nil
 }
 
-//CreateNFSShareFromSnapshot - Create NFS Share for a File system Snapshot
+// CreateNFSShareFromSnapshot - Create NFS Share for a File system Snapshot
 func (f *Filesystem) CreateNFSShareFromSnapshot(ctx context.Context, name, path, snapshotID string, nfsShareDefaultAccess NFSShareDefaultAccess) (*types.NFSShare, error) {
 	if len(snapshotID) == 0 {
 		return nil, errors.New("Snapshot Id cannot be empty")
@@ -322,7 +322,7 @@ func (f *Filesystem) CreateNFSShareFromSnapshot(ctx context.Context, name, path,
 	return nfsShareResp, nil
 }
 
-//FindNFSShareByName - Find the NFS Share by it's name. If the NFS Share is not found, an error will be returned.
+// FindNFSShareByName - Find the NFS Share by it's name. If the NFS Share is not found, an error will be returned.
 func (f *Filesystem) FindNFSShareByName(ctx context.Context, nfsSharename string) (*types.NFSShare, error) {
 	if len(nfsSharename) == 0 {
 		return nil, errors.New("NFS Share Name shouldn't be empty")
@@ -335,7 +335,7 @@ func (f *Filesystem) FindNFSShareByName(ctx context.Context, nfsSharename string
 	return nfsShareResp, nil
 }
 
-//FindNFSShareByID - Find the NFS Share by it's Id. If the NFS Share is not found, an error will be returned.
+// FindNFSShareByID - Find the NFS Share by it's Id. If the NFS Share is not found, an error will be returned.
 func (f *Filesystem) FindNFSShareByID(ctx context.Context, nfsShareID string) (*types.NFSShare, error) {
 	if len(nfsShareID) == 0 {
 		return nil, errors.New("NFS Share Id shouldn't be empty")
@@ -348,7 +348,7 @@ func (f *Filesystem) FindNFSShareByID(ctx context.Context, nfsShareID string) (*
 	return nfsShareResp, nil
 }
 
-//ModifyNFSShareHostAccess - Modify the host access on NFS Share
+// ModifyNFSShareHostAccess - Modify the host access on NFS Share
 func (f *Filesystem) ModifyNFSShareHostAccess(ctx context.Context, filesystemID, nfsShareID string, hostIDs []string, accessType AccessType) error {
 	log := util.GetRunIDLogger(ctx)
 	if len(filesystemID) == 0 {
@@ -402,7 +402,7 @@ func (f *Filesystem) ModifyNFSShareHostAccess(ctx context.Context, filesystemID,
 	return nil
 }
 
-//ModifyNFSShareCreatedFromSnapshotHostAccess - Modify the host access on NFS Share
+// ModifyNFSShareCreatedFromSnapshotHostAccess - Modify the host access on NFS Share
 func (f *Filesystem) ModifyNFSShareCreatedFromSnapshotHostAccess(ctx context.Context, nfsShareID string, hostIDs []string, accessType AccessType) error {
 	if nfsShareID == "" {
 		return errors.New("NFS Share Id cannot be empty")
@@ -435,7 +435,7 @@ func (f *Filesystem) ModifyNFSShareCreatedFromSnapshotHostAccess(ctx context.Con
 	return nil
 }
 
-//DeleteNFSShare by its ID. If the NFSShare is not present on the array, an error will be returned.
+// DeleteNFSShare by its ID. If the NFSShare is not present on the array, an error will be returned.
 func (f *Filesystem) DeleteNFSShare(ctx context.Context, filesystemID, nfsShareID string) error {
 	log := util.GetRunIDLogger(ctx)
 
@@ -477,7 +477,7 @@ func (f *Filesystem) DeleteNFSShare(ctx context.Context, filesystemID, nfsShareI
 	return nil
 }
 
-//DeleteNFSShareCreatedFromSnapshot by its ID. If the NFSShare is not present on the array, an error will be returned.
+// DeleteNFSShareCreatedFromSnapshot by its ID. If the NFSShare is not present on the array, an error will be returned.
 func (f *Filesystem) DeleteNFSShareCreatedFromSnapshot(ctx context.Context, nfsShareID string) error {
 	if len(nfsShareID) == 0 {
 		return errors.New("NFS Share Id cannot be empty")
@@ -495,7 +495,7 @@ func (f *Filesystem) DeleteNFSShareCreatedFromSnapshot(ctx context.Context, nfsS
 	return nil
 }
 
-//FindNASServerByID - Find the NAS Server by it's Id. If the NAS Server is not found, an error will be returned.
+// FindNASServerByID - Find the NAS Server by it's Id. If the NAS Server is not found, an error will be returned.
 func (f *Filesystem) FindNASServerByID(ctx context.Context, nasServerID string) (*types.NASServer, error) {
 	if len(nasServerID) == 0 {
 		return nil, errors.New("NAS Server Id shouldn't be empty")
@@ -508,7 +508,7 @@ func (f *Filesystem) FindNASServerByID(ctx context.Context, nasServerID string) 
 	return nasServerResp, nil
 }
 
-//ExpandFilesystem Filesystem Expand volume to provided capacity
+// ExpandFilesystem Filesystem Expand volume to provided capacity
 func (f *Filesystem) ExpandFilesystem(ctx context.Context, filesystemID string, newSize uint64) error {
 	log := util.GetRunIDLogger(ctx)
 	filesystem, err := f.FindFilesystemByID(ctx, filesystemID)

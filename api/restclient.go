@@ -33,7 +33,7 @@ import (
 	"github.com/dell/gounity/util"
 )
 
-//Header Key constants
+// Header Key constants
 const (
 	HeaderKeyAccept                       = "Accept"
 	HeaderKeyContentType                  = "Content-Type"
@@ -123,7 +123,7 @@ type ClientOptions struct {
 	ShowHTTP bool
 }
 
-//New returns a new API client.
+// New returns a new API client.
 func New(ctx context.Context, host string, opts ClientOptions, debug bool) (Client, error) {
 	if host == "" {
 		return nil, errNewClient

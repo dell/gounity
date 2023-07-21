@@ -29,24 +29,24 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-//Error messages
+// Error messages
 var (
 	ErrorNameEmpty         = errors.New("name empty error")
 	ErrorNameTooLong       = errors.New("name too long error")
 	ErrorInvalidCharacters = errors.New("name contains invalid characters or name doesn't start with alphabetic. Allowed characters are 'a-zA-Z0-9_-'")
 )
 
-//UnityLog constant
+// UnityLog constant
 const (
 	UnityLog = "unitylog"
 )
 
-//UnityLogStruct is structure of UnityLog
+// UnityLogStruct is structure of UnityLog
 type UnityLogStruct struct {
 	unityLog string
 }
 
-//GetRunIDLogger function returns entry if exists
+// GetRunIDLogger function returns entry if exists
 func GetRunIDLogger(ctx context.Context) *logrus.Entry {
 	rlog := ctx.Value(UnityLog)
 	entry := &logrus.Entry{}
@@ -64,8 +64,8 @@ func GetRunIDLogger(ctx context.Context) *logrus.Entry {
 var singletonLog *logrus.Logger
 var once sync.Once
 
-//GetLogger is a singleton method which returns log object.
-//Type singletonLog initialized only once.
+// GetLogger is a singleton method which returns log object.
+// Type singletonLog initialized only once.
 func GetLogger() *logrus.Logger {
 	once.Do(func() {
 		singletonLog = logrus.New()
@@ -91,7 +91,7 @@ func GetLogger() *logrus.Logger {
 	return singletonLog
 }
 
-//ChangeLogLevel method returns log level
+// ChangeLogLevel method returns log level
 func ChangeLogLevel(logLevel string) {
 
 	if singletonLog == nil {
@@ -121,7 +121,7 @@ func ChangeLogLevel(logLevel string) {
 	}
 }
 
-//ValidateResourceName function validate the resource name
+// ValidateResourceName function validate the resource name
 func ValidateResourceName(name string, maxLength int) (string, error) {
 	name = strings.TrimSpace(name)
 	re := regexp.MustCompile("^[A-Za-z][a-zA-Z0-9:_-]*$")
@@ -137,7 +137,7 @@ func ValidateResourceName(name string, maxLength int) (string, error) {
 	return name, nil
 }
 
-//ValidateDuration function validates duration
+// ValidateDuration function validates duration
 func ValidateDuration(durationStr string) (uint64, error) {
 	if durationStr != "" {
 		durationArr := strings.Split(durationStr, ":")
