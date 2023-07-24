@@ -110,7 +110,6 @@ func getVolumeMetrics(t *testing.T) {
 	if testErr != nil {
 		t.Fatal(testErr)
 		return
-	} else {
-		fmt.Println(systemCapacityResult)
 	}
+	fmt.Println(systemCapacityResult)
 }

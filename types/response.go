@@ -497,7 +497,7 @@ type SystemCapacityMetricsResultEntry struct {
 	Content SystemCapacityMetricResult `json:"content"`
 }
 
-// SystemCapacityMetricsResult is response from querying systemCapacity
+// SystemCapacityMetricsQueryResult is response from querying systemCapacity
 type SystemCapacityMetricsQueryResult struct {
 	Base    string                             `json:"base"`
 	Updated string                             `json:"updated"`
