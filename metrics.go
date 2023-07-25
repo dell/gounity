@@ -120,3 +120,20 @@ func (m *Metrics) DeleteRealTimeMetricsQuery(ctx context.Context, queryID int) e
 
 	return nil
 }
+
+// GetCapacity gets Unity capacity metrics at the system level.
+// - Example: GET /api/types/systemCapacity/instances?fields=id,sizeFree,sizeTotal,sizeUsed,sizePreallocated,sizeSubscribed,totalLogicalSize
+func (m *Metrics) GetCapacity(ctx context.Context) (*types.SystemCapacityMetricsQueryResult, error) {
+	log := util.GetRunIDLogger(ctx)
+
+	queryURI := fmt.Sprintf(api.UnityAPIInstanceTypeResourcesWithFields, api.UnitySystemCapacity, SystemCapacityFields)
+	log.Info("GetSystemCapacityMetrics: ", queryURI)
+
+	systemCapacityMetricsQueryResult := &types.SystemCapacityMetricsQueryResult{}
+	err := m.client.executeWithRetryAuthenticate(ctx, http.MethodGet, queryURI, nil, systemCapacityMetricsQueryResult)
+	if err != nil {
+		return nil, err
+	}
+
+	return systemCapacityMetricsQueryResult, nil
+}

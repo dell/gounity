@@ -98,6 +98,9 @@ const (
 	UnityMetricQueryResult   = "metricQueryResult"
 	UnityMetricRealTimeQuery = "metricRealTimeQuery"
 
+	// UnitySystemCapacity is used to get capacity metrics for Unity XT
+	UnitySystemCapacity = "systemCapacity"
+
 	//Action types for URL's
 
 	LunAction               = "lun"
