@@ -87,6 +87,9 @@ const (
 	//UnityCopySnapshotURI does Snapshot Copy Action
 	UnityCopySnapshotURI = UnityAPIGetResourceURI + "/action/copy"
 
+	// UnityAPIGetMaxVolumeSize gets the maximum volume size of an array {1}=unique identifier of the systemLimit instance, {2}=field, {3}=field
+	UnityAPIGetMaxVolumeSize = UnityAPIInstancesURI + "/systemLimit/%s?fields=%s%2C%s"
+
 	//UnityListHostInitiatorsURI gets Host Initiator URIs
 	UnityListHostInitiatorsURI = unityAPITypes + "/hostInitiator/instances?fields="
 	UnityModifyHostInitiators  = unityRootAPI + "/instances/hostInitiator/%s/action/modify"
@@ -120,4 +123,6 @@ const (
 	HostIPPortAction        = "hostIPPort"
 	NasServerAction         = "nasServer"
 	TenantAction            = "tenant"
+	Limit                   = "limitValue"
+	Unit                    = "unit"
 )

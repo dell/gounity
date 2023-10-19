@@ -418,3 +418,18 @@ func (v *Volume) RenameVolume(ctx context.Context, newName, volID string) error 
 	}
 	return v.client.executeWithRetryAuthenticate(ctx, http.MethodPost, fmt.Sprintf(api.UnityModifyLunURI, volID), lunParams, nil)
 }
+
+// GetMaxVolumeSize - Returns the max size of a volume supported by the array
+func (v *Volume) GetMaxVolumeSize(ctx context.Context, systemLimitID string) (*types.MaxVolumSizeInfo, error) {
+	volumeResp := &types.MaxVolumSizeInfo{}
+	if len(systemLimitID) == 0 {
+		return nil, errors.New("system limit ID shouldn't be empty")
+	}
+	lunURI := fmt.Sprintf(api.UnityAPIGetMaxVolumeSize, systemLimitID, api.Limit, api.Unit)
+	err := v.client.executeWithRetryAuthenticate(ctx, http.MethodGet, lunURI, nil, volumeResp)
+	if err != nil {
+		return nil, fmt.Errorf("unable to find system limit by ID %s", systemLimitID)
+	}
+
+	return volumeResp, nil
+}
