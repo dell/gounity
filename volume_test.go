@@ -45,6 +45,7 @@ func TestVolume(t *testing.T) {
 	createCloneFromVolumeTest(t)
 	modifyVolumeExportTest(t)
 	deleteVolumeTest(t)
+	getMaxVolumeSizeTest(t)
 	//creteLunThinCloneTest(t) - Will be added to snapshot_test
 
 }
@@ -347,4 +348,31 @@ func deleteVolumeTest(t *testing.T) {
 	}
 
 	fmt.Println("Delete Volume Test - Successful")
+}
+
+func getMaxVolumeSizeTest(t *testing.T) {
+
+	fmt.Println("Begin - Get Max Volume Size")
+
+	// Positive case
+	systemLimitID := "Limit_MaxLUNSize"
+	_, err := testConf.volumeAPI.GetMaxVolumeSize(ctx, systemLimitID)
+	if err != nil {
+		t.Fatalf("Get maximum volume size failed: %v", err)
+	}
+
+	// Negative cases
+	systemLimitID = ""
+	_, err = testConf.volumeAPI.GetMaxVolumeSize(ctx, systemLimitID)
+	if err != nil {
+		t.Fatalf("Get maximum volume size with empty systemLimitID case failed: %v", err)
+	}
+
+	systemLimitID = "dummy_name"
+	_, err = testConf.volumeAPI.GetMaxVolumeSize(ctx, systemLimitID)
+	if err != nil {
+		t.Fatalf("Get maximum volume size with invalid systemLimitID case failed: %v", err)
+	}
+
+	fmt.Println("Get Max Volume Size - Successful")
 }
