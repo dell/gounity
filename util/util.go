@@ -61,8 +61,10 @@ func GetRunIDLogger(ctx context.Context) *logrus.Entry {
 	return log.WithContext(ctx)
 }
 
-var singletonLog *logrus.Logger
-var once sync.Once
+var (
+	singletonLog *logrus.Logger
+	once         sync.Once
+)
 
 // GetLogger is a singleton method which returns log object.
 // Type singletonLog initialized only once.
@@ -71,7 +73,7 @@ func GetLogger() *logrus.Logger {
 		singletonLog = logrus.New()
 		fmt.Println("gounity logger initiated. This should be called only once.")
 
-		//Gounity users can make use of this environment variable to initialize log level. Default level will be Info
+		// Gounity users can make use of this environment variable to initialize log level. Default level will be Info
 		logLevel := os.Getenv("X_CSI_LOG_LEVEL")
 
 		ChangeLogLevel(logLevel)
@@ -93,7 +95,6 @@ func GetLogger() *logrus.Logger {
 
 // ChangeLogLevel method returns log level
 func ChangeLogLevel(logLevel string) {
-
 	if singletonLog == nil {
 		GetLogger()
 	}
@@ -113,7 +114,7 @@ func ChangeLogLevel(logLevel string) {
 		break
 
 	case "info":
-		//Default level will be Info
+		// Default level will be Info
 		fallthrough
 
 	default:

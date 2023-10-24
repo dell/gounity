@@ -21,20 +21,21 @@ import (
 	"time"
 )
 
-var snapVolName string
-var snapVolID string
-var snapName string
-var snapID string
-var snap2Name string
-var snap2ID string
-var snapByFsAccessTypeName string
-var snapByFsAccessTypeID string
-var snapCopyID string
-var cloneVolName string
-var cloneVolID string
+var (
+	snapVolName            string
+	snapVolID              string
+	snapName               string
+	snapID                 string
+	snap2Name              string
+	snap2ID                string
+	snapByFsAccessTypeName string
+	snapByFsAccessTypeID   string
+	snapCopyID             string
+	cloneVolName           string
+	cloneVolID             string
+)
 
 func TestSnapshot(t *testing.T) {
-
 	now := time.Now()
 	timeStamp := now.Format("20060102150405")
 	snapVolName = "Unit-test-snap-vol-" + timeStamp
@@ -50,12 +51,11 @@ func TestSnapshot(t *testing.T) {
 	listSnapshotsTest(t)
 	modifySnapshotAutoDeleteParameterTest(t)
 	copySnapshotTest(t)
-	creteLunThinCloneTest(t) //create thin clone
+	creteLunThinCloneTest(t) // create thin clone
 	deleteSnapshot(t)
 }
 
 func createSnapshotTest(t *testing.T) {
-
 	fmt.Println("Begin - Create Snapshot Test")
 
 	vol, err := testConf.volumeAPI.CreateLun(ctx, snapVolName, testConf.poolID, "Description", 5368709120, 0, "", true, false)
@@ -89,7 +89,7 @@ func createSnapshotTest(t *testing.T) {
 
 	snapByFsAccessTypeID = snapFsAccess.SnapshotContent.ResourceID
 
-	//Negative cases
+	// Negative cases
 	snapVolIDTemp := ""
 	_, err = testConf.snapAPI.CreateSnapshot(ctx, snapVolIDTemp, snap2Name, "Snapshot Description", "")
 	if err == nil {
@@ -131,7 +131,6 @@ func createSnapshotTest(t *testing.T) {
 }
 
 func findSnapshotByNameTest(t *testing.T) {
-
 	fmt.Println("Begin - Find Snapshot by Name Test")
 
 	snap, err := testConf.snapAPI.FindSnapshotByName(ctx, snapName)
@@ -148,7 +147,7 @@ func findSnapshotByNameTest(t *testing.T) {
 	}
 	snap2ID = snap.SnapshotContent.ResourceID
 
-	//Negative test cases
+	// Negative test cases
 	snapNameTemp := ""
 	_, err = testConf.snapAPI.FindSnapshotByName(ctx, snapNameTemp)
 	if err == nil {
@@ -165,7 +164,6 @@ func findSnapshotByNameTest(t *testing.T) {
 }
 
 func findSnapshotByIDTest(t *testing.T) {
-
 	fmt.Println("Begin - Find Snapshot by Id Test")
 
 	snap, err := testConf.snapAPI.FindSnapshotByID(ctx, snapID)
@@ -174,7 +172,7 @@ func findSnapshotByIDTest(t *testing.T) {
 		t.Fatalf("Find snapshot failed: %v", err)
 	}
 
-	//Negative test cases
+	// Negative test cases
 	snapIDTemp := ""
 	_, err = testConf.snapAPI.FindSnapshotByID(ctx, snapIDTemp)
 	if err == nil {
@@ -191,7 +189,6 @@ func findSnapshotByIDTest(t *testing.T) {
 }
 
 func listSnapshotsTest(t *testing.T) {
-
 	fmt.Println("Begin - List Snapshots Test")
 
 	snaps, _, err := testConf.snapAPI.ListSnapshots(ctx, 0, 10, snapVolID, "")
@@ -222,7 +219,6 @@ func listSnapshotsTest(t *testing.T) {
 }
 
 func modifySnapshotAutoDeleteParameterTest(t *testing.T) {
-
 	fmt.Println("Begin - Modify Snapshot Test")
 
 	err := testConf.snapAPI.ModifySnapshotAutoDeleteParameter(ctx, snapID)
@@ -235,7 +231,7 @@ func modifySnapshotAutoDeleteParameterTest(t *testing.T) {
 		t.Fatalf("Modify Snapshot failed: %v", err)
 	}
 
-	//Negative test cases
+	// Negative test cases
 	snapIDTemp := ""
 	err = testConf.snapAPI.ModifySnapshotAutoDeleteParameter(ctx, snapIDTemp)
 	if err == nil {
@@ -261,7 +257,6 @@ func modifySnapshotAutoDeleteParameterTest(t *testing.T) {
 }
 
 func creteLunThinCloneTest(t *testing.T) {
-
 	fmt.Println("Begin - Create LUN thin clone Test")
 
 	vol, err := testConf.volumeAPI.CreteLunThinClone(ctx, cloneVolName, snapID, snapVolID)
@@ -278,7 +273,6 @@ func creteLunThinCloneTest(t *testing.T) {
 }
 
 func copySnapshotTest(t *testing.T) {
-
 	fmt.Println("Begin - Copy Snapshot Test")
 
 	snapCopy, err := testConf.snapAPI.CopySnapshot(ctx, snapByFsAccessTypeID, snapName+"_copy")
@@ -288,7 +282,7 @@ func copySnapshotTest(t *testing.T) {
 
 	snapCopyID = snapCopy.SnapshotContent.ResourceID
 
-	//Negative test cases
+	// Negative test cases
 
 	snapNameTemp := ""
 
@@ -311,11 +305,9 @@ func copySnapshotTest(t *testing.T) {
 		t.Fatalf("Copy Snapshot with invalid snapshot ID test case failed: %v", err)
 	}
 	fmt.Println("Copy Snapshot Test - Successful")
-
 }
 
 func deleteSnapshot(t *testing.T) {
-
 	fmt.Println("Begin - Delete Snapshot Test")
 
 	err := testConf.snapAPI.DeleteSnapshot(ctx, snapID)
@@ -338,7 +330,7 @@ func deleteSnapshot(t *testing.T) {
 		t.Fatalf("Delete copy of Snapshot failed: %v", err)
 	}
 
-	//Delete thin clone volume
+	// Delete thin clone volume
 	err = testConf.volumeAPI.DeleteVolume(ctx, cloneVolID)
 	if err != nil {
 		t.Fatalf("Delete volume failed: %v", err)
@@ -349,7 +341,7 @@ func deleteSnapshot(t *testing.T) {
 		t.Fatalf("Delete volume failed: %v", err)
 	}
 
-	//Negative test cases
+	// Negative test cases
 	snapIDTemp := ""
 	err = testConf.snapAPI.DeleteSnapshot(ctx, snapIDTemp)
 	if err == nil {

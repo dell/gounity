@@ -31,9 +31,9 @@ type FilesystemAccessType int
 
 // FilesystemAccessType constants
 const (
-	BlockAccessType      FilesystemAccessType = 0 //Parameter not applicable for block
-	CheckpointAccessType FilesystemAccessType = 1 //Checkpoint access to enable access through a .ckpt folder in the file system.
-	ProtocolAccessType   FilesystemAccessType = 2 //Protocol access to enable access through a file share.
+	BlockAccessType      FilesystemAccessType = 0 // Parameter not applicable for block
+	CheckpointAccessType FilesystemAccessType = 1 // Checkpoint access to enable access through a .ckpt folder in the file system.
+	ProtocolAccessType   FilesystemAccessType = 2 // Protocol access to enable access through a file share.
 )
 
 // SnapshotNotFoundErrorCode stores snapshot not found error code
@@ -114,7 +114,7 @@ func (s *Snapshot) DeleteFilesystemAsSnapshot(ctx context.Context, snapshotID st
 		return err
 	}
 	if deleteSourceFs {
-		//Try deleting the marked filesystem for deletion
+		// Try deleting the marked filesystem for deletion
 		f := NewFilesystem(s.client)
 		err = f.DeleteFilesystem(ctx, sourceFs.FileContent.ID)
 		if err != nil {
@@ -162,12 +162,12 @@ func (s *Snapshot) ListSnapshots(ctx context.Context, startToken int, maxEntries
 	}
 	nextToken := startToken + 1
 	snapshotURI := fmt.Sprintf(api.UnityAPIInstanceTypeResourcesWithFields, api.SnapAction, SnapshotDisplayFields)
-	//Pagination will apply only for list all snapshots. If user provides snapshotID or sourceVolumeID then pagination will not apply
+	// Pagination will apply only for list all snapshots. If user provides snapshotID or sourceVolumeID then pagination will not apply
 	if sourceVolumeID == "" {
 		if maxEntries != 0 {
 			snapshotURI = fmt.Sprintf(snapshotURI+"&per_page=%d", maxEntries)
 
-			//startToken should exists only when maxEntries are present
+			// startToken should exists only when maxEntries are present
 			if startToken != 0 {
 				snapshotURI = fmt.Sprintf(snapshotURI+"&page=%d", startToken)
 			}

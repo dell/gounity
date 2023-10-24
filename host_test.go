@@ -24,13 +24,15 @@ import (
 	"github.com/dell/gounity/types"
 )
 
-var hostName string
-var hostID string
-var hostIPPortID string
-var iqnInitiatorID string
-var wwnInitiatorPathID string
-var fcPortID string
-var iqnInitiator *types.HostInitiator
+var (
+	hostName           string
+	hostID             string
+	hostIPPortID       string
+	iqnInitiatorID     string
+	wwnInitiatorPathID string
+	fcPortID           string
+	iqnInitiator       *types.HostInitiator
+)
 
 func TestHost(t *testing.T) {
 	now := time.Now()
@@ -55,7 +57,6 @@ func TestHost(t *testing.T) {
 }
 
 func createHostTest(t *testing.T) {
-
 	fmt.Println("Begin - Create Host Test")
 
 	host, err := testConf.hostAPI.CreateHost(ctx, hostName, testConf.tenant)
@@ -64,7 +65,7 @@ func createHostTest(t *testing.T) {
 	}
 	hostID = host.HostContent.ID
 
-	//Negative test cases
+	// Negative test cases
 	hostNameTemp := ""
 	_, err = testConf.hostAPI.CreateHost(ctx, hostNameTemp, testConf.tenant)
 	if err == nil {
@@ -81,7 +82,6 @@ func createHostTest(t *testing.T) {
 }
 
 func findHostByNameTest(t *testing.T) {
-
 	fmt.Println("Begin - Find Host by name Test")
 
 	_, err := testConf.hostAPI.FindHostByName(ctx, hostName)
@@ -89,7 +89,7 @@ func findHostByNameTest(t *testing.T) {
 		t.Fatalf("Find Host failed: %v", err)
 	}
 
-	//Negative test cases
+	// Negative test cases
 	hostNameTemp := ""
 	_, err = testConf.hostAPI.FindHostByName(ctx, hostNameTemp)
 	if err == nil {
@@ -106,7 +106,6 @@ func findHostByNameTest(t *testing.T) {
 }
 
 func createHostIPPortTest(t *testing.T) {
-
 	fmt.Println("Begin - Create Host IP Port Test")
 
 	hostIPPort, err := testConf.hostAPI.CreateHostIPPort(ctx, hostID, testConf.nodeHostIP)
@@ -115,7 +114,7 @@ func createHostIPPortTest(t *testing.T) {
 	}
 
 	hostIPPortID = hostIPPort.HostIPContent.ID
-	//Negative test cases
+	// Negative test cases
 	hostIDTemp := ""
 	_, err = testConf.hostAPI.CreateHostIPPort(ctx, hostIDTemp, testConf.nodeHostIP)
 	if err == nil {
@@ -132,7 +131,6 @@ func createHostIPPortTest(t *testing.T) {
 }
 
 func findHostIPPortByIDTest(t *testing.T) {
-
 	fmt.Println("Begin - Find Host IP Port Test")
 
 	_, err := testConf.hostAPI.FindHostIPPortByID(ctx, hostIPPortID)
@@ -140,7 +138,7 @@ func findHostIPPortByIDTest(t *testing.T) {
 		t.Fatalf("Find Host IP Port failed: %v", err)
 	}
 
-	//Negative test cases
+	// Negative test cases
 	hostIPPortIDTemp := "dummy-ip-port-id-1"
 	_, err = testConf.hostAPI.FindHostIPPortByID(ctx, hostIPPortIDTemp)
 	if err == nil {
@@ -151,7 +149,6 @@ func findHostIPPortByIDTest(t *testing.T) {
 }
 
 func createHostInitiatorTest(t *testing.T) {
-
 	fmt.Println("Begin - Create Host Initiator Test")
 
 	fmt.Println("WWNs: ", testConf.wwns)
@@ -164,14 +161,14 @@ func createHostInitiatorTest(t *testing.T) {
 		}
 	}
 
-	//Negative case
+	// Negative case
 	hostIDTemp := "host_dummy_1"
 	_, err := testConf.hostAPI.CreateHostInitiator(ctx, hostIDTemp, testConf.iqn, api.ISCSCIInitiatorType)
 	if err == nil {
 		t.Fatalf("Create Host Initiator Idempotency with invalid hostID - Negative case failed")
 	}
 
-	//Add Iqn
+	// Add Iqn
 	initiator, err := testConf.hostAPI.CreateHostInitiator(ctx, hostID, testConf.iqn, api.ISCSCIInitiatorType)
 	fmt.Println("CreateHostInitiator:", initiator, err)
 	if err != nil {
@@ -179,13 +176,13 @@ func createHostInitiatorTest(t *testing.T) {
 	}
 	iqnInitiatorID = initiator.HostInitiatorContent.ID
 
-	//Test idempotency for parent host check
+	// Test idempotency for parent host check
 	initiator, err = testConf.hostAPI.CreateHostInitiator(ctx, hostID, testConf.iqn, api.ISCSCIInitiatorType)
 	if err != nil {
 		t.Fatalf("CreateHostInitiator %s Error: %v", testConf.iqn, err)
 	}
 
-	//Negative test cases
+	// Negative test cases
 	hostIDTemp = ""
 	iqnTemp := ""
 	_, err = testConf.hostAPI.CreateHostInitiator(ctx, hostIDTemp, testConf.iqn, api.ISCSCIInitiatorType)
@@ -198,7 +195,7 @@ func createHostInitiatorTest(t *testing.T) {
 		t.Fatalf("Create Host Initiator with empty iqn - Negative case failed")
 	}
 
-	//Test idempotency for parent host check
+	// Test idempotency for parent host check
 	hostIDTemp = "host_dummy_1"
 	_, err = testConf.hostAPI.CreateHostInitiator(ctx, hostIDTemp, testConf.iqn, api.ISCSCIInitiatorType)
 	if err == nil {
@@ -210,7 +207,6 @@ func createHostInitiatorTest(t *testing.T) {
 }
 
 func listHostInitiatorsTest(t *testing.T) {
-
 	fmt.Println("Begin - List Host Initiators Test")
 	list, err := testConf.hostAPI.ListHostInitiators(ctx)
 	fmt.Println("List Host initiators", list, err)
@@ -219,11 +215,9 @@ func listHostInitiatorsTest(t *testing.T) {
 	}
 
 	fmt.Println("List Host Initiators Test Successful")
-
 }
 
 func findHostInitiatorByNameTest(t *testing.T) {
-
 	fmt.Println("Begin - Find Host Initiator by Name Test")
 
 	initiator, err := testConf.hostAPI.FindHostInitiatorByName(ctx, testConf.iqn)
@@ -233,9 +227,9 @@ func findHostInitiatorByNameTest(t *testing.T) {
 	}
 	iqnInitiator = initiator
 
-	//Check if call for wwn is required
+	// Check if call for wwn is required
 
-	//Negative test cases
+	// Negative test cases
 	iqnTemp := ""
 	_, err = testConf.hostAPI.FindHostInitiatorByName(ctx, iqnTemp)
 	if err == nil {
@@ -246,10 +240,9 @@ func findHostInitiatorByNameTest(t *testing.T) {
 }
 
 func findHostInitiatorByIDTest(t *testing.T) {
-
 	fmt.Println("Begin - Find Host Initiator by Id Test")
 
-	//parameterize this
+	// parameterize this
 	fcHostName := "lglal016"
 
 	host, err := testConf.hostAPI.FindHostByName(ctx, fcHostName)
@@ -271,7 +264,7 @@ func findHostInitiatorByIDTest(t *testing.T) {
 		}
 	}
 
-	//Negative test cases
+	// Negative test cases
 	initiatorIDTemp := "dummy-ip-port-id-1"
 	_, err = testConf.hostAPI.FindHostInitiatorByID(ctx, initiatorIDTemp)
 	if err == nil {
@@ -281,7 +274,6 @@ func findHostInitiatorByIDTest(t *testing.T) {
 }
 
 func modifyHostInitiatorTest(t *testing.T) {
-
 	fmt.Println("Begin - Modify Host Initiator Test")
 
 	initiator, err := testConf.hostAPI.ModifyHostInitiator(ctx, hostID, iqnInitiator)
@@ -305,9 +297,8 @@ func modifyHostInitiatorTest(t *testing.T) {
 }
 
 func modifyHostInitiatorByIDTest(t *testing.T) {
-
 	fmt.Println("Begin - Modify Host Initiator By ID Test")
-	//parameterize this
+	// parameterize this
 	fcHostName := "lglal016"
 
 	host, err := testConf.hostAPI.FindHostByName(ctx, fcHostName)
@@ -347,18 +338,17 @@ func modifyHostInitiatorByIDTest(t *testing.T) {
 }
 
 func findHostInitiatorPathByIDTest(t *testing.T) {
-
 	fmt.Println("Begin - Find Initiator Path Test")
 
 	////initiatorPathID := iqnInitiator.HostInitiatorContent.Paths[0].ID
 	hostInitiatorPath, err := testConf.hostAPI.FindHostInitiatorPathByID(ctx, wwnInitiatorPathID)
 	if err != nil {
-		//Change to log if required for vm execution
+		// Change to log if required for vm execution
 		t.Fatalf("Find Host Initiator Path failed: %v", err)
 	}
 	fcPortID = hostInitiatorPath.HostInitiatorPathContent.FcPortID.ID
 
-	//Negative test cases
+	// Negative test cases
 	initiatorPathIDTemp := "Host_initiator_path_dummy_1"
 	_, err = testConf.hostAPI.FindHostInitiatorPathByID(ctx, initiatorPathIDTemp)
 	if err == nil {
@@ -369,16 +359,15 @@ func findHostInitiatorPathByIDTest(t *testing.T) {
 }
 
 func findFcPortByIDTest(t *testing.T) {
-
 	fmt.Println("Begin - Find FC Port Test")
 
 	_, err := testConf.hostAPI.FindFcPortByID(ctx, fcPortID)
 	if err != nil {
-		//Change to log if required for vm execution
+		// Change to log if required for vm execution
 		t.Fatalf("Find FC Port failed: %v", err)
 	}
 
-	//Negative test cases
+	// Negative test cases
 	fcPortIDTemp := "Fc_Port_dummy_1"
 	_, err = testConf.hostAPI.FindFcPortByID(ctx, fcPortIDTemp)
 	if err == nil {
@@ -400,7 +389,6 @@ func findTenantsTest(t *testing.T) {
 }
 
 func deleteHostTest(t *testing.T) {
-
 	fmt.Println("Begin - Delete Host Test")
 
 	err := testConf.hostAPI.DeleteHost(ctx, hostName)
@@ -420,7 +408,7 @@ func deleteHostTest(t *testing.T) {
 		t.Fatalf("Delete Host with invalid hostName - Negative case failed")
 	}
 
-	//Create hosts with same name
+	// Create hosts with same name
 	hostNameTemp = "test_host_duplicate_names"
 	for apiCall := 0; apiCall < 2; apiCall++ {
 		_, err = testConf.hostAPI.CreateHost(ctx, hostNameTemp, "")

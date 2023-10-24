@@ -71,7 +71,6 @@ func (c *Client) Authenticate(ctx context.Context, configConnect *ConfigConnect)
 	headers[api.XEmcRestClient] = "true"
 	headers[api.HeaderKeyContentType] = api.HeaderValContentTypeJSON
 	resp, err := c.api.DoAndGetResponseBody(ctx, http.MethodGet, api.UnityAPILoginSessionInfoURI, headers, nil)
-
 	if err != nil {
 		return fmt.Errorf("authentication error: %v", err)
 	}

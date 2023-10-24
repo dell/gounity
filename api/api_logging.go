@@ -24,8 +24,8 @@ func isBinOctetBody(h http.Header) bool {
 func logRequest(
 	ctx context.Context,
 	req *http.Request,
-	lf func(func(args ...interface{}), string)) {
-
+	lf func(func(args ...interface{}), string),
+) {
 	w := &bytes.Buffer{}
 
 	fmt.Fprintln(w)
@@ -45,15 +45,15 @@ func logRequest(
 	}
 	fmt.Fprintln(w)
 
-	//Will not be logging request to avoid logging of headers as it is
-	//lf(log.Debug, w.String())
+	// Will not be logging request to avoid logging of headers as it is
+	// lf(log.Debug, w.String())
 }
 
 func logResponse(
 	ctx context.Context,
 	res *http.Response,
-	lf func(func(args ...interface{}), string)) {
-
+	lf func(func(args ...interface{}), string),
+) {
 	w := &bytes.Buffer{}
 
 	fmt.Fprintln(w)
