@@ -65,4 +65,7 @@ const (
 
 	// SystemCapacityFields to display system capacity details
 	SystemCapacityFields = "id,sizeFree,sizeTotal,sizeUsed,sizePreallocated,sizeSubscribed,totalLogicalSize"
+
+	// MaximumVolumeSize to display limit and unit
+	MaximumVolumeSize = "limitValue,unit"
 )

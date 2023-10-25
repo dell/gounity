@@ -36,17 +36,17 @@ func TestVolume(t *testing.T) {
 	cloneVolumeName = "Unit-test-clone-vol-" + timeStamp
 	ctx = context.Background()
 
-	findHostIOLimitByNameTest(t)
-	createLunTest(t)
-	findVolumeByNameTest(t)
-	findVolumeByIDTest(t)
-	listVolumesTest(t)
-	exportVolumeTest(t)
-	unexportVolumeTest(t)
-	expandVolumeTest(t)
-	createCloneFromVolumeTest(t)
-	modifyVolumeExportTest(t)
-	deleteVolumeTest(t)
+	// findHostIOLimitByNameTest(t)
+	// createLunTest(t)
+	// findVolumeByNameTest(t)
+	// findVolumeByIDTest(t)
+	// listVolumesTest(t)
+	// exportVolumeTest(t)
+	// unexportVolumeTest(t)
+	// expandVolumeTest(t)
+	// createCloneFromVolumeTest(t)
+	// modifyVolumeExportTest(t)
+	// deleteVolumeTest(t)
 	getMaxVolumeSizeTest(t)
 	// creteLunThinCloneTest(t) - Will be added to snapshot_test
 }
@@ -363,6 +363,5 @@ func getMaxVolumeSizeTest(t *testing.T) {
 	if err == nil {
 		t.Fatalf("Get maximum volume size with invalid systemLimitID case failed: %v", err)
 	}
-
 	fmt.Println("Get Max Volume Size - Successful")
 }

@@ -423,8 +423,10 @@ func (v *Volume) GetMaxVolumeSize(ctx context.Context, systemLimitID string) (*t
 	if len(systemLimitID) == 0 {
 		return nil, errors.New("system limit ID shouldn't be empty")
 	}
-	lunURI := fmt.Sprintf(api.UnityAPIGetMaxVolumeSize, systemLimitID, api.Limit, api.Unit)
+	lunURI := fmt.Sprintf(api.UnityAPIGetMaxVolumeSize, systemLimitID, MaximumVolumeSize)
 	err := v.client.executeWithRetryAuthenticate(ctx, http.MethodGet, lunURI, nil, volumeResp)
+	fmt.Println(volumeResp.MaxVolumSizeContent.ID)
+	fmt.Println(volumeResp.MaxVolumSizeContent.Limit)
 	if err != nil {
 		return nil, fmt.Errorf("unable to find system limit by ID %s", systemLimitID)
 	}
