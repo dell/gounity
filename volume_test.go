@@ -45,11 +45,10 @@ func TestVolume(t *testing.T) {
 	unexportVolumeTest(t)
 	expandVolumeTest(t)
 	createCloneFromVolumeTest(t)
-	// modifyVolumeExportTest(t)
+	modifyVolumeExportTest(t)
 	deleteVolumeTest(t)
 	getMaxVolumeSizeTest(t)
 	// creteLunThinCloneTest(t) - Will be added to snapshot_test
-
 }
 
 func findHostIOLimitByNameTest(t *testing.T) {
