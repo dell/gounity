@@ -6,11 +6,10 @@ All Rights Reserved
 package gounity
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
-
-	"context"
 
 	"github.com/dell/gounity/api"
 	"github.com/dell/gounity/types"

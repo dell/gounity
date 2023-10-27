@@ -46,7 +46,7 @@ func (h *Host) FindHostByName(ctx context.Context, hostName string) (*types.Host
 	log.Info("URI", fmt.Sprintf(api.UnityAPIGetResourceByNameWithFieldsURI, api.HostAction, hostName, HostfieldsToQuery))
 	err := h.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityAPIGetResourceByNameWithFieldsURI, api.HostAction, hostName, HostfieldsToQuery), nil, hResponse)
 	if err != nil {
-		//Using the multiple host found error code(MultipleHostFoundErrorCode) for comparison
+		// Using the multiple host found error code(MultipleHostFoundErrorCode) for comparison
 		if strings.Contains(err.Error(), MultipleHostFoundErrorCode) {
 			return nil, ErrorMultipleHostFound
 		} else if strings.Contains(err.Error(), HostNotFoundErrorCode) {
@@ -67,7 +67,7 @@ func (h *Host) CreateHost(ctx context.Context, hostName string, tenantID string)
 		TenantID: tenantID,
 	}
 	hostReq := &types.HostCreateParam{
-		Type:        "1", //Initiator type hardcoded as "1" for FC Initiator
+		Type:        "1", // Initiator type hardcoded as "1" for FC Initiator
 		Name:        hostName,
 		Description: hostName,
 		OsType:      "Linux",
@@ -240,7 +240,6 @@ func (h *Host) ModifyHostInitiator(ctx context.Context, hostID string, initiator
 
 // ModifyHostInitiatorByID function modifies host initiator by ID
 func (h *Host) ModifyHostInitiatorByID(ctx context.Context, hostID, initiatorID string) (*types.HostInitiator, error) {
-
 	if hostID == "" {
 		return nil, errors.New("Host ID shouldn't be null")
 	}

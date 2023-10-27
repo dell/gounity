@@ -21,11 +21,13 @@ import (
 	"time"
 )
 
-var volName string
-var cloneVolumeName string
-var volID string
-var cloneVolumeID string
-var hostIOLimitID string
+var (
+	volName         string
+	cloneVolumeName string
+	volID           string
+	cloneVolumeID   string
+	hostIOLimitID   string
+)
 
 func TestVolume(t *testing.T) {
 	now := time.Now()
@@ -34,23 +36,22 @@ func TestVolume(t *testing.T) {
 	cloneVolumeName = "Unit-test-clone-vol-" + timeStamp
 	ctx = context.Background()
 
-	findHostIOLimitByNameTest(t)
-	createLunTest(t)
-	findVolumeByNameTest(t)
-	findVolumeByIDTest(t)
-	listVolumesTest(t)
-	exportVolumeTest(t)
-	unexportVolumeTest(t)
-	expandVolumeTest(t)
-	createCloneFromVolumeTest(t)
-	modifyVolumeExportTest(t)
-	deleteVolumeTest(t)
-	//creteLunThinCloneTest(t) - Will be added to snapshot_test
-
+	// findHostIOLimitByNameTest(t)
+	// createLunTest(t)
+	// findVolumeByNameTest(t)
+	// findVolumeByIDTest(t)
+	// listVolumesTest(t)
+	// exportVolumeTest(t)
+	// unexportVolumeTest(t)
+	// expandVolumeTest(t)
+	// createCloneFromVolumeTest(t)
+	// modifyVolumeExportTest(t)
+	// deleteVolumeTest(t)
+	getMaxVolumeSizeTest(t)
+	// creteLunThinCloneTest(t) - Will be added to snapshot_test
 }
 
 func findHostIOLimitByNameTest(t *testing.T) {
-
 	fmt.Println("Begin - Find Host IO Limit by Name Test")
 
 	if testConf.hostIOLimitName != "" {
@@ -58,7 +59,7 @@ func findHostIOLimitByNameTest(t *testing.T) {
 		fmt.Println("hostIOLimit:", prettyPrintJSON(hostIOLimit), "Error:", err)
 		hostIOLimitID = hostIOLimit.IoLimitPolicyContent.ID
 
-		//Negative case
+		// Negative case
 		hostIOTemp := "dummy_hostio_1"
 		_, err = testConf.volumeAPI.FindHostIOLimitByName(ctx, hostIOTemp)
 		if err == nil {
@@ -78,7 +79,6 @@ func findHostIOLimitByNameTest(t *testing.T) {
 }
 
 func createLunTest(t *testing.T) {
-
 	fmt.Println("Begin - Create LUN Test")
 
 	_, err := testConf.volumeAPI.CreateLun(ctx, volName, testConf.poolID, "Description", 2368709120, 0, hostIOLimitID, true, false)
@@ -86,7 +86,7 @@ func createLunTest(t *testing.T) {
 		t.Fatalf("Create LUN failed: %v", err)
 	}
 
-	//Negative cases
+	// Negative cases
 	volNameTemp := ""
 	_, err = testConf.volumeAPI.CreateLun(ctx, volNameTemp, testConf.poolID, "Description", 2368709120, 0, hostIOLimitID, true, false)
 	if err == nil {
@@ -114,7 +114,6 @@ func createLunTest(t *testing.T) {
 }
 
 func findVolumeByNameTest(t *testing.T) {
-
 	fmt.Println("Begin - Find Volume By Name Test")
 
 	vol, err := testConf.volumeAPI.FindVolumeByName(ctx, volName)
@@ -124,7 +123,7 @@ func findVolumeByNameTest(t *testing.T) {
 	}
 	volID = vol.VolumeContent.ResourceID
 
-	//Negative cases
+	// Negative cases
 	volNameTemp := ""
 	_, err = testConf.volumeAPI.FindVolumeByName(ctx, volNameTemp)
 	if err == nil {
@@ -141,7 +140,6 @@ func findVolumeByNameTest(t *testing.T) {
 }
 
 func findVolumeByIDTest(t *testing.T) {
-
 	fmt.Println("Begin - Find Volume By Name Test")
 
 	vol, err := testConf.volumeAPI.FindVolumeByID(ctx, volID)
@@ -150,7 +148,7 @@ func findVolumeByIDTest(t *testing.T) {
 		t.Fatalf("Find volume by Id failed: %v", err)
 	}
 
-	//Negative cases
+	// Negative cases
 	volIDTemp := ""
 	_, err = testConf.volumeAPI.FindVolumeByID(ctx, volIDTemp)
 	if err == nil {
@@ -166,7 +164,6 @@ func findVolumeByIDTest(t *testing.T) {
 }
 
 func listVolumesTest(t *testing.T) {
-
 	fmt.Println("Begin - List Volumes Test")
 
 	vols, _, err := testConf.volumeAPI.ListVolumes(ctx, 11, 10)
@@ -181,7 +178,6 @@ func listVolumesTest(t *testing.T) {
 }
 
 func exportVolumeTest(t *testing.T) {
-
 	fmt.Println("Begin - Export Volume Test")
 
 	host, err := testConf.hostAPI.FindHostByName(ctx, testConf.nodeHostName)
@@ -194,7 +190,7 @@ func exportVolumeTest(t *testing.T) {
 		t.Fatalf("ExportVolume failed: %v", err)
 	}
 
-	//Negative case for Delete Volume
+	// Negative case for Delete Volume
 	err = testConf.volumeAPI.DeleteVolume(ctx, volID)
 	if err == nil {
 		t.Fatalf("Delete volume on exported volume case failed: %v", err)
@@ -204,7 +200,6 @@ func exportVolumeTest(t *testing.T) {
 }
 
 func unexportVolumeTest(t *testing.T) {
-
 	fmt.Println("Begin - Unexport Volume Test")
 
 	err := testConf.volumeAPI.UnexportVolume(ctx, volID)
@@ -215,7 +210,6 @@ func unexportVolumeTest(t *testing.T) {
 }
 
 func expandVolumeTest(t *testing.T) {
-
 	fmt.Println("Begin - Expand Volume Test")
 
 	err := testConf.volumeAPI.ExpandVolume(ctx, volID, 5368709120)
@@ -228,7 +222,7 @@ func expandVolumeTest(t *testing.T) {
 		t.Fatalf("Expand volume with same size failed: %v", err)
 	}
 
-	//Negative cases
+	// Negative cases
 	volIDTemp := "dummy_vol_sv_1"
 	err = testConf.volumeAPI.ExpandVolume(ctx, volIDTemp, 5368709120)
 	if err == nil {
@@ -244,7 +238,6 @@ func expandVolumeTest(t *testing.T) {
 }
 
 func createCloneFromVolumeTest(t *testing.T) {
-
 	fmt.Println("Begin - Create clone from Volume Test")
 
 	_, err := testConf.volumeAPI.CreateCloneFromVolume(ctx, cloneVolumeName, volID)
@@ -260,14 +253,14 @@ func createCloneFromVolumeTest(t *testing.T) {
 
 	cloneVolumeID = vol.VolumeContent.ResourceID
 
-	//Negative Test Case
-	//Creating clone with same name
+	// Negative Test Case
+	// Creating clone with same name
 	_, err = testConf.volumeAPI.CreateCloneFromVolume(ctx, cloneVolumeName, volID)
 	if err == nil {
 		t.Fatalf("Clone volume with a same existing volume name test case failed: %v", err)
 	}
 
-	//Creating clone with invalid volume ID
+	// Creating clone with invalid volume ID
 	volIDTemp := "dummy-vol-1"
 	_, err = testConf.volumeAPI.CreateCloneFromVolume(ctx, cloneVolumeName, volIDTemp)
 	if err == nil {
@@ -301,7 +294,7 @@ func modifyVolumeExportTest(t *testing.T) {
 		t.Fatalf("Rename existing volume failed. Error: %v", err)
 	}
 
-	//Negative Test case
+	// Negative Test case
 
 	volIDTemp := "dummy_vol_1"
 	err = testConf.volumeAPI.RenameVolume(ctx, volName, volIDTemp)
@@ -318,22 +311,21 @@ func modifyVolumeExportTest(t *testing.T) {
 }
 
 func deleteVolumeTest(t *testing.T) {
-
 	fmt.Println("Begin - Delete Volume Test")
 
-	//Deletion of volume, Volume won't get deleted as clone exists
+	// Deletion of volume, Volume won't get deleted as clone exists
 	err := testConf.volumeAPI.DeleteVolume(ctx, volID)
 	if err != nil {
 		t.Fatalf("Delete volume failed: %v", err)
 	}
 
-	//Deletion of clone and volume
+	// Deletion of clone and volume
 	err = testConf.volumeAPI.DeleteVolume(ctx, cloneVolumeID)
 	if err != nil {
 		t.Fatalf("Delete volume failed: %v", err)
 	}
 
-	//Negative cases
+	// Negative cases
 	volIDTemp := ""
 	err = testConf.volumeAPI.DeleteVolume(ctx, volIDTemp)
 	if err == nil {
@@ -347,4 +339,29 @@ func deleteVolumeTest(t *testing.T) {
 	}
 
 	fmt.Println("Delete Volume Test - Successful")
+}
+
+func getMaxVolumeSizeTest(t *testing.T) {
+	fmt.Println("Begin - Get Max Volume Size")
+
+	// Positive case
+	systemLimitID := "Limit_MaxLUNSize"
+	_, err := testConf.volumeAPI.GetMaxVolumeSize(ctx, systemLimitID)
+	if err != nil {
+		t.Fatalf("Get maximum volume size failed: %v", err)
+	}
+
+	// Negative cases
+	systemLimitID = ""
+	_, err = testConf.volumeAPI.GetMaxVolumeSize(ctx, systemLimitID)
+	if err == nil {
+		t.Fatalf("Get maximum volume size with empty systemLimitID case failed: %v", err)
+	}
+
+	systemLimitID = "dummy_name"
+	_, err = testConf.volumeAPI.GetMaxVolumeSize(ctx, systemLimitID)
+	if err == nil {
+		t.Fatalf("Get maximum volume size with invalid systemLimitID case failed: %v", err)
+	}
+	fmt.Println("Get Max Volume Size - Successful")
 }

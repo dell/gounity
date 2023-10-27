@@ -130,7 +130,6 @@ func (f *Filesystem) CreateFilesystem(ctx context.Context, name, storagepool, de
 
 	poolAPI := NewStoragePool(f.client)
 	pool, err := poolAPI.FindStoragePoolByID(ctx, storagepool)
-
 	if err != nil {
 		return nil, fmt.Errorf("unable to get PoolID (%s) Error:%v", storagepool, err)
 	}
@@ -140,8 +139,8 @@ func (f *Filesystem) CreateFilesystem(ctx context.Context, name, storagepool, de
 	}
 
 	fileEventSettings := types.FileEventSettings{
-		IsCIFSEnabled: false, //Set to false to disable CIFS
-		IsNFSEnabled:  true,  //Set to true to enable NFS alone
+		IsCIFSEnabled: false, // Set to false to disable CIFS
+		IsNFSEnabled:  true,  // Set to true to enable NFS alone
 	}
 
 	nas := types.NasServerID{

@@ -24,7 +24,6 @@ func TestListIPInterfaces(t *testing.T) {
 	ctx := context.Background()
 
 	ipInterfaces, err := testConf.ipinterfaceAPI.ListIscsiIPInterfaces(ctx)
-
 	if err != nil {
 		t.Fatalf("List Ip Interfaces failed: %v", err)
 	}

@@ -25,7 +25,6 @@ var ctx context.Context
 const MaxResourceNameLength = 63
 
 func TestUtils(t *testing.T) {
-
 	getRunIDLoggerTest(t)
 	getLoggetTest(t)
 	validateResourceNameTest(t)

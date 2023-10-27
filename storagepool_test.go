@@ -30,7 +30,6 @@ func TestStoragePool(t *testing.T) {
 }
 
 func findStoragePoolByIDTest(t *testing.T) {
-
 	fmt.Println("Begin - Find Storage Pool by Id Test")
 
 	pool, err := testConf.poolAPI.FindStoragePoolByID(ctx, testConf.poolID)
@@ -40,7 +39,7 @@ func findStoragePoolByIDTest(t *testing.T) {
 	}
 	storagePoolName = pool.StoragePoolContent.Name
 
-	//Negative cases
+	// Negative cases
 	storagePoolIDTemp := ""
 	pool, err = testConf.poolAPI.FindStoragePoolByID(ctx, storagePoolIDTemp)
 	if err == nil {
@@ -57,7 +56,6 @@ func findStoragePoolByIDTest(t *testing.T) {
 }
 
 func findStoragePoolByNameTest(t *testing.T) {
-
 	fmt.Println("Begin - Find Storage Pool by Name Test")
 
 	pool, err := testConf.poolAPI.FindStoragePoolByName(ctx, storagePoolName)
@@ -66,7 +64,7 @@ func findStoragePoolByNameTest(t *testing.T) {
 		t.Fatalf("Find Pool by Name failed: %v", err)
 	}
 
-	//Negative Cases
+	// Negative Cases
 	storagePoolNameTemp := ""
 	pool, err = testConf.poolAPI.FindStoragePoolByName(ctx, storagePoolNameTemp)
 	if err == nil {

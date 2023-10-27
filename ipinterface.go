@@ -28,7 +28,6 @@ func NewIPInterface(client *Client) *Ipinterface {
 
 // ListIscsiIPInterfaces - List the IpnInterfaces configured on the array
 func (f *Ipinterface) ListIscsiIPInterfaces(ctx context.Context) ([]types.IPInterfaceEntries, error) {
-
 	log := util.GetRunIDLogger(ctx)
 	hResponse := &types.ListIPInterfaces{}
 	log.Debugf("URI: "+api.UnityAPIInstanceTypeResourcesWithFields, api.IPInterface, IscsiIPFields)
@@ -39,7 +38,7 @@ func (f *Ipinterface) ListIscsiIPInterfaces(ctx context.Context) ([]types.IPInte
 	var iscsiInterfaces []types.IPInterfaceEntries
 	for _, ipInterface := range hResponse.Entries {
 		IPContent := &ipInterface.IPInterfaceContent
-		if IPContent != nil && ipInterface.IPInterfaceContent.Type == 2 { //2 stands for iScsi Interface in Unisphere 5.0. Verifu while qualifying higher versions
+		if IPContent != nil && ipInterface.IPInterfaceContent.Type == 2 { // 2 stands for iScsi Interface in Unisphere 5.0. Verifu while qualifying higher versions
 			iscsiInterfaces = append(iscsiInterfaces, ipInterface)
 		}
 	}

@@ -65,7 +65,8 @@ func NewVolume(client *Client) *Volume {
 // Pre-validations: 1. Length of the Lun name should be less than 63 characters.
 //  2. Size of Lun should be in bytes.
 func (v *Volume) CreateLun(ctx context.Context, name, poolID, description string, size uint64, fastVPTieringPolicy int,
-	hostIOLimitID string, isThinEnabled, isDataReductionEnabled bool) (*types.Volume, error) {
+	hostIOLimitID string, isThinEnabled, isDataReductionEnabled bool,
+) (*types.Volume, error) {
 	log := util.GetRunIDLogger(ctx)
 
 	if name == "" {
@@ -78,7 +79,6 @@ func (v *Volume) CreateLun(ctx context.Context, name, poolID, description string
 
 	poolAPI := NewStoragePool(v.client)
 	pool, err := poolAPI.FindStoragePoolByID(ctx, poolID)
-
 	if err != nil {
 		return nil, fmt.Errorf("unable to get PoolID (%s) Error:%v", poolID, err)
 	}
@@ -195,7 +195,7 @@ func (v *Volume) ListVolumes(ctx context.Context, startToken int, maxEntries int
 	if maxEntries != 0 {
 		lunURI = fmt.Sprintf(lunURI+"&per_page=%d", maxEntries)
 
-		//startToken should exists only when maxEntries are present
+		// startToken should exists only when maxEntries are present
 		if startToken != 0 {
 			lunURI = fmt.Sprintf(lunURI+"&page=%d", startToken)
 		}
@@ -219,13 +219,12 @@ func (v *Volume) DeleteVolume(ctx context.Context, volumeID string) error {
 	err := v.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityAPIGetResourceURI, api.StorageResourceAction, volumeID), nil, volumeResp)
 
 	volResp, err := v.FindVolumeByID(ctx, volumeID)
-
 	if err != nil {
 		return err
 	}
 	sourceVolID := ""
 	if volResp.VolumeContent.IsThinClone {
-		//Check if parent volume is marked for deletion
+		// Check if parent volume is marked for deletion
 		sourceVolID = volResp.VolumeContent.ParentVolume.ID
 	}
 
@@ -254,7 +253,7 @@ func (v *Volume) DeleteVolume(ctx context.Context, volumeID string) error {
 			newName := MarkVolumeForDeletion + strconv.FormatInt(time.Now().Unix(), 10)
 			err := v.RenameVolume(ctx, newName, volumeID)
 			if err != nil {
-				//Unable to mark volume for deletion
+				// Unable to mark volume for deletion
 				log.Warnf("Unable to mark volume %s with dependent clones for deletion", volumeID)
 			} else {
 				log.Debugf("Volume %s has dependent clones and marked for deletion.", volumeID)
@@ -275,7 +274,7 @@ func (v *Volume) ExportVolume(ctx context.Context, volID, hostID string) error {
 
 	hostAccess := types.HostAccess{
 		HostIDContent: &hostIDContent,
-		AccessMask:    "1", //Hardcoded as 1 so that the host can have access to production LUNs only.
+		AccessMask:    "1", // Hardcoded as 1 so that the host can have access to production LUNs only.
 	}
 	hostAccessArray := []types.HostAccess{hostAccess}
 	lunParams := types.LunHostAccessParameters{
@@ -289,7 +288,6 @@ func (v *Volume) ExportVolume(ctx context.Context, volID, hostID string) error {
 
 // ModifyVolumeExport - Export volume to multiple hosts / Modify the host access list on a given Volume
 func (v *Volume) ModifyVolumeExport(ctx context.Context, volID string, hostIDList []string) error {
-
 	hostAccessArray := []types.HostAccess{}
 	for _, hostID := range hostIDList {
 		hostIDContent := types.HostIDContent{
@@ -298,7 +296,7 @@ func (v *Volume) ModifyVolumeExport(ctx context.Context, volID string, hostIDLis
 
 		hostAccess := types.HostAccess{
 			HostIDContent: &hostIDContent,
-			AccessMask:    "1", //Hardcoded as 1 so that the host can have access to production LUNs only.
+			AccessMask:    "1", // Hardcoded as 1 so that the host can have access to production LUNs only.
 		}
 		hostAccessArray = append(hostAccessArray, hostAccess)
 	}
@@ -387,22 +385,22 @@ func (v *Volume) isFeatureLicensed(ctx context.Context, featureName LicenseType)
 func (v *Volume) CreateCloneFromVolume(ctx context.Context, name, volID string) (*types.Volume, error) {
 	log := util.GetRunIDLogger(ctx)
 	snapAPI := NewSnapshot(v.client)
-	//Create snapshot for cloning
+	// Create snapshot for cloning
 	snapName := SnapForClone + strconv.FormatInt(time.Now().Unix(), 10)
 	snapResp, err := snapAPI.CreateSnapshot(ctx, volID, snapName, "", "")
 	if err != nil {
 		return nil, ErrorCreateSnapshotFailed
 	}
-	//Clone Volume
+	// Clone Volume
 	cloned := true
 	volResp, err := v.CreteLunThinClone(ctx, name, snapResp.SnapshotContent.ResourceID, volID)
 	if err != nil {
 		cloned = false
 	}
-	//Delete Snapshot
+	// Delete Snapshot
 	err = snapAPI.DeleteSnapshot(ctx, snapResp.SnapshotContent.ResourceID)
 	if err != nil {
-		//If delete snapshot created to clone volume failed then error is only logged not returned
+		// If delete snapshot created to clone volume failed then error is only logged not returned
 		log.Warnf("Unable to Delete Snapshot: %s created to clone Volume: %s", snapName, volID)
 	}
 	if !cloned {
@@ -417,4 +415,19 @@ func (v *Volume) RenameVolume(ctx context.Context, newName, volID string) error 
 		Name: newName,
 	}
 	return v.client.executeWithRetryAuthenticate(ctx, http.MethodPost, fmt.Sprintf(api.UnityModifyLunURI, volID), lunParams, nil)
+}
+
+// GetMaxVolumeSize - Returns the max size of a volume supported by the array
+func (v *Volume) GetMaxVolumeSize(ctx context.Context, systemLimitID string) (*types.MaxVolumSizeInfo, error) {
+	volumeResp := &types.MaxVolumSizeInfo{}
+	if len(systemLimitID) == 0 {
+		return nil, errors.New("system limit ID shouldn't be empty")
+	}
+	lunURI := fmt.Sprintf(api.UnityAPIGetMaxVolumeSize, systemLimitID, MaximumVolumeSize)
+	err := v.client.executeWithRetryAuthenticate(ctx, http.MethodGet, lunURI, nil, volumeResp)
+	if err != nil {
+		return nil, fmt.Errorf("unable to find system limit by ID %s", systemLimitID)
+	}
+
+	return volumeResp, nil
 }
