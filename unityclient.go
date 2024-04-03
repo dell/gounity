@@ -128,18 +128,26 @@ func (c *Client) executeWithRetryAuthenticate(ctx context.Context, method, uri s
 		log.Debugf("Error in response. Method:%s URI:%s Error: %v JSON Error: %+v", method, uri, err, e)
 		if e.ErrorContent.HTTPStatusCode == 401 {
 			log.Debug("need to re-authenticate")
-			// Authenticate then try again
-			configConnect := c.configConnect
-			c, err = NewClientWithArgs(ctx, configConnect.Endpoint, configConnect.Insecure)
+			if err := c.Authenticate(ctx, c.configConnect); err != nil {
+				log.Error("Re authentication failed with the already created goUnity client")
 
-			if err != nil {
-				log.Debug("Failed creating a new goUnity client during reauth when response code is 401 ")
-				return err
+				// Re-authenticate again by creating new goUnity client then try again for STIG mode
+				configConnect := c.configConnect
+				c, err = NewClientWithArgs(ctx, configConnect.Endpoint, configConnect.Insecure)
+
+				if err != nil {
+					log.Debug("Failed creating a new goUnity client during reauth when response code is 401 ")
+					return err
+				}
+
+				if err := c.Authenticate(ctx, configConnect); err != nil {
+					return fmt.Errorf("authentication failure due to: %v", err)
+				}
+
+				log.Debug("Authentication success")
+				return c.api.DoWithHeaders(ctx, method, uri, headers, body, resp)
 			}
 
-			if err := c.Authenticate(ctx, configConnect); err != nil {
-				return fmt.Errorf("authentication failure due to: %v", err)
-			}
 			log.Debug("Authentication success")
 			return c.api.DoWithHeaders(ctx, method, uri, headers, body, resp)
 		}
