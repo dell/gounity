@@ -75,9 +75,10 @@ type LunParameters struct {
 
 // FsCreateParam Struct to capture the Filesystem create Params
 type FsCreateParam struct {
-	Name         string        `json:"name"`
-	Description  string        `json:"description,omitempty"`
-	FsParameters *FsParameters `json:"fsParameters"`
+	Name         string                 `json:"name"`
+	Description  string                 `json:"description,omitempty"`
+	FsParameters *FsParameters          `json:"fsParameters"`
+	NFSShares    *[]NFSShareCreateParam `json:"nfsShareCreate,omitempty"`
 }
 
 // FsParameters Struct to capture the File system properties
@@ -103,6 +104,12 @@ type FsExpandParameters struct {
 // FsExpandModifyParam Struct to expand Filesystem
 type FsExpandModifyParam struct {
 	FsParameters *FsExpandParameters `json:"fsParameters"`
+}
+
+// FsModifyWithNFSShareParam Struct to expand Filesystem
+type FsModifyWithNFSShareParam struct {
+	FsParameters           *FsExpandParameters      `json:"fsParameters"`
+	NFSSharesModifyContent *[]NFSShareModifyContent `json:"nfsShareModify,omitempty"`
 }
 
 // FsModifyParameters Struct to modify Filesystem parameters
@@ -153,11 +160,17 @@ type NFSShareModifyContent struct {
 
 // NFSShareParameters Struct to capture NFS Share properties
 type NFSShareParameters struct {
-	DefaultAccess           string           `json:"defaultAccess,omitempty"`
-	ReadOnlyHosts           *[]HostIDContent `json:"readOnlyHosts,omitempty"`
-	ReadWriteHosts          *[]HostIDContent `json:"readWriteHosts,omitempty"`
-	ReadOnlyRootAccessHosts *[]HostIDContent `json:"readOnlyRootAccessHosts,omitempty"`
-	RootAccessHosts         *[]HostIDContent `json:"rootAccessHosts,omitempty"`
+	DefaultAccess                 string           `json:"defaultAccess,omitempty"`
+	ReadOnlyHosts                 *[]HostIDContent `json:"readOnlyHosts,omitempty"`
+	ReadWriteHosts                *[]HostIDContent `json:"readWriteHosts,omitempty"`
+	ReadOnlyRootAccessHosts       *[]HostIDContent `json:"readOnlyRootAccessHosts,omitempty"`
+	RootAccessHosts               *[]HostIDContent `json:"rootAccessHosts,omitempty"`
+	NoAccessHostsString           string           `json:"noAccessHostsString,omitempty"`
+	ReadOnlyHostsString           string           `json:"readOnlyHostsString,omitempty"`
+	ReadWriteHostsString          string           `json:"readWriteHostsString,omitempty"`
+	ReadOnlyRootAccessHostsString string           `json:"readOnlyRootHostsString,omitempty"`
+	ReadWriteRootHostsString      string           `json:"readWriteRootHostsString,omitempty"`
+	ExportOption                  int              `json:"exportOption,omitempty"`
 }
 
 // FileEventSettings Struct to capture File event settings

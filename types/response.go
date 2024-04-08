@@ -282,22 +282,23 @@ type Filesystem struct {
 
 // FileContent struct to capture filesystem parameters
 type FileContent struct {
-	ID                     string        `json:"id"`
-	Name                   string        `json:"name,omitempty"`
-	SizeTotal              uint64        `json:"sizeTotal,omitempty"`
-	Description            string        `json:"description,omitempty"`
-	Type                   int           `json:"type,omitempty"`
-	Format                 int           `json:"format,omitempty"`
-	HostIOSize             int64         `json:"hostIOSize,omitempty"`
-	TieringPolicy          uint64        `json:"tieringPolicy,omitempty"`
-	IsThinEnabled          bool          `json:"isThinEnabled"`
-	IsDataReductionEnabled bool          `json:"isDataReductionEnabled"`
-	Pool                   Pool          `json:"pool,omitempty"`
-	NASServer              Pool          `json:"nasServer,omitempty"`
-	StorageResource        Pool          `json:"storageResource,omitempty"`
-	NFSShare               []Share       `json:"nfsShare,omitempty"`
-	CIFSShare              []Pool        `json:"cifsShare,omitempty"`
-	Health                 HealthContent `json:"health,omitempty"`
+	ID                     string            `json:"id"`
+	Name                   string            `json:"name,omitempty"`
+	SizeTotal              uint64            `json:"sizeTotal,omitempty"`
+	SizeUsed               uint64            `json:"sizeUsed,omitempty"`
+	Description            string            `json:"description,omitempty"`
+	Type                   int               `json:"type,omitempty"`
+	Format                 int               `json:"format,omitempty"`
+	HostIOSize             int64             `json:"hostIOSize,omitempty"`
+	TieringPolicy          uint64            `json:"tieringPolicy,omitempty"`
+	IsThinEnabled          bool              `json:"isThinEnabled"`
+	IsDataReductionEnabled bool              `json:"isDataReductionEnabled"`
+	Pool                   Pool              `json:"pool,omitempty"`
+	NASServer              Pool              `json:"nasServer,omitempty"`
+	StorageResource        Pool              `json:"storageResource,omitempty"`
+	NFSShare               []NFSShareContent `json:"nfsShare,omitempty"`
+	CIFSShare              []Pool            `json:"cifsShare,omitempty"`
+	Health                 HealthContent     `json:"health,omitempty"`
 }
 
 // Share object to capture NFS Share object from FileContent
@@ -315,14 +316,22 @@ type NFSShare struct {
 
 // NFSShareContent struct to capture NFS Share parameters
 type NFSShareContent struct {
-	ID                      string        `json:"id"`
-	Name                    string        `json:"name,omitempty"`
-	Filesystem              Pool          `json:"filesystem,omitempty"`
-	ReadOnlyHosts           []HostContent `json:"readOnlyHosts,omitempty"`
-	ReadWriteHosts          []HostContent `json:"readWriteHosts,omitempty"`
-	ReadOnlyRootAccessHosts []HostContent `json:"readOnlyRootAccessHosts,omitempty"`
-	RootAccessHosts         []HostContent `json:"rootAccessHosts,omitempty"`
-	ExportPaths             []string      `json:"exportPaths,omitempty"`
+	ID                            string          `json:"id"`
+	Name                          string          `json:"name,omitempty"`
+	Path                          string          `json:"path,omitempty"`
+	ParentSnap                    StorageResource `json:"snap,omitempty"`
+	Filesystem                    Pool            `json:"filesystem,omitempty"`
+	ReadOnlyHosts                 []HostContent   `json:"readOnlyHosts,omitempty"`
+	ReadWriteHosts                []HostContent   `json:"readWriteHosts,omitempty"`
+	ReadOnlyRootAccessHosts       []HostContent   `json:"readOnlyRootAccessHosts,omitempty"`
+	RootAccessHosts               []HostContent   `json:"rootAccessHosts,omitempty"`
+	ExportPaths                   []string        `json:"exportPaths,omitempty"`
+	NoAccessHostsString           string          `json:"noAccessHostsString,omitempty"`
+	ReadOnlyHostsString           string          `json:"readOnlyHostsString,omitempty"`
+	ReadWriteHostsString          string          `json:"readWriteHostsString,omitempty"`
+	ReadOnlyRootAccessHostsString string          `json:"readOnlyRootHostsString,omitempty"`
+	ReadWriteRootHostsString      string          `json:"readWriteRootHostsString,omitempty"`
+	ExportOption                  int             `json:"exportOption,omitempty"`
 }
 
 // NASServer struct to capture NAS Server object
