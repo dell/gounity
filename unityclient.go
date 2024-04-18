@@ -33,7 +33,7 @@ import (
 )
 
 const (
-	emcCsrfToken = "EMC-CSRF-TOKEN"
+	emcCsrfToken = "EMC-CSRF-TOKEN" // #nosec G101
 )
 
 var (
@@ -131,7 +131,6 @@ func (c *Client) executeWithRetryAuthenticate(ctx context.Context, method, uri s
 			// Authenticate then try again
 			configConnect := c.configConnect
 			c, err = NewClientWithArgs(ctx, configConnect.Endpoint, configConnect.Insecure)
-
 			if err != nil {
 				log.Debug("Failed creating a new goUnity client during reauth when response code is 401 ")
 				return err

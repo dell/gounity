@@ -64,6 +64,7 @@ func TestMain(m *testing.M) {
 	}
 
 	insecure, _ := strconv.ParseBool(testProp["X_CSI_UNITY_INSECURE"])
+	/* #nosec G402 */
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: insecure}
 
 	if err != nil {

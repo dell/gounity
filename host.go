@@ -51,9 +51,8 @@ func (h *Host) FindHostByName(ctx context.Context, hostName string) (*types.Host
 			return nil, ErrorMultipleHostFound
 		} else if strings.Contains(err.Error(), HostNotFoundErrorCode) {
 			return nil, ErrorHostNotFound
-		} else {
-			return nil, err
 		}
+		return nil, err
 	}
 	return hResponse, nil
 }

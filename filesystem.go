@@ -360,23 +360,23 @@ func (f *Filesystem) ModifyNFSShareHostAccess(ctx context.Context, filesystemID,
 	}
 	resourceID := filesystemResp.FileContent.StorageResource.ID
 
-	hostsIdsContent := []types.HostIDContent{}
+	hostsIDsContent := []types.HostIDContent{}
 	for _, hostID := range hostIDs {
 		hostIDContent := types.HostIDContent{
 			ID: hostID,
 		}
-		hostsIdsContent = append(hostsIdsContent, hostIDContent)
+		hostsIDsContent = append(hostsIDsContent, hostIDContent)
 	}
 
 	nfsShareParameters := types.NFSShareParameters{}
 	if accessType == ReadOnlyAccessType {
-		nfsShareParameters.ReadOnlyHosts = &hostsIdsContent
+		nfsShareParameters.ReadOnlyHosts = &hostsIDsContent
 	} else if accessType == ReadWriteAccessType {
-		nfsShareParameters.ReadWriteHosts = &hostsIdsContent
+		nfsShareParameters.ReadWriteHosts = &hostsIDsContent
 	} else if accessType == ReadOnlyRootAccessType {
-		nfsShareParameters.ReadOnlyRootAccessHosts = &hostsIdsContent
+		nfsShareParameters.ReadOnlyRootAccessHosts = &hostsIDsContent
 	} else if accessType == ReadWriteRootAccessType {
-		nfsShareParameters.RootAccessHosts = &hostsIdsContent
+		nfsShareParameters.RootAccessHosts = &hostsIDsContent
 	}
 
 	nfsShare := types.StorageResourceParam{
@@ -407,24 +407,24 @@ func (f *Filesystem) ModifyNFSShareCreatedFromSnapshotHostAccess(ctx context.Con
 		return errors.New("NFS Share Id cannot be empty")
 	}
 
-	hostsIdsContent := []types.HostIDContent{}
+	hostsIDsContent := []types.HostIDContent{}
 	for _, hostID := range hostIDs {
 		hostIDContent := types.HostIDContent{
 			ID: hostID,
 		}
-		hostsIdsContent = append(hostsIdsContent, hostIDContent)
+		hostsIDsContent = append(hostsIDsContent, hostIDContent)
 	}
 
 	nfsShareModifyReq := types.NFSShareCreateFromSnapModify{}
 
 	if accessType == ReadOnlyAccessType {
-		nfsShareModifyReq.ReadOnlyHosts = &hostsIdsContent
+		nfsShareModifyReq.ReadOnlyHosts = &hostsIDsContent
 	} else if accessType == ReadWriteAccessType {
-		nfsShareModifyReq.ReadWriteHosts = &hostsIdsContent
+		nfsShareModifyReq.ReadWriteHosts = &hostsIDsContent
 	} else if accessType == ReadOnlyRootAccessType {
-		nfsShareModifyReq.ReadOnlyRootAccessHosts = &hostsIdsContent
+		nfsShareModifyReq.ReadOnlyRootAccessHosts = &hostsIDsContent
 	} else if accessType == ReadWriteRootAccessType {
-		nfsShareModifyReq.RootAccessHosts = &hostsIdsContent
+		nfsShareModifyReq.RootAccessHosts = &hostsIDsContent
 	}
 
 	err := f.client.executeWithRetryAuthenticate(ctx, http.MethodPost, fmt.Sprintf(api.UnityModifyNFSShareURI, api.NfsShareAction, nfsShareID), nfsShareModifyReq, nil)
