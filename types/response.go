@@ -504,13 +504,14 @@ type SystemCapacityMetricsQueryResult struct {
 	Entries []SystemCapacityMetricsResultEntry `json:"entries"`
 }
 
-// MaxVolumSizeInfo is a response from querying systemLimit
+// MaxVolumSizeContent is a response from querying systemLimit
 type MaxVolumSizeContent struct {
 	ID    string `json:"id"`
 	Limit int    `json:"limitValue"`
 	Unit  int    `json:"unit"`
 }
 
+// MaxVolumSizeInfo is a response from querying systemLimit
 type MaxVolumSizeInfo struct {
 	MaxVolumSizeContent MaxVolumSizeContent `json:"content"`
 }

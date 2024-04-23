@@ -31,7 +31,7 @@ func TestUtils(t *testing.T) {
 	validateDurationTest(t)
 }
 
-func getRunIDLoggerTest(t *testing.T) {
+func getRunIDLoggerTest(_ *testing.T) {
 	fmt.Println("Begin - Get RunId Logger Test")
 
 	log := GetLogger()
@@ -50,7 +50,7 @@ func getRunIDLoggerTest(t *testing.T) {
 	fmt.Println("Get RunId Logger Test Successful")
 }
 
-func getLoggetTest(t *testing.T) {
+func getLoggetTest(_ *testing.T) {
 	fmt.Println("Begin - Get Logger Test")
 
 	_ = GetLogger()

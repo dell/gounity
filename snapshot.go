@@ -67,7 +67,7 @@ func (s *Snapshot) CreateSnapshot(ctx context.Context, storageResourceID, snapsh
 }
 
 // CreateSnapshotWithFsAccesType - Creates snashot with FsAccess type
-func (s *Snapshot) CreateSnapshotWithFsAccesType(ctx context.Context, storageResourceID, snapshotName, description, retentionDuration string, filesystemAccessType FilesystemAccessType) (*types.Snapshot, error) {
+func (s *Snapshot) CreateSnapshotWithFsAccesType(ctx context.Context, storageResourceID, snapshotName, _, retentionDuration string, filesystemAccessType FilesystemAccessType) (*types.Snapshot, error) {
 	var createSnapshot types.CreateSnapshotParam
 	if len(storageResourceID) == 0 {
 		return nil, errors.New("storage Resource ID cannot be empty")
