@@ -20,6 +20,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"strconv"
@@ -76,10 +77,17 @@ func (c *Client) Authenticate(ctx context.Context, configConnect *ConfigConnect)
 	}
 
 	if resp != nil {
-		log.Debugf("surya %v", resp.Body)
 		log.Debugf("Authentication response code: %d", resp.StatusCode)
 		if err != nil {
 			log.Errorf("Reading Authentication response body error:%v", err)
+		}
+
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			log.Errorf("Error reading response body: %v", err)
+		} else {
+			// Log the response body
+			log.Debugf("surya Response body: %s", string(body))
 		}
 
 		defer resp.Body.Close()
