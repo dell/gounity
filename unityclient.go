@@ -33,7 +33,7 @@ import (
 )
 
 const (
-	emcCsrfToken = "EMC-CSRF-TOKEN" // #nosec G101
+	emcCsrfToken = "EMC-CSRF-TOKEN"
 )
 
 var (
@@ -57,6 +57,41 @@ type ConfigConnect struct {
 	Username string
 	Password string
 	Insecure bool
+}
+
+// BasicSystemInfo make a REST API call [/basicSystemInfo/instances] to Unity to check if array is responding.
+func (c *Client) BasicSystemInfo(ctx context.Context, configConnect *ConfigConnect) error {
+	log := util.GetRunIDLogger(ctx)
+	log.Debug("Executing BasicSystemInfo REST client")
+	headers := make(map[string]string, 3)
+	headers[api.XEmcRestClient] = "true"
+	headers[api.HeaderKeyContentType] = api.HeaderValContentTypeJSON
+	resp, err := c.api.DoAndGetResponseBody(ctx, http.MethodGet, api.UnityAPIBasicSysInfoURI, headers, nil)
+	if err != nil {
+		return fmt.Errorf("Error getting BasicSystemInfo: %v", err)
+	}
+
+	if resp != nil {
+		log.Debugf("BasicSystemInfo response code: %d", resp.StatusCode)
+		if err != nil {
+			log.Errorf("Reading BasicSystemInfo response body error:%v", err)
+		}
+
+		defer resp.Body.Close()
+
+		switch {
+		case resp.StatusCode >= 200 && resp.StatusCode <= 299:
+			{
+				log.Debug("Getting BasicSystemInfo details successful")
+			}
+		default:
+			return fmt.Errorf("Get BaicSystemInfo error. Response: %v", c.api.ParseJSONError(ctx, resp))
+		}
+
+	} else {
+		log.Errorf("Getting BasicSystenInfo details faile")
+	}
+	return nil
 }
 
 // Authenticate make a REST API call [/loginSessionInfo] to Unity to get authenticate the given credentials.
@@ -131,6 +166,7 @@ func (c *Client) executeWithRetryAuthenticate(ctx context.Context, method, uri s
 			// Authenticate then try again
 			configConnect := c.configConnect
 			c, err = NewClientWithArgs(ctx, configConnect.Endpoint, configConnect.Insecure)
+
 			if err != nil {
 				log.Debug("Failed creating a new goUnity client during reauth when response code is 401 ")
 				return err
