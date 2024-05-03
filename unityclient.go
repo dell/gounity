@@ -63,6 +63,7 @@ type ConfigConnect struct {
 func (c *Client) BasicSystemInfo(ctx context.Context, configConnect *ConfigConnect) error {
 	log := util.GetRunIDLogger(ctx)
 	log.Debug("Executing BasicSystemInfo REST client")
+	c.configConnect = configConnect
 	headers := make(map[string]string, 3)
 	headers[api.XEmcRestClient] = "true"
 	headers[api.HeaderKeyContentType] = api.HeaderValContentTypeJSON
