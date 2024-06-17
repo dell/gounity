@@ -148,6 +148,7 @@ func New(_ context.Context, host string, opts ClientOptions, debug bool) (Client
 			TLSClientConfig: &tls.Config{
 				/* #nosec G402 */
 				InsecureSkipVerify: true,
+				CipherSuites:       util.GetSecuredCipherSuites(),
 			},
 		}
 	} else {
@@ -160,6 +161,7 @@ func New(_ context.Context, host string, opts ClientOptions, debug bool) (Client
 				/* #nosec G402 */
 				RootCAs:            pool,
 				InsecureSkipVerify: false,
+				CipherSuites:       util.GetSecuredCipherSuites(),
 			},
 		}
 	}
