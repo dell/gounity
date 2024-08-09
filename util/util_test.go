@@ -1,5 +1,5 @@
 /*
- Copyright © 2019 Dell Inc. or its subsidiaries. All Rights Reserved.
+ Copyright © 2019-2024 Dell Inc. or its subsidiaries. All Rights Reserved.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@ package util
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"testing"
 )
@@ -29,6 +30,7 @@ func TestUtils(t *testing.T) {
 	getLoggetTest(t)
 	validateResourceNameTest(t)
 	validateDurationTest(t)
+	getSecuredCipherSuitesTest(t)
 }
 
 func getRunIDLoggerTest(_ *testing.T) {
@@ -144,4 +146,29 @@ func validateDurationTest(t *testing.T) {
 	}
 	fmt.Println("Error: ", err)
 	fmt.Println("Validate Duration Test Successful")
+}
+
+func getSecuredCipherSuitesTest(t *testing.T) {
+	fmt.Println("Begin - Get Secured Cipher Suites Test")
+
+	suites := GetSecuredCipherSuites()
+	if len(suites) == 0 {
+		t.Fatalf("No secured cipher suites found")
+	}
+
+	// Check if all returned suites are valid TLS cipher suites
+	for _, suite := range suites {
+		found := false
+		for _, v := range tls.CipherSuites() {
+			if suite == v.ID {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Fatalf("Invalid cipher suite ID found: %d", suite)
+		}
+	}
+
+	fmt.Println("Get Secured Cipher Suites Test Successful")
 }

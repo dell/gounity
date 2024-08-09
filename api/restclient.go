@@ -1,5 +1,5 @@
 /*
- Copyright © 2019 Dell Inc. or its subsidiaries. All Rights Reserved.
+ Copyright © 2019-2024 Dell Inc. or its subsidiaries. All Rights Reserved.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -147,6 +147,7 @@ func New(ctx context.Context, host string, opts ClientOptions, debug bool) (Clie
 		c.http.Transport = &http.Transport{
 			TLSClientConfig: &tls.Config{
 				InsecureSkipVerify: true,
+				CipherSuites:       util.GetSecuredCipherSuites(),
 			},
 		}
 	} else {
@@ -158,6 +159,7 @@ func New(ctx context.Context, host string, opts ClientOptions, debug bool) (Clie
 			TLSClientConfig: &tls.Config{
 				RootCAs:            pool,
 				InsecureSkipVerify: false,
+				CipherSuites:       util.GetSecuredCipherSuites(),
 			},
 		}
 	}

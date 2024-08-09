@@ -1,5 +1,5 @@
 /*
- Copyright © 2019 Dell Inc. or its subsidiaries. All Rights Reserved.
+ Copyright © 2019-2024 Dell Inc. or its subsidiaries. All Rights Reserved.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@ package util
 
 import (
 	"context"
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"os"
@@ -175,4 +176,15 @@ func ValidateDuration(durationStr string) (uint64, error) {
 	}
 
 	return 0, nil
+}
+
+// GetSecuredCipherSuites returns a slice of secured cipher suites.
+// It iterates over the tls.CipherSuites() and appends the ID of each cipher suite to the suites slice.
+// The function returns the suites slice.
+func GetSecuredCipherSuites() (suites []uint16) {
+	securedSuite := tls.CipherSuites()
+	for _, v := range securedSuite {
+		suites = append(suites, v.ID)
+	}
+	return suites
 }
