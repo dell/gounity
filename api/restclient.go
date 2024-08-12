@@ -291,6 +291,8 @@ func (c *client) DoAndGetResponseBody(ctx context.Context, method, uri string, h
 		req.Header.Set(HeaderEMCCSRFToken, c.token)
 	}
 
+	log.Debugf("HTTP Request Header: %v", req.Header)
+
 	logRequest(ctx, req, c.doLog)
 
 	// send the request
@@ -299,6 +301,7 @@ func (c *client) DoAndGetResponseBody(ctx context.Context, method, uri string, h
 		return nil, err
 	}
 
+	log.Debugf("HTTP Response Header: %v", res.Header)
 	logResponse(ctx, res, c.doLog)
 
 	log.Debugf("Response code:%d for url: %s", res.StatusCode, uri)
