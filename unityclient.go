@@ -40,9 +40,9 @@ var (
 	accHeader string
 	conHeader string
 
-	errNoLink   = errors.New("error: problem finding link")
-	debug, _    = strconv.ParseBool(os.Getenv("GOUNITY_DEBUG"))
-	showHTTP, _ = strconv.ParseBool(os.Getenv("GOUNITY_SHOWHTTP"))
+	errNoLink = errors.New("error: problem finding link")
+	debug, _  = strconv.ParseBool(os.Getenv("GOUNITY_DEBUG"))
+	showHTTP  = true
 )
 
 // Client Struct holds the configuration & REST Client.
