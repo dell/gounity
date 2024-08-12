@@ -293,7 +293,7 @@ func (c *client) DoAndGetResponseBody(ctx context.Context, method, uri string, h
 	}
 
 	dump, _ := httputil.DumpRequest(req, true)
-	log.Debugf("HTTP Request: %v", dump)
+	log.Debugf("HTTP Request: %v", string(dump))
 
 	logRequest(ctx, req, c.doLog)
 
@@ -304,7 +304,7 @@ func (c *client) DoAndGetResponseBody(ctx context.Context, method, uri string, h
 	}
 
 	dumpres, _ := httputil.DumpResponse(res, true)
-	log.Debugf("HTTP Response: %v", dumpres)
+	log.Debugf("HTTP Response: %v", string(dumpres))
 
 	logResponse(ctx, res, c.doLog)
 
