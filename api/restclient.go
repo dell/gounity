@@ -291,9 +291,7 @@ func (c *client) DoAndGetResponseBody(ctx context.Context, method, uri string, h
 		req.Header.Set(HeaderEMCCSRFToken, c.token)
 	}
 
-	if c.showHTTP {
-		logRequest(ctx, req, c.doLog)
-	}
+	logRequest(ctx, req, c.doLog)
 
 	// send the request
 	req = req.WithContext(ctx)
@@ -301,9 +299,7 @@ func (c *client) DoAndGetResponseBody(ctx context.Context, method, uri string, h
 		return nil, err
 	}
 
-	if c.showHTTP {
-		logResponse(ctx, res, c.doLog)
-	}
+	logResponse(ctx, res, c.doLog)
 
 	log.Debugf("Response code:%d for url: %s", res.StatusCode, uri)
 	return res, err
