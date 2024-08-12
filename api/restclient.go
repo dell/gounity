@@ -25,6 +25,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/cookiejar"
+	"net/http/httputil"
 	"net/url"
 	"strings"
 	"time"
@@ -291,7 +292,8 @@ func (c *client) DoAndGetResponseBody(ctx context.Context, method, uri string, h
 		req.Header.Set(HeaderEMCCSRFToken, c.token)
 	}
 
-	log.Debugf("HTTP Request Header: %v", req.Header)
+	dump, _ := httputil.DumpRequest(req, true)
+	log.Debugf("HTTP Request: %v", dump)
 
 	logRequest(ctx, req, c.doLog)
 
@@ -301,7 +303,9 @@ func (c *client) DoAndGetResponseBody(ctx context.Context, method, uri string, h
 		return nil, err
 	}
 
-	log.Debugf("HTTP Response Header: %v", res.Header)
+	dumpres, _ := httputil.DumpResponse(res, true)
+	log.Debugf("HTTP Response: %v", dumpres)
+
 	logResponse(ctx, res, c.doLog)
 
 	log.Debugf("Response code:%d for url: %s", res.StatusCode, uri)
