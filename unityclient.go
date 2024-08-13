@@ -23,6 +23,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"sync"
 
 	"github.com/dell/gounity/util"
 
@@ -49,6 +50,7 @@ var (
 type Client struct {
 	configConnect *ConfigConnect
 	api           api.Client
+	loginMutex    sync.Mutex
 }
 
 // ConfigConnect Struct holds the endpoint & credential info.
@@ -98,6 +100,8 @@ func (c *Client) BasicSystemInfo(ctx context.Context, configConnect *ConfigConne
 // Authenticate make a REST API call [/loginSessionInfo] to Unity to get authenticate the given credentials.
 // The response contains the EMC-CSRF-TOKEN and the client caches it for further communication.
 func (c *Client) Authenticate(ctx context.Context, configConnect *ConfigConnect) error {
+	c.loginMutex.Lock()
+	defer c.loginMutex.Unlock()
 	log := util.GetRunIDLogger(ctx)
 	log.Debug("Executing Authenticate REST client")
 	c.configConnect = configConnect
@@ -164,20 +168,20 @@ func (c *Client) executeWithRetryAuthenticate(ctx context.Context, method, uri s
 		log.Debugf("Error in response. Method:%s URI:%s Error: %v JSON Error: %+v", method, uri, err, e)
 		if e.ErrorContent.HTTPStatusCode == 401 {
 			log.Debug("need to re-authenticate")
-			// Authenticate then try again
-			configConnect := c.configConnect
-			opts := api.ClientOptions{
-				Insecure: configConnect.Insecure,
-				ShowHTTP: showHTTP,
-			}
-			c.api, err = api.New(ctx, configConnect.Endpoint, opts, debug)
-			//c, err = NewClientWithArgs(ctx, configConnect.Endpoint, configConnect.Insecure)
-			if err != nil {
-				log.Debug("Failed creating a new goUnity client during reauth when response code is 401 ")
-				return err
-			}
+			// // Authenticate then try again
+			//configConnect := c.configConnect
+			// opts := api.ClientOptions{
+			// 	Insecure: configConnect.Insecure,
+			// 	ShowHTTP: showHTTP,
+			// }
+			// c.api, err = api.New(ctx, configConnect.Endpoint, opts, debug)
+			// //c, err = NewClientWithArgs(ctx, configConnect.Endpoint, configConnect.Insecure)
+			// if err != nil {
+			// 	log.Debug("Failed creating a new goUnity client during reauth when response code is 401 ")
+			// 	return err
+			// }
 
-			if err := c.Authenticate(ctx, configConnect); err != nil {
+			if err := c.Authenticate(ctx, c.configConnect); err != nil {
 				return fmt.Errorf("authentication failure due to: %v", err)
 			}
 			log.Debug("Authentication success")
