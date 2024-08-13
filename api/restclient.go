@@ -25,7 +25,6 @@ import (
 	"io"
 	"net/http"
 	"net/http/cookiejar"
-	"net/http/httputil"
 	"net/url"
 	"strings"
 	"time"
@@ -292,9 +291,8 @@ func (c *client) DoAndGetResponseBody(ctx context.Context, method, uri string, h
 		req.Header.Set(HeaderEMCCSRFToken, c.token)
 	}
 
-	dump, _ := httputil.DumpRequest(req, true)
-	log.Debugf("HTTP Request: %v", string(dump))
-
+	log.Debugf("REQUEST TOKEN: %v", req.Header.Get("Emc-Csrf-Token"))
+	log.Debugf("REQUEST COOKIE : %v", c.http.Jar)
 	logRequest(ctx, req, c.doLog)
 
 	// send the request
@@ -303,9 +301,8 @@ func (c *client) DoAndGetResponseBody(ctx context.Context, method, uri string, h
 		return nil, err
 	}
 
-	dumpres, _ := httputil.DumpResponse(res, true)
-	log.Debugf("HTTP Response: %v", string(dumpres))
-
+	log.Debugf("RESPONSE TOKEN: %v", res.Header.Get("Emc-Csrf-Token"))
+	log.Debugf("RESPONSE COOKIE : %v", c.http.Jar)
 	logResponse(ctx, res, c.doLog)
 
 	log.Debugf("Response code:%d for url: %s", res.StatusCode, uri)
