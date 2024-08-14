@@ -39,7 +39,7 @@ const (
 	HeaderKeyContentType                  = "Content-Type"
 	HeaderValContentTypeJSON              = "application/json"
 	headerValContentTypeBinaryOctetStream = "binary/octet-stream"
-	HeaderEMCCSRFToken                    = "EMC-CSRF-TOKEN"
+	HeaderEMCCSRFToken                    = "EMC-CSRF-TOKEN" // #nosec G101
 )
 
 var (
@@ -124,7 +124,7 @@ type ClientOptions struct {
 }
 
 // New returns a new API client.
-func New(ctx context.Context, host string, opts ClientOptions, debug bool) (Client, error) {
+func New(_ context.Context, host string, opts ClientOptions, debug bool) (Client, error) {
 	if host == "" {
 		return nil, errNewClient
 	}
