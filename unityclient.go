@@ -23,6 +23,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"sync"
 
 	"github.com/dell/gounity/util"
 
@@ -49,6 +50,7 @@ var (
 type Client struct {
 	configConnect *ConfigConnect
 	api           api.Client
+	loginMutex    sync.Mutex
 }
 
 // ConfigConnect Struct holds the endpoint & credential info.
@@ -59,9 +61,47 @@ type ConfigConnect struct {
 	Insecure bool
 }
 
+// BasicSystemInfo make a REST API call [/basicSystemInfo/instances] to Unity to check if array is responding.
+func (c *Client) BasicSystemInfo(ctx context.Context, configConnect *ConfigConnect) error {
+	log := util.GetRunIDLogger(ctx)
+	log.Debug("Executing BasicSystemInfo REST client")
+	c.configConnect = configConnect
+	headers := make(map[string]string, 3)
+	headers[api.XEmcRestClient] = "true"
+	headers[api.HeaderKeyContentType] = api.HeaderValContentTypeJSON
+	resp, err := c.api.DoAndGetResponseBody(ctx, http.MethodGet, api.UnityAPIBasicSysInfoURI, headers, nil)
+	if err != nil {
+		return fmt.Errorf("Error getting BasicSystemInfo: %v", err)
+	}
+
+	if resp != nil {
+		log.Debugf("BasicSystemInfo response code: %d", resp.StatusCode)
+		if err != nil {
+			log.Errorf("Reading BasicSystemInfo response body error:%v", err)
+		}
+
+		defer resp.Body.Close()
+
+		switch {
+		case resp.StatusCode >= 200 && resp.StatusCode <= 299:
+			{
+				log.Debug("Getting BasicSystemInfo details successful")
+			}
+		default:
+			return fmt.Errorf("Get BaicSystemInfo error. Response: %v", c.api.ParseJSONError(ctx, resp))
+		}
+
+	} else {
+		log.Errorf("Getting BasicSystenInfo details faile")
+	}
+	return nil
+}
+
 // Authenticate make a REST API call [/loginSessionInfo] to Unity to get authenticate the given credentials.
 // The response contains the EMC-CSRF-TOKEN and the client caches it for further communication.
 func (c *Client) Authenticate(ctx context.Context, configConnect *ConfigConnect) error {
+	c.loginMutex.Lock()
+	defer c.loginMutex.Unlock()
 	log := util.GetRunIDLogger(ctx)
 	log.Debug("Executing Authenticate REST client")
 	c.configConnect = configConnect
@@ -129,14 +169,7 @@ func (c *Client) executeWithRetryAuthenticate(ctx context.Context, method, uri s
 		if e.ErrorContent.HTTPStatusCode == 401 {
 			log.Debug("need to re-authenticate")
 			// Authenticate then try again
-			configConnect := c.configConnect
-			c, err = NewClientWithArgs(ctx, configConnect.Endpoint, configConnect.Insecure)
-			if err != nil {
-				log.Debug("Failed creating a new goUnity client during reauth when response code is 401 ")
-				return err
-			}
-
-			if err := c.Authenticate(ctx, configConnect); err != nil {
+			if err := c.Authenticate(ctx, c.configConnect); err != nil {
 				return fmt.Errorf("authentication failure due to: %v", err)
 			}
 			log.Debug("Authentication success")

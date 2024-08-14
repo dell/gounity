@@ -131,7 +131,7 @@ func New(_ context.Context, host string, opts ClientOptions, debug bool) (Client
 
 	host = strings.Replace(host, "/api", "", 1)
 
-	cookieJar, _ := cookiejar.New(nil)
+	cookieJar, _ := cookiejar.New(&cookiejar.Options{PublicSuffixList: nil})
 
 	c := &client{
 		http:  &http.Client{},
@@ -146,7 +146,6 @@ func New(_ context.Context, host string, opts ClientOptions, debug bool) (Client
 	if opts.Insecure {
 		c.http.Transport = &http.Transport{
 			TLSClientConfig: &tls.Config{
-				/* #nosec G402 */
 				InsecureSkipVerify: true,
 				CipherSuites:       util.GetSecuredCipherSuites(),
 			},
@@ -158,7 +157,6 @@ func New(_ context.Context, host string, opts ClientOptions, debug bool) (Client
 		}
 		c.http.Transport = &http.Transport{
 			TLSClientConfig: &tls.Config{
-				/* #nosec G402 */
 				RootCAs:            pool,
 				InsecureSkipVerify: false,
 				CipherSuites:       util.GetSecuredCipherSuites(),
