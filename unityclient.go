@@ -34,7 +34,7 @@ import (
 )
 
 const (
-	emcCsrfToken = "EMC-CSRF-TOKEN"
+	emcCsrfToken = "EMC-CSRF-TOKEN" // #nosec G101
 )
 
 var (
