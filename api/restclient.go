@@ -143,7 +143,7 @@ func New(_ context.Context, host string, opts ClientOptions, debug bool) (Client
 		c.http.Timeout = opts.Timeout
 	}
 
-	if opts.Insecure {
+	if opts.Insecure { // #nosec G402
 		c.http.Transport = &http.Transport{
 			TLSClientConfig: &tls.Config{
 				InsecureSkipVerify: true,
@@ -160,6 +160,7 @@ func New(_ context.Context, host string, opts ClientOptions, debug bool) (Client
 				RootCAs:            pool,
 				InsecureSkipVerify: false,
 				CipherSuites:       util.GetSecuredCipherSuites(),
+				MinVersion:         tls.VersionTLS12,
 			},
 		}
 	}
