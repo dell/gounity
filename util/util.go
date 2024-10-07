@@ -171,6 +171,8 @@ func ValidateDuration(durationStr string) (uint64, error) {
 		if minutes >= 60 || minutes < 0 || secs >= 60 || secs < 0 {
 			return 0, errors.New("hours, minutes and seconds should be in between 0-60")
 		}
+
+		// #nosec G115
 		seconds := uint64(days*24*60*60 + hours*60*60 + minutes*60 + secs)
 		return seconds, nil
 	}
