@@ -58,7 +58,7 @@ func TestMain(m *testing.M) {
 	os.Setenv("GOUNITY_DEBUG", "true")
 
 	// for this tutorial, we will hard code it to config.txt
-	testProp, err := readTestProperties("test.properties")
+	testProp, err := readTestProperties("test.properties_template")
 	if err != nil {
 		panic("The system cannot find the file specified")
 	}
