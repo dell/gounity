@@ -16,7 +16,6 @@ package gounity
 
 import (
 	"bufio"
-	"context"
 	"crypto/tls"
 	"encoding/json"
 	"errors"
@@ -27,6 +26,8 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+
+	"github.com/dell/gounity/mocks"
 )
 
 type testConfig struct {
@@ -70,7 +71,6 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		fmt.Println(err)
 	}
-	ctx := context.Background()
 
 	testConf = &testConfig{}
 	testConf.unityEndPoint = testProp["GOUNITY_ENDPOINT"]
@@ -93,7 +93,7 @@ func TestMain(m *testing.M) {
 	testConf.username = testProp["X_CSI_UNITY_USER"]
 	testConf.password = testProp["X_CSI_UNITY_PASSWORD"]
 
-	testClient := getTestClient(ctx, testConf.unityEndPoint, testConf.username, testConf.password, testConf.unityEndPoint, insecure)
+	testClient := getTestClient()
 	testConf.wwns = strings.Split(wwnStr, ",")
 	testConf.hostList = strings.Split(hostListStr, ",")
 
@@ -110,20 +110,11 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func getTestClient(ctx context.Context, url, username, password, endpoint string, insecure bool) *Client {
-	fmt.Println("Test:", url, username, password)
-
-	c, err := NewClientWithArgs(ctx, endpoint, insecure)
-	if err != nil {
-		fmt.Println(err)
+func getTestClient() *Client {
+	return &Client{
+		api:           &mocks.Client{},
+		configConnect: &ConfigConnect{},
 	}
-
-	err = c.Authenticate(ctx, &ConfigConnect{
-		Username: username,
-		Password: password,
-		Endpoint: url,
-	})
-	return c
 }
 
 func readTestProperties(filename string) (map[string]string, error) {
