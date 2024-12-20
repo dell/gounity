@@ -18,68 +18,89 @@ import (
 	"context"
 	"fmt"
 	"testing"
-	"time"
+
+	"github.com/dell/gounity/mocks"
+	"github.com/dell/gounity/types"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 var (
-	volName         string
-	cloneVolumeName string
-	volID           string
+	volName         = "unit-test-vol"
+	cloneVolumeName = "unit-test-clone-vol"
+	volID           = "unity-volume-id"
 	cloneVolumeID   string
 	hostIOLimitID   string
+	anyArgs         = []interface{}{mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything}
+	ctx             = context.Background()
 )
 
-func TestVolume(t *testing.T) {
-	now := time.Now()
-	timeStamp := now.Format("20060102150405")
-	volName = "Unit-test-vol-" + timeStamp
-	cloneVolumeName = "Unit-test-clone-vol-" + timeStamp
-	ctx = context.Background()
+// func TestVolume(t *testing.T) {
+// 	now := time.Now()
+// 	timeStamp := now.Format("20060102150405")
+// 	volName = "Unit-test-vol-" + timeStamp
+// 	cloneVolumeName = "Unit-test-clone-vol-" + timeStamp
+// 	ctx = context.Background()
 
-	findHostIOLimitByNameTest(t)
-	createLunTest(t)
-	findVolumeByNameTest(t)
-	findVolumeByIDTest(t)
-	listVolumesTest(t)
-	exportVolumeTest(t)
-	unexportVolumeTest(t)
-	expandVolumeTest(t)
-	createCloneFromVolumeTest(t)
-	modifyVolumeExportTest(t)
-	deleteVolumeTest(t)
-	getMaxVolumeSizeTest(t)
-	// creteLunThinCloneTest(t) - Will be added to snapshot_test
-}
+// 	findHostIOLimitByNameTest(t)
+// 	createLunTest(t)
+// 	findVolumeByNameTest(t)
+// 	findVolumeByIDTest(t)
+// 	listVolumesTest(t)
+// 	exportVolumeTest(t)
+// 	unexportVolumeTest(t)
+// 	expandVolumeTest(t)
+// 	createCloneFromVolumeTest(t)
+// 	modifyVolumeExportTest(t)
+// 	deleteVolumeTest(t)
+// 	getMaxVolumeSizeTest(t)
+// 	// creteLunThinCloneTest(t) - Will be added to snapshot_test
+// }
 
-func findHostIOLimitByNameTest(t *testing.T) {
+func TestFindHostIOLimitByName(t *testing.T) {
 	fmt.Println("Begin - Find Host IO Limit by Name Test")
 
-	if testConf.hostIOLimitName != "" {
-		hostIOLimit, err := testConf.volumeAPI.FindHostIOLimitByName(ctx, testConf.hostIOLimitName)
-		fmt.Println("hostIOLimit:", prettyPrintJSON(hostIOLimit), "Error:", err)
-		hostIOLimitID = hostIOLimit.IoLimitPolicyContent.ID
+	// Mock the client.DoWithHeaders to return nil
+	testConf.volumeAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
 
-		// Negative case
-		hostIOTemp := "dummy_hostio_1"
-		_, err = testConf.volumeAPI.FindHostIOLimitByName(ctx, hostIOTemp)
-		if err == nil {
-			t.Fatalf("Find Host IO Limit negative case failed: %v", err)
-		}
+	// Call the FindHostIOLimitByName function
+	hostIOLimit, err := testConf.volumeAPI.FindHostIOLimitByName(ctx, testConf.hostIOLimitName)
+	fmt.Println("hostIOLimit:", prettyPrintJSON(hostIOLimit), "Error:", err)
+	assert.NotNil(t, hostIOLimit.IoLimitPolicyContent)
 
-		hostIOTemp = ""
-		_, err = testConf.volumeAPI.FindHostIOLimitByName(ctx, hostIOTemp)
-		if err == nil {
-			t.Fatalf("Find Host IO Limit with empty name case failed: %v", err)
-		}
+	// Negative cases
 
-		fmt.Println("Find Host IO Limit by Name Test - Successful")
-	} else {
-		fmt.Println("Skipping Host IO Limit by Name Test - Parameter not configured")
+	// Mock the client.DoWithHeaders to return an error
+	testConf.volumeAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(fmt.Errorf("not found")).Once()
+
+	// Call the FindHostIOLimitByName function with a dummy name
+	_, err = testConf.volumeAPI.FindHostIOLimitByName(ctx, "dummy_hostio_1")
+	if err == nil {
+		t.Fatalf("Find Host IO Limit negative case failed: %v", err)
 	}
+
+	// Call the FindHostIOLimitByName function with an empty name
+	_, err = testConf.volumeAPI.FindHostIOLimitByName(ctx, "")
+	if err == nil {
+		t.Fatalf("Find Host IO Limit with empty name case failed: %v", err)
+	}
+
+	fmt.Println("Find Host IO Limit by Name Test - Successful")
 }
 
-func createLunTest(t *testing.T) {
+func TestCreateLun(t *testing.T) {
 	fmt.Println("Begin - Create LUN Test")
+
+	// Mock FindStoragePoolByID to return nil
+	testConf.volumeAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
+	// Mock isFeatureLicensed to return expected response
+	testConf.volumeAPI.client.api.(*mocks.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.AnythingOfType("*types.LicenseInfo")).Return(nil).
+		Run(func(args mock.Arguments) {
+			resp := args.Get(5).(*types.LicenseInfo)
+			*resp = types.LicenseInfo{LicenseInfoContent: types.LicenseInfoContent{IsInstalled: true, IsValid: true}}
+		}).Twice()
+	// Mock create request to return nil
+	testConf.volumeAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
 
 	_, err := testConf.volumeAPI.CreateLun(ctx, volName, testConf.poolID, "Description", 2368709120, 0, hostIOLimitID, true, false)
 	if err != nil {
@@ -99,12 +120,24 @@ func createLunTest(t *testing.T) {
 		t.Fatalf("Create LUN exceeding max name length case failed: %v", err)
 	}
 
+	// Mock FindStoragePoolByID to return error
+	testConf.volumeAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(fmt.Errorf("storage pool not found")).Once()
 	poolIDTemp := "dummy_pool_1"
 	_, err = testConf.volumeAPI.CreateLun(ctx, volName, poolIDTemp, "Description", 2368709120, 0, hostIOLimitID, true, false)
 	if err == nil {
 		t.Fatalf("Create LUN with invalid pool name case failed: %v", err)
 	}
 
+	// Mock FindStoragePoolByID to return no error
+	testConf.volumeAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
+	// Mock isFeatureLicensed to return expected response
+	testConf.volumeAPI.client.api.(*mocks.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.AnythingOfType("*types.LicenseInfo")).Return(nil).
+		Run(func(args mock.Arguments) {
+			resp := args.Get(5).(*types.LicenseInfo)
+			*resp = types.LicenseInfo{LicenseInfoContent: types.LicenseInfoContent{IsInstalled: true, IsValid: true}}
+		}).Twice()
+	// Mock create volume to return error
+	testConf.volumeAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(fmt.Errorf("volume already exists")).Once()
 	_, err = testConf.volumeAPI.CreateLun(ctx, volName, testConf.poolID, "Description", 2368709120, 0, hostIOLimitID, true, false)
 	if err == nil {
 		t.Fatalf("Create LUN with same name case failed: %v", err)
@@ -113,15 +146,17 @@ func createLunTest(t *testing.T) {
 	fmt.Println("Create LUN Test - Successful")
 }
 
-func findVolumeByNameTest(t *testing.T) {
+func TestFindVolumeByName(t *testing.T) {
 	fmt.Println("Begin - Find Volume By Name Test")
 
+	// Mock FindVolumeByName to return no error
+	testConf.volumeAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
 	vol, err := testConf.volumeAPI.FindVolumeByName(ctx, volName)
 	fmt.Println("Find volume by Name:", prettyPrintJSON(vol), err)
 	if err != nil {
 		t.Fatalf("Find volume by Name failed: %v", err)
 	}
-	volID = vol.VolumeContent.ResourceID
+	assert.NotNil(t, vol.VolumeContent.ResourceID)
 
 	// Negative cases
 	volNameTemp := ""
@@ -130,6 +165,8 @@ func findVolumeByNameTest(t *testing.T) {
 		t.Fatalf("Find volume by Name with empty name case failed: %v", err)
 	}
 
+	// Mock FindVolumeByName to return error
+	testConf.volumeAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(fmt.Errorf("volume not found")).Once()
 	volNameTemp = "dummy_volume_1"
 	_, err = testConf.volumeAPI.FindVolumeByName(ctx, volNameTemp)
 	if err == nil {
@@ -139,9 +176,11 @@ func findVolumeByNameTest(t *testing.T) {
 	fmt.Println("Find Volume by Name Test - Successful")
 }
 
-func findVolumeByIDTest(t *testing.T) {
+func TestFindVolumeByID(t *testing.T) {
 	fmt.Println("Begin - Find Volume By Name Test")
 
+	// Mock FindVolumeByID to return no error
+	testConf.volumeAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
 	vol, err := testConf.volumeAPI.FindVolumeByID(ctx, volID)
 	fmt.Println("Find volume by Name:", prettyPrintJSON(vol), err)
 	if err != nil {
@@ -155,6 +194,8 @@ func findVolumeByIDTest(t *testing.T) {
 		t.Fatalf("Find volume by Id with empty Id case failed: %v", err)
 	}
 
+	// Mock FindVolumeByID to return error
+	testConf.volumeAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(fmt.Errorf("volume not found")).Once()
 	volIDTemp = "dummy_vol_sv_1"
 	_, err = testConf.volumeAPI.FindVolumeByID(ctx, volIDTemp)
 	if err == nil {
@@ -163,9 +204,14 @@ func findVolumeByIDTest(t *testing.T) {
 	fmt.Println("Find Volume by Id Test - Successful")
 }
 
-func listVolumesTest(t *testing.T) {
+func TestListVolumes(t *testing.T) {
 	fmt.Println("Begin - List Volumes Test")
 
+	// Mock ListVolumes to return no error
+	testConf.volumeAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(nil).Run(func(args mock.Arguments) {
+		resp := args.Get(5).(*types.ListVolumes)
+		resp.Volumes = make([]types.Volume, 10)
+	}).Once()
 	vols, _, err := testConf.volumeAPI.ListVolumes(ctx, 11, 10)
 	fmt.Println("List volumes count: ", len(vols))
 	if len(vols) <= 10 {
@@ -177,20 +223,30 @@ func listVolumesTest(t *testing.T) {
 	fmt.Println("List Volume Test - Successful")
 }
 
-func exportVolumeTest(t *testing.T) {
+func TestExportVolume(t *testing.T) {
 	fmt.Println("Begin - Export Volume Test")
 
+	// Mock FindHostByName to return no error
+	testConf.volumeAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
 	host, err := testConf.hostAPI.FindHostByName(ctx, testConf.nodeHostName)
 	if err != nil {
 		t.Fatalf("Find Host failed: %v", err)
 	}
 
+	// Mock ExportVolume to return no error
+	testConf.volumeAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
 	err = testConf.volumeAPI.ExportVolume(ctx, volID, host.HostContent.ID)
 	if err != nil {
 		t.Fatalf("ExportVolume failed: %v", err)
 	}
 
 	// Negative case for Delete Volume
+	// Mock executeWithRetryAuthenticate to return no error
+	testConf.volumeAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
+	// Mock FindVolumeByID to return no error
+	testConf.volumeAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
+	// Mock DeleteVolume to return error
+	testConf.volumeAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(fmt.Errorf("failed to delete exported volume")).Once()
 	err = testConf.volumeAPI.DeleteVolume(ctx, volID)
 	if err == nil {
 		t.Fatalf("Delete volume on exported volume case failed: %v", err)
@@ -199,9 +255,11 @@ func exportVolumeTest(t *testing.T) {
 	fmt.Println("Export Volume Test - Successful")
 }
 
-func unexportVolumeTest(t *testing.T) {
+func TestUnexportVolume(t *testing.T) {
 	fmt.Println("Begin - Unexport Volume Test")
 
+	// Mock UnexportVolume to return no error
+	testConf.volumeAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
 	err := testConf.volumeAPI.UnexportVolume(ctx, volID)
 	if err != nil {
 		t.Fatalf("UnExportVolume failed: %v", err)
