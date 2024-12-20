@@ -79,7 +79,7 @@ func TestMain(m *testing.M) {
 	testConf.poolID = "pool_3"
 	testConf.nodeHostName = "Unit-test-host-20231023052923"
 	testConf.hostIOLimitName = "Autotyre"
-	testConf.nodeHostIP = "10.225.111.243"
+	testConf.nodeHostIP = "10.20.30.40"
 	testConf.nasServer = "nas_1"
 	testConf.iqn = "iqn.1996-04.de.suse:01:f8298e544dc"
 	wwnStr := ""
