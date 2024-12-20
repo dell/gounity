@@ -18,44 +18,46 @@ import (
 	"context"
 	"fmt"
 	"testing"
-	"time"
 
 	"github.com/dell/gounity/mocks"
+	"github.com/dell/gounity/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
 var (
-	volName         string
-	cloneVolumeName string
+	volName         = "Unit-test-vol"
+	cloneVolumeName = "Unit-test-clone-vol"
 	volID           string
 	cloneVolumeID   string
 	hostIOLimitID   string
+	anyArgs         = []interface{}{mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything}
+	ctx             = context.Background()
 )
 
-func TestVolume(t *testing.T) {
-	now := time.Now()
-	timeStamp := now.Format("20060102150405")
-	volName = "Unit-test-vol-" + timeStamp
-	cloneVolumeName = "Unit-test-clone-vol-" + timeStamp
-	ctx = context.Background()
+// func TestVolume(t *testing.T) {
+// 	now := time.Now()
+// 	timeStamp := now.Format("20060102150405")
+// 	volName = "Unit-test-vol-" + timeStamp
+// 	cloneVolumeName = "Unit-test-clone-vol-" + timeStamp
+// 	ctx = context.Background()
 
-	findHostIOLimitByNameTest(t)
-	// createLunTest(t)
-	// findVolumeByNameTest(t)
-	// findVolumeByIDTest(t)
-	// listVolumesTest(t)
-	// exportVolumeTest(t)
-	// unexportVolumeTest(t)
-	// expandVolumeTest(t)
-	// createCloneFromVolumeTest(t)
-	// modifyVolumeExportTest(t)
-	// deleteVolumeTest(t)
-	// getMaxVolumeSizeTest(t)
-	// creteLunThinCloneTest(t) - Will be added to snapshot_test
-}
+// 	findHostIOLimitByNameTest(t)
+// 	createLunTest(t)
+// 	findVolumeByNameTest(t)
+// 	findVolumeByIDTest(t)
+// 	listVolumesTest(t)
+// 	exportVolumeTest(t)
+// 	unexportVolumeTest(t)
+// 	expandVolumeTest(t)
+// 	createCloneFromVolumeTest(t)
+// 	modifyVolumeExportTest(t)
+// 	deleteVolumeTest(t)
+// 	getMaxVolumeSizeTest(t)
+// 	// creteLunThinCloneTest(t) - Will be added to snapshot_test
+// }
 
-func findHostIOLimitByNameTest(t *testing.T) {
+func TestFindHostIOLimitByName(t *testing.T) {
 	fmt.Println("Begin - Find Host IO Limit by Name Test")
 
 	if testConf.hostIOLimitName == "" {
@@ -63,7 +65,6 @@ func findHostIOLimitByNameTest(t *testing.T) {
 		return
 	}
 	// Mock the client.DoWithHeaders to return nil
-	anyArgs := []interface{}{mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything}
 	testConf.volumeAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
 
 	// Call the FindHostIOLimitByName function
@@ -94,8 +95,19 @@ func findHostIOLimitByNameTest(t *testing.T) {
 	fmt.Println("Find Host IO Limit by Name Test - Successful")
 }
 
-func createLunTest(t *testing.T) {
+func TestCreateLun(t *testing.T) {
 	fmt.Println("Begin - Create LUN Test")
+
+	// Mock FindStoragePoolByID to return nil
+	testConf.volumeAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
+	// Mock isFeatureLicensed to return expected response
+	testConf.volumeAPI.client.api.(*mocks.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.AnythingOfType("*types.LicenseInfo")).Return(nil).
+		Run(func(args mock.Arguments) {
+			resp := args.Get(5).(*types.LicenseInfo)
+			*resp = types.LicenseInfo{LicenseInfoContent: types.LicenseInfoContent{IsInstalled: true, IsValid: true}}
+		}).Twice()
+	// Mock create request to return nil
+	testConf.volumeAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
 
 	_, err := testConf.volumeAPI.CreateLun(ctx, volName, testConf.poolID, "Description", 2368709120, 0, hostIOLimitID, true, false)
 	if err != nil {
@@ -115,12 +127,24 @@ func createLunTest(t *testing.T) {
 		t.Fatalf("Create LUN exceeding max name length case failed: %v", err)
 	}
 
+	// Mock FindStoragePoolByID to return error
+	testConf.volumeAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(fmt.Errorf("storage pool not found")).Once()
 	poolIDTemp := "dummy_pool_1"
 	_, err = testConf.volumeAPI.CreateLun(ctx, volName, poolIDTemp, "Description", 2368709120, 0, hostIOLimitID, true, false)
 	if err == nil {
 		t.Fatalf("Create LUN with invalid pool name case failed: %v", err)
 	}
 
+	// Mock FindStoragePoolByID to return no error
+	testConf.volumeAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
+	// Mock isFeatureLicensed to return expected response
+	testConf.volumeAPI.client.api.(*mocks.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.AnythingOfType("*types.LicenseInfo")).Return(nil).
+		Run(func(args mock.Arguments) {
+			resp := args.Get(5).(*types.LicenseInfo)
+			*resp = types.LicenseInfo{LicenseInfoContent: types.LicenseInfoContent{IsInstalled: true, IsValid: true}}
+		}).Twice()
+	// Mock create volume to return error
+	testConf.volumeAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(fmt.Errorf("volume already exists")).Once()
 	_, err = testConf.volumeAPI.CreateLun(ctx, volName, testConf.poolID, "Description", 2368709120, 0, hostIOLimitID, true, false)
 	if err == nil {
 		t.Fatalf("Create LUN with same name case failed: %v", err)

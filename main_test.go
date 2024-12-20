@@ -73,25 +73,22 @@ func TestMain(m *testing.M) {
 	}
 
 	testConf = &testConfig{}
-	testConf.unityEndPoint = testProp["GOUNITY_ENDPOINT"]
-	testConf.username = testProp["X_CSI_UNITY_USER"]
-	testConf.password = testProp["X_CSI_UNITY_PASSWORD"]
-	testConf.poolID = testProp["STORAGE_POOL"]
-	testConf.nodeHostName = testProp["NODE_HOSTNAME"]
-	testConf.hostIOLimitName = testProp["HOST_IO_LIMIT_NAME"]
-	testConf.nodeHostIP = testProp["NODE_HOSTIP"]
-	testConf.nasServer = testProp["UNITY_NAS_SERVER"]
-	testConf.iqn = testProp["NODE_IQN"]
-	wwnStr := testProp["NODE_WWNS"]
-	hostListStr := testProp["HOST_LIST_NAME"]
-	testConf.tenant = testProp["TENANT_ID"]
+	testConf.unityEndPoint = "https://mock-endpoint"
+	testConf.username = "user"
+	testConf.password = "password"
+	testConf.poolID = "pool_3"
+	testConf.nodeHostName = "Unit-test-host-20231023052923"
+	testConf.hostIOLimitName = "Autotyre"
+	testConf.nodeHostIP = "10.225.111.243"
+	testConf.nasServer = "nas_1"
+	testConf.iqn = "iqn.1996-04.de.suse:01:f8298e544dc"
+	wwnStr := ""
+	hostListStr := "Unit-test-host-20231023052923"
+	testConf.tenant = "tenant_1"
 
 	os.Setenv("GOUNITY_ENDPOINT", testConf.unityEndPoint)
 	os.Setenv("X_CSI_UNITY_USER", testConf.username)
 	os.Setenv("X_CSI_UNITY_PASSWORD", testConf.password)
-
-	testConf.username = testProp["X_CSI_UNITY_USER"]
-	testConf.password = testProp["X_CSI_UNITY_PASSWORD"]
 
 	testClient := getTestClient()
 	testConf.wwns = strings.Split(wwnStr, ",")
