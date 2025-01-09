@@ -1,5 +1,5 @@
 /*
- Copyright © 2019 Dell Inc. or its subsidiaries. All Rights Reserved.
+ Copyright © 2019-2025 Dell Inc. or its subsidiaries. All Rights Reserved.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@ package gounity
 
 import (
 	"bufio"
-	"context"
 	"crypto/tls"
 	"encoding/json"
 	"errors"
@@ -27,6 +26,8 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+
+	"github.com/dell/gounity/mocks"
 )
 
 type testConfig struct {
@@ -58,7 +59,7 @@ func TestMain(m *testing.M) {
 	os.Setenv("GOUNITY_DEBUG", "true")
 
 	// for this tutorial, we will hard code it to config.txt
-	testProp, err := readTestProperties("test.properties")
+	testProp, err := readTestProperties("test.properties_template")
 	if err != nil {
 		panic("The system cannot find the file specified")
 	}
@@ -70,30 +71,26 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		fmt.Println(err)
 	}
-	ctx := context.Background()
 
 	testConf = &testConfig{}
-	testConf.unityEndPoint = testProp["GOUNITY_ENDPOINT"]
-	testConf.username = testProp["X_CSI_UNITY_USER"]
-	testConf.password = testProp["X_CSI_UNITY_PASSWORD"]
-	testConf.poolID = testProp["STORAGE_POOL"]
-	testConf.nodeHostName = testProp["NODE_HOSTNAME"]
-	testConf.hostIOLimitName = testProp["HOST_IO_LIMIT_NAME"]
-	testConf.nodeHostIP = testProp["NODE_HOSTIP"]
-	testConf.nasServer = testProp["UNITY_NAS_SERVER"]
-	testConf.iqn = testProp["NODE_IQN"]
-	wwnStr := testProp["NODE_WWNS"]
-	hostListStr := testProp["HOST_LIST_NAME"]
-	testConf.tenant = testProp["TENANT_ID"]
+	testConf.unityEndPoint = "https://mock-endpoint"
+	testConf.username = "user"
+	testConf.password = "password"
+	testConf.poolID = "pool_3"
+	testConf.nodeHostName = "Unit-test-host-20231023052923"
+	testConf.hostIOLimitName = "Autotyre"
+	testConf.nodeHostIP = "10.20.30.40"
+	testConf.nasServer = "nas_1"
+	testConf.iqn = "iqn.1996-04.de.suse:01:f8298e544dc"
+	wwnStr := ""
+	hostListStr := "Unit-test-host-20231023052923"
+	testConf.tenant = "tenant_1"
 
 	os.Setenv("GOUNITY_ENDPOINT", testConf.unityEndPoint)
 	os.Setenv("X_CSI_UNITY_USER", testConf.username)
 	os.Setenv("X_CSI_UNITY_PASSWORD", testConf.password)
 
-	testConf.username = testProp["X_CSI_UNITY_USER"]
-	testConf.password = testProp["X_CSI_UNITY_PASSWORD"]
-
-	testClient := getTestClient(ctx, testConf.unityEndPoint, testConf.username, testConf.password, testConf.unityEndPoint, insecure)
+	testClient := getTestClient()
 	testConf.wwns = strings.Split(wwnStr, ",")
 	testConf.hostList = strings.Split(hostListStr, ",")
 
@@ -110,20 +107,11 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func getTestClient(ctx context.Context, url, username, password, endpoint string, insecure bool) *Client {
-	fmt.Println("Test:", url, username, password)
-
-	c, err := NewClientWithArgs(ctx, endpoint, insecure)
-	if err != nil {
-		fmt.Println(err)
+func getTestClient() *Client {
+	return &Client{
+		api:           &mocks.Client{},
+		configConnect: &ConfigConnect{},
 	}
-
-	err = c.Authenticate(ctx, &ConfigConnect{
-		Username: username,
-		Password: password,
-		Endpoint: url,
-	})
-	return c
 }
 
 func readTestProperties(filename string) (map[string]string, error) {

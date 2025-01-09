@@ -1,5 +1,5 @@
 /*
- Copyright © 2019 Dell Inc. or its subsidiaries. All Rights Reserved.
+ Copyright © 2019-2025 Dell Inc. or its subsidiaries. All Rights Reserved.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -16,66 +16,84 @@ package gounity
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"testing"
+
+	"github.com/dell/gounity/mocks"
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
 
 var storagePoolName string
 
-func TestStoragePool(t *testing.T) {
-	ctx = context.Background()
+func TestFindStoragePoolByID(t *testing.T) {
+	fmt.Println("Begin - Find Storage Pool by ID Test")
+	testConf.volumeAPI.client.api.(*mocks.Client).ExpectedCalls = nil
+	ctx := context.Background()
+	testConf.volumeAPI.client.api.(*mocks.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
 
-	findStoragePoolByIDTest(t)
-	findStoragePoolByNameTest(t)
-}
-
-func findStoragePoolByIDTest(t *testing.T) {
-	fmt.Println("Begin - Find Storage Pool by Id Test")
-
+	// Positive case
 	pool, err := testConf.poolAPI.FindStoragePoolByID(ctx, testConf.poolID)
-	fmt.Println("Find volume by Id:", prettyPrintJSON(pool), err)
+	fmt.Println("Find Storage Pool by ID:", prettyPrintJSON(pool), err)
 	if err != nil {
-		t.Fatalf("Find Pool by Id failed: %v", err)
+		t.Fatalf("Find Storage Pool by ID failed: %v", err)
 	}
 	storagePoolName = pool.StoragePoolContent.Name
 
 	// Negative cases
-	storagePoolIDTemp := ""
-	pool, err = testConf.poolAPI.FindStoragePoolByID(ctx, storagePoolIDTemp)
+	// Case 1: Empty ID
+	emptyID := ""
+	testConf.volumeAPI.client.api.(*mocks.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(fmt.Errorf("invalid ID")).Once()
+	pool, err = testConf.poolAPI.FindStoragePoolByID(ctx, emptyID)
 	if err == nil {
-		t.Fatalf("Find Pool by Id with empty Id case - failed: %v", err)
+		t.Fatalf("Find Storage Pool by ID with empty ID case - failed: %v", err)
 	}
 
-	storagePoolIDTemp = "dumy_pool_id_1"
-	pool, err = testConf.poolAPI.FindStoragePoolByID(ctx, storagePoolIDTemp)
+	// Case 2: Invalid ID
+	invalidID := "dummy_pool_id_1"
+	testConf.volumeAPI.client.api.(*mocks.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(fmt.Errorf("invalid ID")).Once()
+	pool, err = testConf.poolAPI.FindStoragePoolByID(ctx, invalidID)
 	if err == nil {
-		t.Fatalf("Find Pool by Id with invalid Id case - failed: %v", err)
+		t.Fatalf("Find Storage Pool by ID with invalid ID case - failed: %v", err)
 	}
 
-	fmt.Println("Find Storage Pool by Id Test - Successful")
+	fmt.Println("Find Storage Pool by ID Test - Successful")
 }
 
-func findStoragePoolByNameTest(t *testing.T) {
+func TestFindStoragePoolByNameTest(t *testing.T) {
+	testConf.volumeAPI.client.api.(*mocks.Client).ExpectedCalls = nil
+	assert := require.New(t)
 	fmt.Println("Begin - Find Storage Pool by Name Test")
+	ctx := context.Background()
 
+	// Mock setup for valid pool name
+	testConf.volumeAPI.client.api.(*mocks.Client).On("DoWithHeaders", mock.Anything, "GET", "/api/instances/pool/name:valid_pool_name?fields=id,name,description,sizeFree,sizeTotal,sizeUsed,sizeSubscribed,hasDataReductionEnabledLuns,hasDataReductionEnabledFs,isFASTCacheEnabled,type,isAllFlash,poolFastVP", mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
+
+	// Positive Case
+	storagePoolName := "valid_pool_name" // Ensure this is set to a valid name
 	pool, err := testConf.poolAPI.FindStoragePoolByName(ctx, storagePoolName)
 	fmt.Println("Find volume by Name:", prettyPrintJSON(pool), err)
-	if err != nil {
-		t.Fatalf("Find Pool by Name failed: %v", err)
-	}
+	assert.NoError(err, "Find Pool by Name failed")
+	assert.NotNil(pool, "Pool should not be nil")
 
-	// Negative Cases
+	// Mock setup for empty pool name
+	testConf.volumeAPI.client.api.(*mocks.Client).On("DoWithHeaders", mock.Anything, "GET", "/api/instances/pool/name:?fields=id,name,description,sizeFree,sizeTotal,sizeUsed,sizeSubscribed,hasDataReductionEnabledLuns,hasDataReductionEnabledFs,isFASTCacheEnabled,type,isAllFlash,poolFastVP", mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
+
+	// Negative Case: Empty pool name
 	storagePoolNameTemp := ""
 	pool, err = testConf.poolAPI.FindStoragePoolByName(ctx, storagePoolNameTemp)
-	if err == nil {
-		t.Fatalf("Find Pool by Id with empty Name case - failed: %v", err)
-	}
+	assert.Error(err, "Expected error for empty pool name")
+	assert.Nil(pool, "Pool should be nil for empty name")
 
+	// Mock setup for invalid pool name
+	testConf.volumeAPI.client.api.(*mocks.Client).On("DoWithHeaders", mock.Anything, "GET", "/api/instances/pool/name:dummy_pool_name_1?fields=id,name,description,sizeFree,sizeTotal,sizeUsed,sizeSubscribed,hasDataReductionEnabledLuns,hasDataReductionEnabledFs,isFASTCacheEnabled,type,isAllFlash,poolFastVP", mock.Anything, mock.Anything, mock.Anything).Return(errors.New("pool not found")).Once()
+
+	// Negative Case: Invalid pool name
 	storagePoolNameTemp = "dummy_pool_name_1"
 	pool, err = testConf.poolAPI.FindStoragePoolByName(ctx, storagePoolNameTemp)
-	if err == nil {
-		t.Fatalf("Find Pool by Id with invalid Name case - failed: %v", err)
-	}
+	assert.Error(err, "Expected error for invalid pool name")
+	assert.Nil(pool, "Pool should be nil for invalid name")
 
 	fmt.Println("Find Storage Pool by Name Test - Successful")
 }
