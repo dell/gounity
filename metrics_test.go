@@ -1,115 +1,74 @@
 /*
- * Copyright (c) 2021. Dell Inc., or its subsidiaries. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- */
+ Copyright © 2021-2025 Dell Inc. or its subsidiaries. All Rights Reserved.
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+      http://www.apache.org/licenses/LICENSE-2.0
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+*/
+
 package gounity
 
 import (
 	"context"
 	"fmt"
-	"os"
-	"strconv"
-	"strings"
 	"testing"
-	"time"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/dell/gounity/mocks"
+	"github.com/dell/gounity/types"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
-func TestMetrics(t *testing.T) {
-	ctx = context.Background()
+func TestDeleteRealTimeMetricsQuery(t *testing.T) {
+	fmt.Println("Begin - Delete Real Time Metrics Query Test")
+	testConf.metricsAPI.client.api.(*mocks.Client).ExpectedCalls = nil
+	ctx := context.Background()
+	queryID := 12345
 
-	getVolumeMetrics(t)
+	testConf.metricsAPI.client.api.(*mocks.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
+
+	err := testConf.metricsAPI.DeleteRealTimeMetricsQuery(ctx, queryID)
+	fmt.Println("Error:", err)
+	if err != nil {
+		t.Fatalf("Delete Real Time Metrics Query failed: %v", err)
+	}
+
+	testConf.metricsAPI.client.api.(*mocks.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(fmt.Errorf("delete failed")).Once()
+
+	err = testConf.metricsAPI.DeleteRealTimeMetricsQuery(ctx, queryID)
+	if err == nil {
+		t.Fatalf("Delete Real Time Metrics Query negative case failed: %v", err)
+	}
+
+	fmt.Println("Delete Real Time Metrics Query Test - Successful")
 }
 
-func getVolumeMetrics(t *testing.T) {
-	debugOn, _ := strconv.ParseBool(os.Getenv("GOUNITY_SHOWHTTP"))
-	if debugOn {
-		level, _ := log.ParseLevel("debug")
-		log.SetLevel(level)
-	}
+func TestGetMetricsCollection(t *testing.T) {
+	fmt.Println("Begin - Get Metrics Collection Test")
+	testConf.metricsAPI.client.api.(*mocks.Client).ExpectedCalls = nil
+	ctx := context.Background()
+	queryID := 12345
 
-	queryID := -1
-
-	fmt.Println("Begin - Realtime Volume Metrics Query")
-	defer func() {
-		fmt.Println("End - Realtime Volume Metrics Query")
-		// Clean up the query if it was created
-		if queryID != -1 {
-			err := testConf.metricsAPI.DeleteRealTimeMetricsQuery(ctx, queryID)
-			if err != nil {
-				t.Fatal(err)
-			}
+	metricsQueryResult := &types.MetricQueryResult{}
+	testConf.metricsAPI.client.api.(*mocks.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Run(func(args mock.Arguments) {
+		resp := args.Get(5).(*types.MetricQueryResult)
+		if resp != nil {
+			*resp = *metricsQueryResult
 		}
-	}()
+	}).Once()
 
-	var err error
-
-	err = testConf.metricsAPI.GetAllRealTimeMetricPaths(ctx)
+	result, err := testConf.metricsAPI.GetMetricsCollection(ctx, queryID)
+	fmt.Println("Metrics Query Result:", prettyPrintJSON(result), "Error:", err)
 	if err != nil {
-		t.Fatalf("Get all real time Metric Paths failed: %v", err)
+		t.Fatalf("Get Metrics Collection failed: %v", err)
 	}
+	assert.NotNil(t, result)
 
-	paths := []string{
-		"sp.*.storage.lun.*.reads",
-		"sp.*.storage.lun.*.writes",
-		"sp.*.cpu.summary.busyTicks",
-		"sp.*.cpu.summary.idleTicks",
-	}
-
-	interval := 5 // seconds
-	query, err := testConf.metricsAPI.CreateRealTimeMetricsQuery(ctx, paths, interval)
-	if err != nil {
-		t.Fatal(err)
-		return
-	}
-
-	// Example result:
-	//	============== 1 ==============
-	//	Timestamp: 2021-04-08T13:42:50.000Z
-	//  QueryID:   71
-	//  Path:      sp.*.storage.lun.*.reads [spa = map[sv_108:0 sv_18:0 sv_19:0 sv_22:0 sv_23:0 sv_24:0 sv_25:0 sv_26:0 sv_27:0 sv_28:0 sv_29:0 sv_42:0 sv_43:0]]
-	//	Path:      sp.*.storage.lun.*.writes [spa = map[sv_108:0 sv_18:0 sv_19:0 sv_22:0 sv_23:0 sv_24:0 sv_25:0 sv_26:0 sv_27:0 sv_28:0 sv_29:0 sv_42:0 sv_43:0]]
-	//	Path:      sp.*.cpu.summary.busyTicks [spa = 243675336]
-	//	Path:      sp.*.cpu.summary.idleTicks [spa = 615488915]
-	//	================================
-	queryID = query.Content.ID
-	fmt.Printf("Created MetricsQuery %d. Waiting %d seconds before trying queries\n", queryID, interval)
-	for i := 1; i <= 2; i++ {
-		time.Sleep(time.Duration(interval) * time.Second)
-		timeMetrics, err2 := testConf.metricsAPI.GetMetricsCollection(ctx, queryID)
-		if err2 != nil {
-			t.Fatal(err2)
-			return
-		}
-		fmt.Printf("============== %d ==============\n", i)
-		doOnce := true
-		for _, entry := range timeMetrics.Entries {
-			if doOnce {
-				fmt.Printf("Timestamp: %s\n", entry.Content.Timestamp)
-				fmt.Printf("QueryID:   %d\n", entry.Content.QueryID)
-				doOnce = false
-			}
-			keyValues := make([]string, 0)
-			for k, v := range entry.Content.Values {
-				keyValues = append(keyValues, fmt.Sprintf("%s = %s", k, v))
-			}
-			fmt.Printf("Path:      %s [%s]\n", entry.Content.Path, strings.Join(keyValues, ","))
-		}
-		fmt.Println("================================")
-	}
-
-	// Checking GetCapacity function
-	systemCapacityResult, testErr := testConf.metricsAPI.GetCapacity(ctx)
-	if testErr != nil {
-		t.Fatal(testErr)
-		return
-	}
-	fmt.Println(systemCapacityResult)
+	fmt.Println("Get Metrics Collection Test - Successful")
 }

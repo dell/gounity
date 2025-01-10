@@ -1,5 +1,5 @@
 /*
- Copyright © 2020 Dell Inc. or its subsidiaries. All Rights Reserved.
+ Copyright © 2020-2025 Dell Inc. or its subsidiaries. All Rights Reserved.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -18,18 +18,78 @@ import (
 	"context"
 	"fmt"
 	"testing"
+
+	"github.com/dell/gounity/mocks"
+	"github.com/dell/gounity/types"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
-func TestListIPInterfaces(t *testing.T) {
+func TestListIscsiIPInterfaces(t *testing.T) {
+	assert := assert.New(t)
+
+	// Initial Setup
+	t.Log("Begin - List IP Interfaces Test")
+	testConf.ipinterfaceAPI.client.api.(*mocks.Client).ExpectedCalls = nil
 	ctx := context.Background()
 
-	ipInterfaces, err := testConf.ipinterfaceAPI.ListIscsiIPInterfaces(ctx)
-	if err != nil {
-		t.Fatalf("List Ip Interfaces failed: %v", err)
+	// Mock ListIscsiIPInterfaces to return example data
+	expectedIPInterfaces := &types.ListIPInterfaces{
+		Entries: []types.IPInterfaceEntries{
+			{IPInterfaceContent: types.IPInterfaceContent{Type: 2, IPAddress: "192.168.1.100"}},
+			{IPInterfaceContent: types.IPInterfaceContent{Type: 2, IPAddress: "192.168.1.101"}},
+		},
 	}
 
+	mockClient := testConf.ipinterfaceAPI.client.api.(*mocks.Client)
+	mockClient.On("DoWithHeaders", mock.Anything, "GET", mock.Anything, mock.Anything, mock.Anything, mock.AnythingOfType("*types.ListIPInterfaces")).Return(nil).
+		Run(func(args mock.Arguments) {
+			resp := args.Get(5).(*types.ListIPInterfaces)
+			*resp = *expectedIPInterfaces
+		}).Once()
+
+	// Call the method
+	ipInterfaces, err := testConf.ipinterfaceAPI.ListIscsiIPInterfaces(ctx)
+
+	// Verify the results for the main case
+	assert.NoError(err, "List IP Interfaces should not return an error")
+	assert.Len(ipInterfaces, 2, "Expected 2 IP interfaces")
 	for _, ipInterface := range ipInterfaces {
-		fmt.Println("Ip Address of interface: ", ipInterface.IPInterfaceContent.IPAddress)
+		t.Logf("IP Address of interface: %s", ipInterface.IPInterfaceContent.IPAddress)
 	}
-	fmt.Println("List Ip Interfaces success")
+
+	// Negative Cases
+
+	// Case: API returns an error
+	mockClient.On("DoWithHeaders", mock.Anything, "GET", mock.Anything, mock.Anything, mock.Anything, mock.AnythingOfType("*types.ListIPInterfaces")).Return(
+		fmt.Errorf("API call error"),
+	).Once()
+	_, err = testConf.ipinterfaceAPI.ListIscsiIPInterfaces(ctx)
+	assert.Error(err, "Expected error when API call returns an error")
+	t.Log("Negative case: API call error - successful")
+
+	// Case: No iSCSI interfaces found
+	mockClient.On("DoWithHeaders", mock.Anything, "GET", mock.Anything, mock.Anything, mock.Anything, mock.AnythingOfType("*types.ListIPInterfaces")).Return(nil).
+		Run(func(args mock.Arguments) {
+			resp := args.Get(5).(*types.ListIPInterfaces)
+			*resp = types.ListIPInterfaces{
+				Entries: []types.IPInterfaceEntries{
+					{IPInterfaceContent: types.IPInterfaceContent{Type: 1, IPAddress: "192.168.1.102"}}, // Not an iSCSI interface
+				},
+			}
+		}).Once()
+	ipInterfaces, err = testConf.ipinterfaceAPI.ListIscsiIPInterfaces(ctx)
+	assert.NoError(err, "List IP Interfaces with no iSCSI interfaces should not return an error")
+	assert.Len(ipInterfaces, 0, "Expected 0 iSCSI IP interfaces")
+	t.Log("Negative case: No iSCSI interfaces - successful")
+
+	// Mock network error
+	mockClient.On("DoWithHeaders", mock.Anything, "GET", mock.Anything, mock.Anything, mock.Anything, mock.AnythingOfType("*types.ListIPInterfaces")).Return(
+		fmt.Errorf("network error"),
+	).Once()
+	_, err = testConf.ipinterfaceAPI.ListIscsiIPInterfaces(ctx)
+	assert.Error(err, "Expected network error")
+	t.Log("Negative case: Network error successfully validated")
+
+	t.Log("List IP Interfaces Test - Successful")
 }
