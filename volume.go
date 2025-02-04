@@ -205,7 +205,7 @@ func (c *UnityClientImpl) DeleteVolume(ctx context.Context, volumeID string) err
 	}
 	volumeResp := &types.Volume{}
 
-	c.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityAPIGetResourceURI, api.StorageResourceAction, volumeID), nil, volumeResp)
+	err := c.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityAPIGetResourceURI, api.StorageResourceAction, volumeID), nil, volumeResp)
 
 	volResp, err := c.FindVolumeByID(ctx, volumeID)
 	if err != nil {
