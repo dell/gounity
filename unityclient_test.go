@@ -23,31 +23,30 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/dell/gounity/api"
 	"github.com/dell/gounity/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 // Mock API client
-type MockAPIClient struct {
+type mocksapiClient struct {
 	BaseURL string
 	Token   string
 }
 
-func (m *MockAPIClient) DoAndGetResponseBody(_ context.Context, _, _ string, _ map[string]string, _ interface{}) (*http.Response, error) {
+func (m *mocksapiClient) DoAndGetResponseBody(_ context.Context, _, _ string, _ map[string]string, _ interface{}) (*http.Response, error) {
 	w := httptest.NewRecorder()
 	w.WriteHeader(http.StatusOK)
 	return w.Result(), nil
 }
 
-func (m *MockAPIClient) Delete(_ context.Context, _ string, _ map[string]string, _ interface{}) error {
+func (m *mocksapiClient) Delete(_ context.Context, _ string, _ map[string]string, _ interface{}) error {
 	w := httptest.NewRecorder()
 	w.WriteHeader(http.StatusOK)
 	return nil
 }
 
-func (m *MockAPIClient) DoWithHeaders(_ context.Context, _, uri string, _ map[string]string, _, _ interface{}) error {
+func (m *mocksapiClient) DoWithHeaders(_ context.Context, _, uri string, _ map[string]string, _, _ interface{}) error {
 	if uri == "/unauthorized" {
 		return &types.Error{
 			ErrorContent: types.ErrorContent{
@@ -65,23 +64,23 @@ func (m *MockAPIClient) DoWithHeaders(_ context.Context, _, uri string, _ map[st
 	return nil
 }
 
-func (m *MockAPIClient) Get(_ context.Context, _ string, _ map[string]string, _ interface{}) error {
+func (m *mocksapiClient) Get(_ context.Context, _ string, _ map[string]string, _ interface{}) error {
 	w := httptest.NewRecorder()
 	w.WriteHeader(http.StatusOK)
 	return nil
 }
 
-func (m *MockAPIClient) ParseJSONError(_ context.Context, _ *http.Response) error {
+func (m *mocksapiClient) ParseJSONError(_ context.Context, _ *http.Response) error {
 	return errors.New("mock parse JSON error")
 }
 
-func (m *MockAPIClient) Post(_ context.Context, _ string, _ map[string]string, _ interface{}, _ interface{}) error {
+func (m *mocksapiClient) Post(_ context.Context, _ string, _ map[string]string, _ interface{}, _ interface{}) error {
 	w := httptest.NewRecorder()
 	w.WriteHeader(http.StatusOK)
 	return nil
 }
 
-func (m *MockAPIClient) Put(_ context.Context, _ string, _ map[string]string, _ interface{}, _ interface{}) error {
+func (m *mocksapiClient) Put(_ context.Context, _ string, _ map[string]string, _ interface{}, _ interface{}) error {
 	w := httptest.NewRecorder()
 	w.WriteHeader(http.StatusOK)
 	return nil
@@ -120,7 +119,7 @@ func TestBasicSystemInfo(t *testing.T) {
 
 			// Create a new client with the test server URL
 			client := &UnityClientImpl{
-				api: &MockAPIClient{
+				api: &mocksapiClient{
 					BaseURL: server.URL,
 				},
 			}
@@ -169,7 +168,7 @@ func TestAuthenticate(t *testing.T) {
 
 			// Create a new client with the test server URL
 			client := &UnityClientImpl{
-				api: &MockAPIClient{
+				api: &mocksapiClient{
 					BaseURL: server.URL,
 				},
 				loginMutex: sync.Mutex{},
@@ -200,7 +199,6 @@ func (e *MockError) Error() string {
 
 type MockClient struct {
 	*UnityClientImpl
-	AuthError bool
 }
 
 func TestExecuteWithRetryAuthenticate(t *testing.T) {
@@ -208,19 +206,16 @@ func TestExecuteWithRetryAuthenticate(t *testing.T) {
 		name          string
 		uri           string
 		expectedError bool
-		authError     bool
 	}{
 		{
 			name:          "Successful execution",
 			uri:           "/success",
 			expectedError: false,
-			authError:     false,
 		},
 		{
 			name:          "Server error",
 			uri:           "/server-error",
 			expectedError: true,
-			authError:     false,
 		},
 	}
 
@@ -239,17 +234,16 @@ func TestExecuteWithRetryAuthenticate(t *testing.T) {
 			defer server.Close()
 
 			// Create a new mock API client
-			mockAPIClient := &MockAPIClient{
+			mocksapiClient := &mocksapiClient{
 				BaseURL: server.URL,
 			}
 
 			// Create a new client with the mock API client
 			client := &MockClient{
 				UnityClientImpl: &UnityClientImpl{
-					api:        mockAPIClient,
+					api:        mocksapiClient,
 					loginMutex: sync.Mutex{},
 				},
-				AuthError: tt.authError,
 			}
 
 			// Call the executeWithRetryAuthenticate function
@@ -296,13 +290,6 @@ func TestWithFieldsE(t *testing.T) {
 	}
 }
 
-var mockNewAPIClient = func(_ context.Context, endpoint string, _ api.ClientOptions, _ bool) (api.Client, error) {
-	if endpoint == "http://error.com" {
-		return nil, errors.New("error creating API client")
-	}
-	return &MockAPIClient{BaseURL: endpoint}, nil
-}
-
 func TestClientCreation(t *testing.T) {
 	tests := []struct {
 		name      string
@@ -340,29 +327,29 @@ func TestClientCreation(t *testing.T) {
 }
 
 // SetToken sets the token in the mock API client.
-func (m *MockAPIClient) SetToken(token string) {
+func (m *mocksapiClient) SetToken(token string) {
 	m.Token = token
 }
 
 // GetToken gets the token from the mock API client.
-func (m *MockAPIClient) GetToken() string {
+func (m *mocksapiClient) GetToken() string {
 	return m.Token
 }
 
 func TestSetToken(t *testing.T) {
-	mockAPIClient := &MockAPIClient{}
-	client := &UnityClientImpl{api: mockAPIClient}
+	mocksapiClient := &mocksapiClient{}
+	client := &UnityClientImpl{api: mocksapiClient}
 
 	token := "test-token"
 	client.SetToken(token)
 
-	assert.Equal(t, token, mockAPIClient.Token)
+	assert.Equal(t, token, mocksapiClient.Token)
 }
 
 func TestGetToken(t *testing.T) {
 	token := "test-token"
-	mockAPIClient := &MockAPIClient{Token: token}
-	client := &UnityClientImpl{api: mockAPIClient}
+	mocksapiClient := &mocksapiClient{Token: token}
+	client := &UnityClientImpl{api: mocksapiClient}
 
 	retrievedToken := client.GetToken()
 	assert.Equal(t, token, retrievedToken)

@@ -93,13 +93,13 @@ func (c *UnityClientImpl) CreateLun(ctx context.Context, name, poolID, descripti
 
 	if thinProvisioningLicenseInfoResp.LicenseInfoContent.IsInstalled && thinProvisioningLicenseInfoResp.LicenseInfoContent.IsValid {
 		lunParams.IsThinEnabled = strconv.FormatBool(isThinEnabled)
-	} else if isThinEnabled == true {
+	} else if isThinEnabled {
 		return nil, fmt.Errorf("thin Provisioning is not supported on array and hence cannot create Volume")
 	}
 
 	if dataReductionLicenseInfoResp.LicenseInfoContent.IsInstalled && dataReductionLicenseInfoResp.LicenseInfoContent.IsValid {
 		lunParams.IsDataReductionEnabled = strconv.FormatBool(isDataReductionEnabled)
-	} else if isDataReductionEnabled == true {
+	} else if isDataReductionEnabled {
 		return nil, fmt.Errorf("data Reduction is not supported on array and hence cannot create Volume")
 	}
 
@@ -205,7 +205,7 @@ func (c *UnityClientImpl) DeleteVolume(ctx context.Context, volumeID string) err
 	}
 	volumeResp := &types.Volume{}
 
-	err := c.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityAPIGetResourceURI, api.StorageResourceAction, volumeID), nil, volumeResp)
+	c.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityAPIGetResourceURI, api.StorageResourceAction, volumeID), nil, volumeResp)
 
 	volResp, err := c.FindVolumeByID(ctx, volumeID)
 	if err != nil {

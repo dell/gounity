@@ -21,7 +21,7 @@ import (
 	"testing"
 
 	"github.com/dell/gounity/api"
-	"github.com/dell/gounity/mocks"
+	mocksapi "github.com/dell/gounity/mocks/api"
 	"github.com/dell/gounity/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -41,11 +41,11 @@ var (
 func TestCreateHost(t *testing.T) {
 	assert := require.New(t)
 	fmt.Println("Begin - Create Host Test")
-	testConf.client.getAPI().(*mocks.Client).ExpectedCalls = nil
+	testConf.client.getAPI().(*mocksapi.Client).ExpectedCalls = nil
 	ctx := context.Background()
 
 	// Mock setup for valid host creation
-	testConf.client.getAPI().(*mocks.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
+	testConf.client.getAPI().(*mocksapi.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
 
 	// Positive Case
 	hostName := "valid_host_name" // Ensure this is set to a valid name
@@ -59,7 +59,7 @@ func TestCreateHost(t *testing.T) {
 
 	// Negative Cases
 	// Mock setup for empty host name
-	testConf.client.getAPI().(*mocks.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("hostname shouldn't be empty")).Once()
+	testConf.client.getAPI().(*mocksapi.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("hostname shouldn't be empty")).Once()
 
 	hostNameTemp := ""
 	_, err = testConf.client.CreateHost(ctx, hostNameTemp, testConf.tenant)
@@ -67,7 +67,7 @@ func TestCreateHost(t *testing.T) {
 	assert.EqualError(err, "hostname shouldn't be empty", "Unexpected error message")
 
 	// Mock setup for invalid tenant ID
-	testConf.client.getAPI().(*mocks.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("hostname shouldn't be empty")).Once()
+	testConf.client.getAPI().(*mocksapi.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("hostname shouldn't be empty")).Once()
 
 	tenantIDTemp := "tenant_invalid_1"
 	_, err = testConf.client.CreateHost(ctx, hostName, tenantIDTemp)
@@ -87,7 +87,7 @@ func TestFindHostByName(t *testing.T) {
 	assert.Equal(t, errors.New("host Name shouldn't be empty"), err)
 
 	hostNameTemp = "dummy-host-1"
-	testConf.client.getAPI().(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(errors.New("error")).Once()
+	testConf.client.getAPI().(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(errors.New("error")).Once()
 	_, err = testConf.client.FindHostByName(ctx, hostNameTemp)
 	if err == nil {
 		t.Fatalf("Find Host with invalid hostName - Negative case failed")
@@ -99,11 +99,11 @@ func TestFindHostByName(t *testing.T) {
 func TestCreateHostIPPort(t *testing.T) {
 	assert := require.New(t)
 	fmt.Println("Begin - Create Host IP Port Test")
-	testConf.client.getAPI().(*mocks.Client).ExpectedCalls = nil
+	testConf.client.getAPI().(*mocksapi.Client).ExpectedCalls = nil
 	ctx := context.Background()
 
 	// Mock setup for valid host IP port creation
-	testConf.client.getAPI().(*mocks.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
+	testConf.client.getAPI().(*mocksapi.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
 
 	// Positive Case
 	hostID := "valid_host_id" // Ensure this is set to a valid ID
@@ -117,7 +117,7 @@ func TestCreateHostIPPort(t *testing.T) {
 
 	// Negative Cases
 	// Mock setup for empty host ID
-	testConf.client.getAPI().(*mocks.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("host ID shouldn't be empty")).Once()
+	testConf.client.getAPI().(*mocksapi.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("host ID shouldn't be empty")).Once()
 
 	hostIDTemp := ""
 	_, err = testConf.client.CreateHostIPPort(ctx, hostIDTemp, testConf.nodeHostIP)
@@ -125,7 +125,7 @@ func TestCreateHostIPPort(t *testing.T) {
 	assert.EqualError(err, "host ID shouldn't be empty", "Unexpected error message")
 
 	// Mock setup for invalid host ID
-	testConf.client.getAPI().(*mocks.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("host ID shouldn't be empty")).Once()
+	testConf.client.getAPI().(*mocksapi.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("host ID shouldn't be empty")).Once()
 
 	hostIDTemp = "Host_dummy_1"
 	_, err = testConf.client.CreateHostIPPort(ctx, hostIDTemp, testConf.nodeHostIP)
@@ -139,11 +139,11 @@ func TestFindHostIPPortByID(t *testing.T) {
 	assert := require.New(t)
 	fmt.Println("Begin - Find Host IP Port Test")
 
-	testConf.client.getAPI().(*mocks.Client).ExpectedCalls = nil
+	testConf.client.getAPI().(*mocksapi.Client).ExpectedCalls = nil
 	ctx := context.Background()
 
 	// Mock setup for valid host IP port retrieval
-	testConf.client.getAPI().(*mocks.Client).On("DoWithHeaders", mock.Anything, "GET", "/api/instances/hostIPPort/"+hostIPPortID+"?fields=id,address", mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
+	testConf.client.getAPI().(*mocksapi.Client).On("DoWithHeaders", mock.Anything, "GET", "/api/instances/hostIPPort/"+hostIPPortID+"?fields=id,address", mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
 
 	_, err := testConf.client.FindHostIPPortByID(ctx, hostIPPortID)
 	if err != nil {
@@ -151,7 +151,7 @@ func TestFindHostIPPortByID(t *testing.T) {
 	}
 
 	// Mock setup for invalid host IP port ID
-	testConf.client.getAPI().(*mocks.Client).On("DoWithHeaders", mock.Anything, "GET", "/api/instances/hostIPPort/dummy-ip-port-id-1?fields=id,address", mock.Anything, mock.Anything, mock.Anything).Return(errors.New("host IP port not found")).Once()
+	testConf.client.getAPI().(*mocksapi.Client).On("DoWithHeaders", mock.Anything, "GET", "/api/instances/hostIPPort/dummy-ip-port-id-1?fields=id,address", mock.Anything, mock.Anything, mock.Anything).Return(errors.New("host IP port not found")).Once()
 
 	// Negative test case: Invalid host IP port ID
 	hostIPPortIDTemp := "dummy-ip-port-id-1"
@@ -165,7 +165,7 @@ func TestFindHostIPPortByID(t *testing.T) {
 func TestCreateHostInitiator(t *testing.T) {
 	fmt.Println("Begin - Create Host Initiator Test")
 
-	testConf.client.getAPI().(*mocks.Client).ExpectedCalls = nil
+	testConf.client.getAPI().(*mocksapi.Client).ExpectedCalls = nil
 	ctx := context.Background()
 
 	// Initialize hostID and WWNs
@@ -173,16 +173,16 @@ func TestCreateHostInitiator(t *testing.T) {
 	testConf.wwns = []string{"valid_wwn1", "valid_wwn2"} // Replace with actual valid WWNs
 
 	// Mock setup for valid host IP port retrieval
-	testConf.client.getAPI().(*mocks.Client).On("DoWithHeaders", mock.Anything, "GET", "/api/instances/hostIPPort/"+hostIPPortID+"?fields=id,address", mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
+	testConf.client.getAPI().(*mocksapi.Client).On("DoWithHeaders", mock.Anything, "GET", "/api/instances/hostIPPort/"+hostIPPortID+"?fields=id,address", mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
 
 	// Mock setup for host initiator retrieval
-	testConf.client.getAPI().(*mocks.Client).On("DoWithHeaders", mock.Anything, "GET", "/api/types/hostInitiator/instances?fields=id,health,type,initiatorId,isIgnored,parentHost,paths", mock.Anything, mock.Anything, mock.Anything).Return(nil).Times(4)
+	testConf.client.getAPI().(*mocksapi.Client).On("DoWithHeaders", mock.Anything, "GET", "/api/types/hostInitiator/instances?fields=id,health,type,initiatorId,isIgnored,parentHost,paths", mock.Anything, mock.Anything, mock.Anything).Return(nil).Times(4)
 
 	// Mock setup for host initiator creation
-	testConf.client.getAPI().(*mocks.Client).On("DoWithHeaders", mock.Anything, "POST", "/api/types/hostInitiator/instances", mock.Anything, mock.Anything, mock.Anything).Return(nil).Times(len(testConf.wwns) + 1)
+	testConf.client.getAPI().(*mocksapi.Client).On("DoWithHeaders", mock.Anything, "POST", "/api/types/hostInitiator/instances", mock.Anything, mock.Anything, mock.Anything).Return(nil).Times(len(testConf.wwns) + 1)
 
 	// Mock setup for invalid hostID
-	testConf.client.getAPI().(*mocks.Client).On("DoWithHeaders", mock.Anything, "POST", "/api/types/hostInitiator/instances", mock.Anything, mock.Anything, mock.Anything).Return(fmt.Errorf("invalid hostID")).Once()
+	testConf.client.getAPI().(*mocksapi.Client).On("DoWithHeaders", mock.Anything, "POST", "/api/types/hostInitiator/instances", mock.Anything, mock.Anything, mock.Anything).Return(fmt.Errorf("invalid hostID")).Once()
 
 	if hostID == "" {
 		t.Fatalf("hostID should not be empty")
@@ -238,11 +238,11 @@ func TestCreateHostInitiator(t *testing.T) {
 
 func TestListHostInitiatorsTest(t *testing.T) {
 	fmt.Println("Begin - List Host Initiators Test")
-	testConf.client.getAPI().(*mocks.Client).ExpectedCalls = nil
+	testConf.client.getAPI().(*mocksapi.Client).ExpectedCalls = nil
 	ctx := context.Background()
 
 	// Mock setup for listing host initiators
-	testConf.client.getAPI().(*mocks.Client).On("DoWithHeaders", mock.Anything, "GET", "/api/types/hostInitiator/instances?fields=id,health,type,initiatorId,isIgnored,parentHost,paths", mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
+	testConf.client.getAPI().(*mocksapi.Client).On("DoWithHeaders", mock.Anything, "GET", "/api/types/hostInitiator/instances?fields=id,health,type,initiatorId,isIgnored,parentHost,paths", mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
 
 	list, err := testConf.client.ListHostInitiators(ctx)
 	fmt.Println("List Host initiators", list, err)
@@ -291,7 +291,7 @@ func TestModifyHostInitiatorByID(t *testing.T) {
 	assert.Equal(t, errors.New("Initiator ID shouldn't be null"), err)
 
 	hostIDTemp := "host_dummy_1"
-	testConf.client.getAPI().(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
+	testConf.client.getAPI().(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
 	_, err = testConf.client.ModifyHostInitiatorByID(ctx, hostIDTemp, "Initiator-123")
 	if err != nil {
 		t.Fatalf("Modify Host initiator with invalid initiator - Negative case failed")
@@ -304,7 +304,7 @@ func TestFindHostInitiatorPathByID(t *testing.T) {
 	fmt.Println("Begin - Find Initiator Path Test")
 
 	ctx := context.Background()
-	testConf.client.getAPI().(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
+	testConf.client.getAPI().(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
 	hostInitiatorPath, err := testConf.client.FindHostInitiatorPathByID(ctx, wwnInitiatorPathID)
 	if err != nil {
 		// Change to log if required for vm execution
@@ -314,7 +314,7 @@ func TestFindHostInitiatorPathByID(t *testing.T) {
 
 	// Negative test cases
 	initiatorPathIDTemp := "Host_initiator_path_dummy_1"
-	testConf.client.getAPI().(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
+	testConf.client.getAPI().(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
 	_, err = testConf.client.FindHostInitiatorPathByID(ctx, initiatorPathIDTemp)
 	if err != nil {
 		t.Fatalf("Find Host Initiator path with invalid Id - Negative case failed")
@@ -326,7 +326,7 @@ func TestFindHostInitiatorPathByID(t *testing.T) {
 func TestFindFcPortByID(t *testing.T) {
 	fmt.Println("Begin - Find FC Port Test")
 	ctx := context.Background()
-	testConf.client.getAPI().(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
+	testConf.client.getAPI().(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
 	_, err := testConf.client.FindFcPortByID(ctx, fcPortID)
 	if err != nil {
 		// Change to log if required for vm execution
@@ -335,7 +335,7 @@ func TestFindFcPortByID(t *testing.T) {
 
 	// Negative test cases
 	fcPortIDTemp := "Fc_Port_dummy_1"
-	testConf.client.getAPI().(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
+	testConf.client.getAPI().(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
 	_, err = testConf.client.FindFcPortByID(ctx, fcPortIDTemp)
 	if err != nil {
 		t.Fatalf("Find FC Port with invalid Id - Negative case failed")
@@ -347,7 +347,7 @@ func TestFindFcPortByID(t *testing.T) {
 func TestFindTenants(t *testing.T) {
 	fmt.Println("Begin - Find Tenants Test")
 	ctx := context.Background()
-	testConf.client.getAPI().(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
+	testConf.client.getAPI().(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
 	_, err := testConf.client.FindTenants(ctx)
 	if err != nil {
 		t.Fatalf("Find Tenants failed: %v", err)
@@ -365,7 +365,7 @@ func TestDeleteHost(t *testing.T) {
 	assert.Equal(t, errors.New("hostname shouldn't be empty"), err)
 
 	hostNameTemp = "dummy-host-1"
-	testConf.client.getAPI().(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
+	testConf.client.getAPI().(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
 	err = testConf.client.DeleteHost(ctx, hostNameTemp)
 	if err != nil {
 		t.Fatalf("Delete Host with invalid hostName - Negative case failed")
@@ -377,7 +377,7 @@ func TestDeleteHost(t *testing.T) {
 func TestFindHostInitiatorByID(t *testing.T) {
 	fmt.Println("Begin - Find HostInitiator By ID")
 	ctx := context.Background()
-	testConf.client.getAPI().(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
+	testConf.client.getAPI().(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
 	_, err := testConf.client.FindHostInitiatorByID(ctx, "")
 	if err != nil {
 		t.Fatalf("Find initiator by empty id - Negative case failed")

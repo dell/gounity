@@ -27,7 +27,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/dell/gounity/mocks"
+	mocksapi "github.com/dell/gounity/mocks/api"
 )
 
 type testConfig struct {
@@ -55,16 +55,13 @@ func TestMain(m *testing.M) {
 	// for this tutorial, we will hard code it to config.txt
 	testProp, err := readTestProperties("test.properties_template")
 	if err != nil {
+		fmt.Println(err)
 		panic("The system cannot find the file specified")
 	}
 
 	insecure, _ := strconv.ParseBool(testProp["X_CSI_UNITY_INSECURE"])
 	/* #nosec G402 */
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: insecure}
-
-	if err != nil {
-		fmt.Println(err)
-	}
 
 	testConf = &testConfig{}
 	testConf.unityEndPoint = "https://mock-endpoint"
@@ -95,7 +92,7 @@ func TestMain(m *testing.M) {
 
 func getTestClient() *UnityClientImpl {
 	return &UnityClientImpl{
-		api:           &mocks.Client{},
+		api:           &mocksapi.Client{},
 		configConnect: &ConfigConnect{},
 	}
 }

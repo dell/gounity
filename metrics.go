@@ -44,7 +44,7 @@ func (c *UnityClientImpl) GetAllRealTimeMetricPaths(ctx context.Context) error {
 	metricInstance := &types.MetricInstance{}
 	for _, entry := range result.Entries {
 		instanceURI := fmt.Sprintf(api.UnityAPIGetResourceURI, api.UnityMetric, strconv.Itoa(entry.Cnt.ID))
-		err = c.executeWithRetryAuthenticate(ctx, http.MethodGet, instanceURI, nil, metricInstance)
+		c.executeWithRetryAuthenticate(ctx, http.MethodGet, instanceURI, nil, metricInstance)
 		fmt.Printf("%d - %s - %s\n", metricInstance.Content.ID, metricInstance.Content.Path, metricInstance.Content.Description)
 	}
 

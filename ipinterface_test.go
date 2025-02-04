@@ -19,7 +19,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/dell/gounity/mocks"
+	mocksapi "github.com/dell/gounity/mocks/api"
 	"github.com/dell/gounity/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -30,7 +30,7 @@ func TestListIscsiIPInterfaces(t *testing.T) {
 
 	// Initial Setup
 	t.Log("Begin - List IP Interfaces Test")
-	testConf.client.getAPI().(*mocks.Client).ExpectedCalls = nil
+	testConf.client.getAPI().(*mocksapi.Client).ExpectedCalls = nil
 	ctx := context.Background()
 
 	// Mock ListIscsiIPInterfaces to return example data
@@ -41,7 +41,7 @@ func TestListIscsiIPInterfaces(t *testing.T) {
 		},
 	}
 
-	mockClient := testConf.client.getAPI().(*mocks.Client)
+	mockClient := testConf.client.getAPI().(*mocksapi.Client)
 	mockClient.On("DoWithHeaders", mock.Anything, "GET", mock.Anything, mock.Anything, mock.Anything, mock.AnythingOfType("*types.ListIPInterfaces")).Return(nil).
 		Run(func(args mock.Arguments) {
 			resp := args.Get(5).(*types.ListIPInterfaces)

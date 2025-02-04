@@ -18,7 +18,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/base64"
-	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -41,7 +40,6 @@ var (
 	accHeader string
 	conHeader string
 
-	errNoLink   = errors.New("error: problem finding link")
 	debug, _    = strconv.ParseBool(os.Getenv("GOUNITY_DEBUG"))
 	showHTTP, _ = strconv.ParseBool(os.Getenv("GOUNITY_SHOWHTTP"))
 )
