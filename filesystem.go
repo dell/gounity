@@ -19,11 +19,6 @@ import (
 	"github.com/dell/gounity/types"
 )
 
-// Filesystem structure
-type Filesystem struct {
-	client *Client
-}
-
 // FsNameMaxLength provides the allowed max length for filesystem name
 const (
 	FsNameMaxLength = 63
@@ -64,18 +59,13 @@ var AttachedSnapshotsErrorCode = "0x6000c17"
 // MarkFilesystemForDeletion stores filesystem for deletion mark
 var MarkFilesystemForDeletion = "csi-marked-filesystem-for-deletion(do not remove this from description)"
 
-// NewFilesystem function returns filesystem
-func NewFilesystem(client *Client) *Filesystem {
-	return &Filesystem{client}
-}
-
 // FindFilesystemByName - Find the Filesystem by it's name. If the Filesystem is not found, an error will be returned.
-func (f *Filesystem) FindFilesystemByName(ctx context.Context, filesystemName string) (*types.Filesystem, error) {
+func (c *UnityClientImpl) FindFilesystemByName(ctx context.Context, filesystemName string) (*types.Filesystem, error) {
 	if len(filesystemName) == 0 {
 		return nil, errors.New("Filesystem Name shouldn't be empty")
 	}
 	fileSystemResp := &types.Filesystem{}
-	err := f.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityAPIGetResourceByNameWithFieldsURI, api.FileSystemAction, filesystemName, FileSystemDisplayFields), nil, fileSystemResp)
+	err := c.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityAPIGetResourceByNameWithFieldsURI, api.FileSystemAction, filesystemName, FileSystemDisplayFields), nil, fileSystemResp)
 	if err != nil {
 		if strings.Contains(err.Error(), FilesystemNotFoundErrorCode) {
 			return nil, ErrorFilesystemNotFound
@@ -86,13 +76,13 @@ func (f *Filesystem) FindFilesystemByName(ctx context.Context, filesystemName st
 }
 
 // FindFilesystemByID - Find the Filesystem by it's Id. If the Filesystem is not found, an error will be returned.
-func (f *Filesystem) FindFilesystemByID(ctx context.Context, filesystemID string) (*types.Filesystem, error) {
+func (c *UnityClientImpl) FindFilesystemByID(ctx context.Context, filesystemID string) (*types.Filesystem, error) {
 	log := util.GetRunIDLogger(ctx)
 	if len(filesystemID) == 0 {
 		return nil, errors.New("Filesystem Id shouldn't be empty")
 	}
 	fileSystemResp := &types.Filesystem{}
-	err := f.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityAPIGetResourceWithFieldsURI, api.FileSystemAction, filesystemID, FileSystemDisplayFields), nil, fileSystemResp)
+	err := c.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityAPIGetResourceWithFieldsURI, api.FileSystemAction, filesystemID, FileSystemDisplayFields), nil, fileSystemResp)
 	if err != nil {
 		log.Debugf("Unable to find filesystem Id %s Error: %v", filesystemID, err)
 		if strings.Contains(err.Error(), FilesystemNotFoundErrorCode) {
@@ -104,13 +94,13 @@ func (f *Filesystem) FindFilesystemByID(ctx context.Context, filesystemID string
 }
 
 // GetFilesystemIDFromResID - Returns the filesystem ID for the filesystem
-func (f *Filesystem) GetFilesystemIDFromResID(ctx context.Context, filesystemResID string) (string, error) {
+func (c *UnityClientImpl) GetFilesystemIDFromResID(ctx context.Context, filesystemResID string) (string, error) {
 	if filesystemResID == "" {
 		return "", errors.New("Filesystem Resource Id shouldn't be empty")
 	}
 
 	fileSystemResp := &types.StorageResourceParameters{}
-	err := f.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityAPIGetResourceWithFieldsURI, api.StorageResourceAction, filesystemResID, StorageResourceDisplayFields), nil, fileSystemResp)
+	err := c.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityAPIGetResourceWithFieldsURI, api.StorageResourceAction, filesystemResID, StorageResourceDisplayFields), nil, fileSystemResp)
 	if err != nil {
 		return "", fmt.Errorf("get filesystem Id for %s failed with error: %v", filesystemResID, err)
 	}
@@ -118,7 +108,7 @@ func (f *Filesystem) GetFilesystemIDFromResID(ctx context.Context, filesystemRes
 }
 
 // CreateFilesystem - Create a new filesystem on the array
-func (f *Filesystem) CreateFilesystem(ctx context.Context, name, storagepool, description, nasServer string, size uint64, tieringPolicy, hostIOSize, supportedProtocol int, isThinEnabled, isDataReductionEnabled bool) (*types.Filesystem, error) {
+func (c *UnityClientImpl) CreateFilesystem(ctx context.Context, name, storagepool, description, nasServer string, size uint64, tieringPolicy, hostIOSize, supportedProtocol int, isThinEnabled, isDataReductionEnabled bool) (*types.Filesystem, error) {
 	log := util.GetRunIDLogger(ctx)
 	if name == "" {
 		return nil, errors.New("filesystem name should not be empty")
@@ -128,8 +118,7 @@ func (f *Filesystem) CreateFilesystem(ctx context.Context, name, storagepool, de
 		return nil, fmt.Errorf("filesystem name %s should not exceed %d characters", name, FsNameMaxLength)
 	}
 
-	poolAPI := NewStoragePool(f.client)
-	pool, err := poolAPI.FindStoragePoolByID(ctx, storagepool)
+	pool, err := c.FindStoragePoolByID(ctx, storagepool)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get PoolID (%s) Error:%v", storagepool, err)
 	}
@@ -156,13 +145,12 @@ func (f *Filesystem) CreateFilesystem(ctx context.Context, name, storagepool, de
 		FileEventSettings: fileEventSettings,
 	}
 
-	volAPI := NewVolume(f.client)
-	thinProvisioningLicenseInfoResp, err := volAPI.isFeatureLicensed(ctx, ThinProvisioning)
+	thinProvisioningLicenseInfoResp, err := c.isFeatureLicensed(ctx, ThinProvisioning)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get license info for feature: %s", ThinProvisioning)
 	}
 
-	dataReductionLicenseInfoResp, err := volAPI.isFeatureLicensed(ctx, DataReduction)
+	dataReductionLicenseInfoResp, err := c.isFeatureLicensed(ctx, DataReduction)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get license info for feature: %s", DataReduction)
 	}
@@ -199,7 +187,7 @@ func (f *Filesystem) CreateFilesystem(ctx context.Context, name, storagepool, de
 	}
 
 	fileResp := &types.Filesystem{}
-	err = f.client.executeWithRetryAuthenticate(ctx,
+	err = c.executeWithRetryAuthenticate(ctx,
 		http.MethodPost, fmt.Sprintf(api.UnityAPIStorageResourceActionURI, api.CreateFSAction), fileReqParam, fileResp)
 	if err != nil {
 		return nil, err
@@ -209,21 +197,21 @@ func (f *Filesystem) CreateFilesystem(ctx context.Context, name, storagepool, de
 }
 
 // DeleteFilesystem delete by its ID. If the Filesystem is not present on the array, an error will be returned.
-func (f *Filesystem) DeleteFilesystem(ctx context.Context, filesystemID string) error {
+func (c *UnityClientImpl) DeleteFilesystem(ctx context.Context, filesystemID string) error {
 	log := util.GetRunIDLogger(ctx)
 	if len(filesystemID) == 0 {
 		return errors.New("Filesystem Id cannot be empty")
 	}
 
-	filesystemResp, err := f.FindFilesystemByID(ctx, filesystemID)
+	filesystemResp, err := c.FindFilesystemByID(ctx, filesystemID)
 	if err != nil {
 		return err
 	}
 	resourceID := filesystemResp.FileContent.StorageResource.ID
-	deleteErr := f.client.executeWithRetryAuthenticate(ctx, http.MethodDelete, fmt.Sprintf(api.UnityAPIGetResourceURI, api.StorageResourceAction, resourceID), nil, nil)
+	deleteErr := c.executeWithRetryAuthenticate(ctx, http.MethodDelete, fmt.Sprintf(api.UnityAPIGetResourceURI, api.StorageResourceAction, resourceID), nil, nil)
 	if deleteErr != nil {
 		if strings.Contains(deleteErr.Error(), AttachedSnapshotsErrorCode) {
-			err := f.updateDescription(ctx, filesystemID, MarkFilesystemForDeletion)
+			err := c.updateDescription(ctx, filesystemID, MarkFilesystemForDeletion)
 			if err != nil {
 				return fmt.Errorf("mark filesystem %s for deletion failed. Error: %v", filesystemID, err)
 			}
@@ -236,11 +224,11 @@ func (f *Filesystem) DeleteFilesystem(ctx context.Context, filesystemID string) 
 }
 
 // Update description of filesystem
-func (f *Filesystem) updateDescription(ctx context.Context, filesystemID, description string) error {
+func (c *UnityClientImpl) updateDescription(ctx context.Context, filesystemID, description string) error {
 	if len(filesystemID) == 0 {
 		return errors.New("Filesystem Id cannot be empty")
 	}
-	filesystemResp, err := f.FindFilesystemByID(ctx, filesystemID)
+	filesystemResp, err := c.FindFilesystemByID(ctx, filesystemID)
 	if err != nil {
 		return err
 	}
@@ -249,7 +237,7 @@ func (f *Filesystem) updateDescription(ctx context.Context, filesystemID, descri
 	filesystemModifyParam := types.FsModifyParameters{
 		Description: description,
 	}
-	err = f.client.executeWithRetryAuthenticate(ctx, http.MethodPost, fmt.Sprintf(api.UnityModifyFilesystemURI, resourceID), filesystemModifyParam, nil)
+	err = c.executeWithRetryAuthenticate(ctx, http.MethodPost, fmt.Sprintf(api.UnityModifyFilesystemURI, resourceID), filesystemModifyParam, nil)
 	if err != nil {
 		return fmt.Errorf("update filesystem: %s description failed with error: %v", resourceID, err)
 	}
@@ -257,12 +245,12 @@ func (f *Filesystem) updateDescription(ctx context.Context, filesystemID, descri
 }
 
 // CreateNFSShare - Create NFS Share for a File system
-func (f *Filesystem) CreateNFSShare(ctx context.Context, name, path, filesystemID string, nfsShareDefaultAccess NFSShareDefaultAccess) (*types.Filesystem, error) {
+func (c *UnityClientImpl) CreateNFSShare(ctx context.Context, name, path, filesystemID string, nfsShareDefaultAccess NFSShareDefaultAccess) (*types.Filesystem, error) {
 	if len(filesystemID) == 0 {
 		return nil, errors.New("Filesystem Id cannot be empty")
 	}
 
-	filesystemResp, err := f.FindFilesystemByID(ctx, filesystemID)
+	filesystemResp, err := c.FindFilesystemByID(ctx, filesystemID)
 	if err != nil {
 		return nil, err
 	}
@@ -283,12 +271,12 @@ func (f *Filesystem) CreateNFSShare(ctx context.Context, name, path, filesystemI
 		NFSShares: &nfsShares,
 	}
 
-	err = f.client.executeWithRetryAuthenticate(ctx, http.MethodPost, fmt.Sprintf(api.UnityModifyFilesystemURI, resourceID), filesystemModifyParam, nil)
+	err = c.executeWithRetryAuthenticate(ctx, http.MethodPost, fmt.Sprintf(api.UnityModifyFilesystemURI, resourceID), filesystemModifyParam, nil)
 	if err != nil {
 		return nil, fmt.Errorf("create NFS Share failed. Error: %v", err)
 	}
 
-	filesystemResp, err = f.FindFilesystemByID(ctx, filesystemID)
+	filesystemResp, err = c.FindFilesystemByID(ctx, filesystemID)
 	if err != nil {
 		return nil, ErrorFilesystemNotFound
 	}
@@ -296,7 +284,7 @@ func (f *Filesystem) CreateNFSShare(ctx context.Context, name, path, filesystemI
 }
 
 // CreateNFSShareFromSnapshot - Create NFS Share for a File system Snapshot
-func (f *Filesystem) CreateNFSShareFromSnapshot(ctx context.Context, name, path, snapshotID string, nfsShareDefaultAccess NFSShareDefaultAccess) (*types.NFSShare, error) {
+func (c *UnityClientImpl) CreateNFSShareFromSnapshot(ctx context.Context, name, path, snapshotID string, nfsShareDefaultAccess NFSShareDefaultAccess) (*types.NFSShare, error) {
 	if len(snapshotID) == 0 {
 		return nil, errors.New("Snapshot Id cannot be empty")
 	}
@@ -313,7 +301,7 @@ func (f *Filesystem) CreateNFSShareFromSnapshot(ctx context.Context, name, path,
 	}
 
 	nfsShareResp := &types.NFSShare{}
-	err := f.client.executeWithRetryAuthenticate(ctx, http.MethodPost, fmt.Sprintf(api.UnityAPIInstanceTypeResources, api.NfsShareAction), nfsShareCreateReq, nfsShareResp)
+	err := c.executeWithRetryAuthenticate(ctx, http.MethodPost, fmt.Sprintf(api.UnityAPIInstanceTypeResources, api.NfsShareAction), nfsShareCreateReq, nfsShareResp)
 	if err != nil {
 		return nil, fmt.Errorf("create NFS Share: %s failed. Error: %v", name, err)
 	}
@@ -322,12 +310,12 @@ func (f *Filesystem) CreateNFSShareFromSnapshot(ctx context.Context, name, path,
 }
 
 // FindNFSShareByName - Find the NFS Share by it's name. If the NFS Share is not found, an error will be returned.
-func (f *Filesystem) FindNFSShareByName(ctx context.Context, nfsSharename string) (*types.NFSShare, error) {
+func (c *UnityClientImpl) FindNFSShareByName(ctx context.Context, nfsSharename string) (*types.NFSShare, error) {
 	if len(nfsSharename) == 0 {
 		return nil, errors.New("NFS Share Name shouldn't be empty")
 	}
 	nfsShareResp := &types.NFSShare{}
-	err := f.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityAPIGetResourceByNameWithFieldsURI, api.NfsShareAction, nfsSharename, NFSShareDisplayfields), nil, nfsShareResp)
+	err := c.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityAPIGetResourceByNameWithFieldsURI, api.NfsShareAction, nfsSharename, NFSShareDisplayfields), nil, nfsShareResp)
 	if err != nil {
 		return nil, fmt.Errorf("unable to find NFS Share. Error: %v", err)
 	}
@@ -335,12 +323,12 @@ func (f *Filesystem) FindNFSShareByName(ctx context.Context, nfsSharename string
 }
 
 // FindNFSShareByID - Find the NFS Share by it's Id. If the NFS Share is not found, an error will be returned.
-func (f *Filesystem) FindNFSShareByID(ctx context.Context, nfsShareID string) (*types.NFSShare, error) {
+func (c *UnityClientImpl) FindNFSShareByID(ctx context.Context, nfsShareID string) (*types.NFSShare, error) {
 	if len(nfsShareID) == 0 {
 		return nil, errors.New("NFS Share Id shouldn't be empty")
 	}
 	nfsShareResp := &types.NFSShare{}
-	err := f.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityAPIGetResourceWithFieldsURI, api.NfsShareAction, nfsShareID, NFSShareDisplayfields), nil, nfsShareResp)
+	err := c.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityAPIGetResourceWithFieldsURI, api.NfsShareAction, nfsShareID, NFSShareDisplayfields), nil, nfsShareResp)
 	if err != nil {
 		return nil, fmt.Errorf("unable to find NFS Share: %s. Error: %v", nfsShareID, err)
 	}
@@ -348,13 +336,13 @@ func (f *Filesystem) FindNFSShareByID(ctx context.Context, nfsShareID string) (*
 }
 
 // ModifyNFSShareHostAccess - Modify the host access on NFS Share
-func (f *Filesystem) ModifyNFSShareHostAccess(ctx context.Context, filesystemID, nfsShareID string, hostIDs []string, accessType AccessType) error {
+func (c *UnityClientImpl) ModifyNFSShareHostAccess(ctx context.Context, filesystemID, nfsShareID string, hostIDs []string, accessType AccessType) error {
 	log := util.GetRunIDLogger(ctx)
 	if len(filesystemID) == 0 {
 		return errors.New("Filesystem Id cannot be empty")
 	}
 
-	filesystemResp, err := f.FindFilesystemByID(ctx, filesystemID)
+	filesystemResp, err := c.FindFilesystemByID(ctx, filesystemID)
 	if err != nil {
 		return ErrorFilesystemNotFound
 	}
@@ -393,7 +381,7 @@ func (f *Filesystem) ModifyNFSShareHostAccess(ctx context.Context, filesystemID,
 		NFSSharesModifyContent: &nfsSharesModifyContent,
 	}
 
-	err = f.client.executeWithRetryAuthenticate(ctx, http.MethodPost, fmt.Sprintf(api.UnityModifyFilesystemURI, resourceID), nfsShareModifyReq, nil)
+	err = c.executeWithRetryAuthenticate(ctx, http.MethodPost, fmt.Sprintf(api.UnityModifyFilesystemURI, resourceID), nfsShareModifyReq, nil)
 	if err != nil {
 		return fmt.Errorf("modify NFS Share failed. Error: %v", err)
 	}
@@ -402,7 +390,7 @@ func (f *Filesystem) ModifyNFSShareHostAccess(ctx context.Context, filesystemID,
 }
 
 // ModifyNFSShareCreatedFromSnapshotHostAccess - Modify the host access on NFS Share
-func (f *Filesystem) ModifyNFSShareCreatedFromSnapshotHostAccess(ctx context.Context, nfsShareID string, hostIDs []string, accessType AccessType) error {
+func (c *UnityClientImpl) ModifyNFSShareCreatedFromSnapshotHostAccess(ctx context.Context, nfsShareID string, hostIDs []string, accessType AccessType) error {
 	if nfsShareID == "" {
 		return errors.New("NFS Share Id cannot be empty")
 	}
@@ -427,7 +415,7 @@ func (f *Filesystem) ModifyNFSShareCreatedFromSnapshotHostAccess(ctx context.Con
 		nfsShareModifyReq.RootAccessHosts = &hostsIDsContent
 	}
 
-	err := f.client.executeWithRetryAuthenticate(ctx, http.MethodPost, fmt.Sprintf(api.UnityModifyNFSShareURI, api.NfsShareAction, nfsShareID), nfsShareModifyReq, nil)
+	err := c.executeWithRetryAuthenticate(ctx, http.MethodPost, fmt.Sprintf(api.UnityModifyNFSShareURI, api.NfsShareAction, nfsShareID), nfsShareModifyReq, nil)
 	if err != nil {
 		return fmt.Errorf("modify NFS Share %s failed. Error: %v", nfsShareID, err)
 	}
@@ -435,13 +423,13 @@ func (f *Filesystem) ModifyNFSShareCreatedFromSnapshotHostAccess(ctx context.Con
 }
 
 // DeleteNFSShare by its ID. If the NFSShare is not present on the array, an error will be returned.
-func (f *Filesystem) DeleteNFSShare(ctx context.Context, filesystemID, nfsShareID string) error {
+func (c *UnityClientImpl) DeleteNFSShare(ctx context.Context, filesystemID, nfsShareID string) error {
 	log := util.GetRunIDLogger(ctx)
 
 	if len(filesystemID) == 0 {
 		return errors.New("Filesystem Id cannot be empty")
 	}
-	filesystemResp, err := f.FindFilesystemByID(ctx, filesystemID)
+	filesystemResp, err := c.FindFilesystemByID(ctx, filesystemID)
 	if err != nil {
 		return ErrorFilesystemNotFound
 	}
@@ -450,7 +438,7 @@ func (f *Filesystem) DeleteNFSShare(ctx context.Context, filesystemID, nfsShareI
 	if len(nfsShareID) == 0 {
 		return errors.New("NFS Share Id cannot be empty")
 	}
-	_, err = f.FindNFSShareByID(ctx, nfsShareID)
+	_, err = c.FindNFSShareByID(ctx, nfsShareID)
 	if err != nil {
 		return fmt.Errorf("unable to find NFS Share. Error: %v", err)
 	}
@@ -468,7 +456,7 @@ func (f *Filesystem) DeleteNFSShare(ctx context.Context, filesystemID, nfsShareI
 		NFSSharesDeleteContent: &nfsSharesDeleteContent,
 	}
 
-	deleteErr := f.client.executeWithRetryAuthenticate(ctx, http.MethodPost, fmt.Sprintf(api.UnityModifyFilesystemURI, resourceID), nfsShareDeleteReq, nil)
+	deleteErr := c.executeWithRetryAuthenticate(ctx, http.MethodPost, fmt.Sprintf(api.UnityModifyFilesystemURI, resourceID), nfsShareDeleteReq, nil)
 	if deleteErr != nil {
 		return fmt.Errorf("delete NFS Share: %s Failed. Error: %v", nfsShareID, deleteErr)
 	}
@@ -477,17 +465,17 @@ func (f *Filesystem) DeleteNFSShare(ctx context.Context, filesystemID, nfsShareI
 }
 
 // DeleteNFSShareCreatedFromSnapshot by its ID. If the NFSShare is not present on the array, an error will be returned.
-func (f *Filesystem) DeleteNFSShareCreatedFromSnapshot(ctx context.Context, nfsShareID string) error {
+func (c *UnityClientImpl) DeleteNFSShareCreatedFromSnapshot(ctx context.Context, nfsShareID string) error {
 	if len(nfsShareID) == 0 {
 		return errors.New("NFS Share Id cannot be empty")
 	}
 
-	_, err := f.FindNFSShareByID(ctx, nfsShareID)
+	_, err := c.FindNFSShareByID(ctx, nfsShareID)
 	if err != nil {
 		return fmt.Errorf("unable to find NFS Share %s. Error: %v", nfsShareID, err)
 	}
 
-	err = f.client.executeWithRetryAuthenticate(ctx, http.MethodDelete, fmt.Sprintf(api.UnityAPIGetResourceURI, api.NfsShareAction, nfsShareID), nil, nil)
+	err = c.executeWithRetryAuthenticate(ctx, http.MethodDelete, fmt.Sprintf(api.UnityAPIGetResourceURI, api.NfsShareAction, nfsShareID), nil, nil)
 	if err != nil {
 		return fmt.Errorf("delete NFS Share: %s Failed. Error: %v", nfsShareID, err)
 	}
@@ -495,12 +483,12 @@ func (f *Filesystem) DeleteNFSShareCreatedFromSnapshot(ctx context.Context, nfsS
 }
 
 // FindNASServerByID - Find the NAS Server by it's Id. If the NAS Server is not found, an error will be returned.
-func (f *Filesystem) FindNASServerByID(ctx context.Context, nasServerID string) (*types.NASServer, error) {
+func (c *UnityClientImpl) FindNASServerByID(ctx context.Context, nasServerID string) (*types.NASServer, error) {
 	if len(nasServerID) == 0 {
 		return nil, errors.New("NAS Server Id shouldn't be empty")
 	}
 	nasServerResp := &types.NASServer{}
-	err := f.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityAPIGetResourceWithFieldsURI, api.NasServerAction, nasServerID, NasServerDisplayfields), nil, nasServerResp)
+	err := c.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityAPIGetResourceWithFieldsURI, api.NasServerAction, nasServerID, NasServerDisplayfields), nil, nasServerResp)
 	if err != nil {
 		return nil, fmt.Errorf("unable to find NAS Server: %s. Error: %v", nasServerID, err)
 	}
@@ -508,9 +496,9 @@ func (f *Filesystem) FindNASServerByID(ctx context.Context, nasServerID string) 
 }
 
 // ExpandFilesystem Filesystem Expand volume to provided capacity
-func (f *Filesystem) ExpandFilesystem(ctx context.Context, filesystemID string, newSize uint64) error {
+func (c *UnityClientImpl) ExpandFilesystem(ctx context.Context, filesystemID string, newSize uint64) error {
 	log := util.GetRunIDLogger(ctx)
-	filesystem, err := f.FindFilesystemByID(ctx, filesystemID)
+	filesystem, err := c.FindFilesystemByID(ctx, filesystemID)
 	if err != nil {
 		return fmt.Errorf("unable to find filesystem Id %s. Error: %v", filesystemID, err)
 	}
@@ -526,5 +514,5 @@ func (f *Filesystem) ExpandFilesystem(ctx context.Context, filesystemID string, 
 	fsExpandReqParam := types.FsExpandModifyParam{
 		FsParameters: &fsExpandParams,
 	}
-	return f.client.executeWithRetryAuthenticate(ctx, http.MethodPost, fmt.Sprintf(api.UnityModifyFilesystemURI, filesystem.FileContent.StorageResource.ID), fsExpandReqParam, nil)
+	return c.executeWithRetryAuthenticate(ctx, http.MethodPost, fmt.Sprintf(api.UnityModifyFilesystemURI, filesystem.FileContent.StorageResource.ID), fsExpandReqParam, nil)
 }

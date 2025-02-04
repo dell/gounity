@@ -30,7 +30,7 @@ func TestListIscsiIPInterfaces(t *testing.T) {
 
 	// Initial Setup
 	t.Log("Begin - List IP Interfaces Test")
-	testConf.ipinterfaceAPI.client.api.(*mocks.Client).ExpectedCalls = nil
+	testConf.client.getAPI().(*mocks.Client).ExpectedCalls = nil
 	ctx := context.Background()
 
 	// Mock ListIscsiIPInterfaces to return example data
@@ -41,7 +41,7 @@ func TestListIscsiIPInterfaces(t *testing.T) {
 		},
 	}
 
-	mockClient := testConf.ipinterfaceAPI.client.api.(*mocks.Client)
+	mockClient := testConf.client.getAPI().(*mocks.Client)
 	mockClient.On("DoWithHeaders", mock.Anything, "GET", mock.Anything, mock.Anything, mock.Anything, mock.AnythingOfType("*types.ListIPInterfaces")).Return(nil).
 		Run(func(args mock.Arguments) {
 			resp := args.Get(5).(*types.ListIPInterfaces)
@@ -49,7 +49,7 @@ func TestListIscsiIPInterfaces(t *testing.T) {
 		}).Once()
 
 	// Call the method
-	ipInterfaces, err := testConf.ipinterfaceAPI.ListIscsiIPInterfaces(ctx)
+	ipInterfaces, err := testConf.client.ListIscsiIPInterfaces(ctx)
 
 	// Verify the results for the main case
 	assert.NoError(err, "List IP Interfaces should not return an error")
@@ -64,7 +64,7 @@ func TestListIscsiIPInterfaces(t *testing.T) {
 	mockClient.On("DoWithHeaders", mock.Anything, "GET", mock.Anything, mock.Anything, mock.Anything, mock.AnythingOfType("*types.ListIPInterfaces")).Return(
 		fmt.Errorf("API call error"),
 	).Once()
-	_, err = testConf.ipinterfaceAPI.ListIscsiIPInterfaces(ctx)
+	_, err = testConf.client.ListIscsiIPInterfaces(ctx)
 	assert.Error(err, "Expected error when API call returns an error")
 	t.Log("Negative case: API call error - successful")
 
@@ -78,7 +78,7 @@ func TestListIscsiIPInterfaces(t *testing.T) {
 				},
 			}
 		}).Once()
-	ipInterfaces, err = testConf.ipinterfaceAPI.ListIscsiIPInterfaces(ctx)
+	ipInterfaces, err = testConf.client.ListIscsiIPInterfaces(ctx)
 	assert.NoError(err, "List IP Interfaces with no iSCSI interfaces should not return an error")
 	assert.Len(ipInterfaces, 0, "Expected 0 iSCSI IP interfaces")
 	t.Log("Negative case: No iSCSI interfaces - successful")
@@ -87,7 +87,7 @@ func TestListIscsiIPInterfaces(t *testing.T) {
 	mockClient.On("DoWithHeaders", mock.Anything, "GET", mock.Anything, mock.Anything, mock.Anything, mock.AnythingOfType("*types.ListIPInterfaces")).Return(
 		fmt.Errorf("network error"),
 	).Once()
-	_, err = testConf.ipinterfaceAPI.ListIscsiIPInterfaces(ctx)
+	_, err = testConf.client.ListIscsiIPInterfaces(ctx)
 	assert.Error(err, "Expected network error")
 	t.Log("Negative case: Network error successfully validated")
 

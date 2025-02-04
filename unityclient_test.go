@@ -119,7 +119,7 @@ func TestBasicSystemInfo(t *testing.T) {
 			defer server.Close()
 
 			// Create a new client with the test server URL
-			client := &Client{
+			client := &UnityClientImpl{
 				api: &MockAPIClient{
 					BaseURL: server.URL,
 				},
@@ -168,7 +168,7 @@ func TestAuthenticate(t *testing.T) {
 			defer server.Close()
 
 			// Create a new client with the test server URL
-			client := &Client{
+			client := &UnityClientImpl{
 				api: &MockAPIClient{
 					BaseURL: server.URL,
 				},
@@ -199,7 +199,7 @@ func (e *MockError) Error() string {
 }
 
 type MockClient struct {
-	*Client
+	*UnityClientImpl
 	AuthError bool
 }
 
@@ -245,7 +245,7 @@ func TestExecuteWithRetryAuthenticate(t *testing.T) {
 
 			// Create a new client with the mock API client
 			client := &MockClient{
-				Client: &Client{
+				UnityClientImpl: &UnityClientImpl{
 					api:        mockAPIClient,
 					loginMutex: sync.Mutex{},
 				},
@@ -351,7 +351,7 @@ func (m *MockAPIClient) GetToken() string {
 
 func TestSetToken(t *testing.T) {
 	mockAPIClient := &MockAPIClient{}
-	client := &Client{api: mockAPIClient}
+	client := &UnityClientImpl{api: mockAPIClient}
 
 	token := "test-token"
 	client.SetToken(token)
@@ -362,7 +362,7 @@ func TestSetToken(t *testing.T) {
 func TestGetToken(t *testing.T) {
 	token := "test-token"
 	mockAPIClient := &MockAPIClient{Token: token}
-	client := &Client{api: mockAPIClient}
+	client := &UnityClientImpl{api: mockAPIClient}
 
 	retrievedToken := client.GetToken()
 	assert.Equal(t, token, retrievedToken)

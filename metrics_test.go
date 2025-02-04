@@ -27,21 +27,21 @@ import (
 
 func TestDeleteRealTimeMetricsQuery(t *testing.T) {
 	fmt.Println("Begin - Delete Real Time Metrics Query Test")
-	testConf.metricsAPI.client.api.(*mocks.Client).ExpectedCalls = nil
+	testConf.client.getAPI().(*mocks.Client).ExpectedCalls = nil
 	ctx := context.Background()
 	queryID := 12345
 
-	testConf.metricsAPI.client.api.(*mocks.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
+	testConf.client.getAPI().(*mocks.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
 
-	err := testConf.metricsAPI.DeleteRealTimeMetricsQuery(ctx, queryID)
+	err := testConf.client.DeleteRealTimeMetricsQuery(ctx, queryID)
 	fmt.Println("Error:", err)
 	if err != nil {
 		t.Fatalf("Delete Real Time Metrics Query failed: %v", err)
 	}
 
-	testConf.metricsAPI.client.api.(*mocks.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(fmt.Errorf("delete failed")).Once()
+	testConf.client.getAPI().(*mocks.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(fmt.Errorf("delete failed")).Once()
 
-	err = testConf.metricsAPI.DeleteRealTimeMetricsQuery(ctx, queryID)
+	err = testConf.client.DeleteRealTimeMetricsQuery(ctx, queryID)
 	if err == nil {
 		t.Fatalf("Delete Real Time Metrics Query negative case failed: %v", err)
 	}
@@ -51,19 +51,19 @@ func TestDeleteRealTimeMetricsQuery(t *testing.T) {
 
 func TestGetMetricsCollection(t *testing.T) {
 	fmt.Println("Begin - Get Metrics Collection Test")
-	testConf.metricsAPI.client.api.(*mocks.Client).ExpectedCalls = nil
+	testConf.client.getAPI().(*mocks.Client).ExpectedCalls = nil
 	ctx := context.Background()
 	queryID := 12345
 
 	metricsQueryResult := &types.MetricQueryResult{}
-	testConf.metricsAPI.client.api.(*mocks.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Run(func(args mock.Arguments) {
+	testConf.client.getAPI().(*mocks.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Run(func(args mock.Arguments) {
 		resp := args.Get(5).(*types.MetricQueryResult)
 		if resp != nil {
 			*resp = *metricsQueryResult
 		}
 	}).Once()
 
-	result, err := testConf.metricsAPI.GetMetricsCollection(ctx, queryID)
+	result, err := testConf.client.GetMetricsCollection(ctx, queryID)
 	fmt.Println("Metrics Query Result:", prettyPrintJSON(result), "Error:", err)
 	if err != nil {
 		t.Fatalf("Get Metrics Collection failed: %v", err)

@@ -43,13 +43,7 @@ type testConfig struct {
 	nasServer       string
 	tenant          string
 	hostList        []string
-	volumeAPI       *Volume
-	hostAPI         *Host
-	poolAPI         *Storagepool
-	snapAPI         *Snapshot
-	ipinterfaceAPI  *Ipinterface
-	fileAPI         *Filesystem
-	metricsAPI      *Metrics
+	client          UnityClient
 }
 
 var testConf *testConfig
@@ -90,25 +84,17 @@ func TestMain(m *testing.M) {
 	os.Setenv("X_CSI_UNITY_USER", testConf.username)
 	os.Setenv("X_CSI_UNITY_PASSWORD", testConf.password)
 
-	testClient := getTestClient()
+	testConf.client = getTestClient()
 	testConf.wwns = strings.Split(wwnStr, ",")
 	testConf.hostList = strings.Split(hostListStr, ",")
-
-	testConf.hostAPI = NewHost(testClient)
-	testConf.poolAPI = NewStoragePool(testClient)
-	testConf.snapAPI = NewSnapshot(testClient)
-	testConf.volumeAPI = NewVolume(testClient)
-	testConf.ipinterfaceAPI = NewIPInterface(testClient)
-	testConf.fileAPI = NewFilesystem(testClient)
-	testConf.metricsAPI = NewMetrics(testClient)
 
 	code := m.Run()
 	fmt.Println("------------End of TestMain--------------")
 	os.Exit(code)
 }
 
-func getTestClient() *Client {
-	return &Client{
+func getTestClient() *UnityClientImpl {
+	return &UnityClientImpl{
 		api:           &mocks.Client{},
 		configConnect: &ConfigConnect{},
 	}
