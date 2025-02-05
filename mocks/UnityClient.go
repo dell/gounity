@@ -5,8 +5,6 @@ package mocks
 import (
 	context "context"
 
-	api "github.com/dell/gounity/api"
-
 	gounity "github.com/dell/gounity"
 
 	mock "github.com/stretchr/testify/mock"
@@ -1685,92 +1683,6 @@ func (_m *UnityClient) UnexportVolume(ctx context.Context, volID string) error {
 	var r0 error
 	if rf, ok := ret.Get(0).(func(context.Context, string) error); ok {
 		r0 = rf(ctx, volID)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
-// executeWithRetryAuthenticate provides a mock function with given fields: ctx, method, uri, body, resp
-func (_m *UnityClient) executeWithRetryAuthenticate(ctx context.Context, method string, uri string, body interface{}, resp interface{}) error {
-	ret := _m.Called(ctx, method, uri, body, resp)
-
-	if len(ret) == 0 {
-		panic("no return value specified for executeWithRetryAuthenticate")
-	}
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, string, string, interface{}, interface{}) error); ok {
-		r0 = rf(ctx, method, uri, body, resp)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
-// getAPI provides a mock function with no fields
-func (_m *UnityClient) getAPI() api.Client {
-	ret := _m.Called()
-
-	if len(ret) == 0 {
-		panic("no return value specified for getAPI")
-	}
-
-	var r0 api.Client
-	if rf, ok := ret.Get(0).(func() api.Client); ok {
-		r0 = rf()
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(api.Client)
-		}
-	}
-
-	return r0
-}
-
-// isFeatureLicensed provides a mock function with given fields: ctx, featureName
-func (_m *UnityClient) isFeatureLicensed(ctx context.Context, featureName gounity.LicenseType) (*types.LicenseInfo, error) {
-	ret := _m.Called(ctx, featureName)
-
-	if len(ret) == 0 {
-		panic("no return value specified for isFeatureLicensed")
-	}
-
-	var r0 *types.LicenseInfo
-	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, gounity.LicenseType) (*types.LicenseInfo, error)); ok {
-		return rf(ctx, featureName)
-	}
-	if rf, ok := ret.Get(0).(func(context.Context, gounity.LicenseType) *types.LicenseInfo); ok {
-		r0 = rf(ctx, featureName)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*types.LicenseInfo)
-		}
-	}
-
-	if rf, ok := ret.Get(1).(func(context.Context, gounity.LicenseType) error); ok {
-		r1 = rf(ctx, featureName)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// updateDescription provides a mock function with given fields: ctx, filesystemID, description
-func (_m *UnityClient) updateDescription(ctx context.Context, filesystemID string, description string) error {
-	ret := _m.Called(ctx, filesystemID, description)
-
-	if len(ret) == 0 {
-		panic("no return value specified for updateDescription")
-	}
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, string, string) error); ok {
-		r0 = rf(ctx, filesystemID, description)
 	} else {
 		r0 = ret.Error(0)
 	}

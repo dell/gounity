@@ -30,7 +30,7 @@ func TestListIscsiIPInterfaces(t *testing.T) {
 
 	// Initial Setup
 	t.Log("Begin - List IP Interfaces Test")
-	testConf.client.getAPI().(*mocksapi.Client).ExpectedCalls = nil
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).ExpectedCalls = nil
 	ctx := context.Background()
 
 	// Mock ListIscsiIPInterfaces to return example data
@@ -41,7 +41,7 @@ func TestListIscsiIPInterfaces(t *testing.T) {
 		},
 	}
 
-	mockClient := testConf.client.getAPI().(*mocksapi.Client)
+	mockClient := testConf.client.(*UnityClientImpl).api.(*mocksapi.Client)
 	mockClient.On("DoWithHeaders", mock.Anything, "GET", mock.Anything, mock.Anything, mock.Anything, mock.AnythingOfType("*types.ListIPInterfaces")).Return(nil).
 		Run(func(args mock.Arguments) {
 			resp := args.Get(5).(*types.ListIPInterfaces)

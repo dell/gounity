@@ -27,11 +27,11 @@ import (
 
 func TestDeleteRealTimeMetricsQuery(t *testing.T) {
 	fmt.Println("Begin - Delete Real Time Metrics Query Test")
-	testConf.client.getAPI().(*mocksapi.Client).ExpectedCalls = nil
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).ExpectedCalls = nil
 	ctx := context.Background()
 	queryID := 12345
 
-	testConf.client.getAPI().(*mocksapi.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
 
 	err := testConf.client.DeleteRealTimeMetricsQuery(ctx, queryID)
 	fmt.Println("Error:", err)
@@ -39,7 +39,7 @@ func TestDeleteRealTimeMetricsQuery(t *testing.T) {
 		t.Fatalf("Delete Real Time Metrics Query failed: %v", err)
 	}
 
-	testConf.client.getAPI().(*mocksapi.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(fmt.Errorf("delete failed")).Once()
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(fmt.Errorf("delete failed")).Once()
 
 	err = testConf.client.DeleteRealTimeMetricsQuery(ctx, queryID)
 	if err == nil {
@@ -51,12 +51,12 @@ func TestDeleteRealTimeMetricsQuery(t *testing.T) {
 
 func TestGetMetricsCollection(t *testing.T) {
 	fmt.Println("Begin - Get Metrics Collection Test")
-	testConf.client.getAPI().(*mocksapi.Client).ExpectedCalls = nil
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).ExpectedCalls = nil
 	ctx := context.Background()
 	queryID := 12345
 
 	metricsQueryResult := &types.MetricQueryResult{}
-	testConf.client.getAPI().(*mocksapi.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Run(func(args mock.Arguments) {
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Run(func(args mock.Arguments) {
 		resp := args.Get(5).(*types.MetricQueryResult)
 		if resp != nil {
 			*resp = *metricsQueryResult

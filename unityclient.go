@@ -65,7 +65,6 @@ type UnityClient interface {
 	GetFilesystemIDFromResID(ctx context.Context, filesystemResID string) (string, error)
 	ModifyNFSShareCreatedFromSnapshotHostAccess(ctx context.Context, nfsShareID string, hostIDs []string, accessType AccessType) error
 	ModifyNFSShareHostAccess(ctx context.Context, filesystemID string, nfsShareID string, hostIDs []string, accessType AccessType) error
-	updateDescription(ctx context.Context, filesystemID string, description string) error
 	FindHostByName(ctx context.Context, hostName string) (*types.Host, error)
 	CreateHost(ctx context.Context, hostName string, tenantID string) (*types.Host, error)
 	DeleteHost(ctx context.Context, hostName string) error
@@ -112,9 +111,6 @@ type UnityClient interface {
 	ModifyVolumeExport(ctx context.Context, volID string, hostIDList []string) error
 	RenameVolume(ctx context.Context, newName string, volID string) error
 	UnexportVolume(ctx context.Context, volID string) error
-	isFeatureLicensed(ctx context.Context, featureName LicenseType) (*types.LicenseInfo, error)
-	executeWithRetryAuthenticate(ctx context.Context, method string, uri string, body interface{}, resp interface{}) error
-	getAPI() api.Client
 }
 
 // UnityClientImpl Struct holds the configuration & REST Client.
