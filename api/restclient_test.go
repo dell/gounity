@@ -248,3 +248,48 @@ func TestDoLog(t *testing.T) {
 	c.doLog(logger, "Test message")
 	assert.Equal(t, "Test message", loggedMessage)
 }
+
+func TestClientGet(t *testing.T) {
+	c := &client{
+		http: http.DefaultClient,
+		host: "https://example.com",
+	}
+	err := c.Get(context.Background(), c.host, nil, nil)
+	assert.Error(t, err)
+}
+
+func TestClientPost(t *testing.T) {
+	c := &client{
+		http: http.DefaultClient,
+		host: "https://example.com",
+	}
+	err := c.Post(context.Background(), c.host, nil, nil, nil)
+	assert.Error(t, err)
+}
+
+func TestClientPut(t *testing.T) {
+	c := &client{
+		http: http.DefaultClient,
+		host: "https://example.com",
+	}
+	err := c.Put(context.Background(), c.host, nil, nil, nil)
+	assert.Error(t, err)
+}
+
+func TestClientDelete(t *testing.T) {
+	c := &client{
+		http: http.DefaultClient,
+		host: "https://example.com",
+	}
+	err := c.Delete(context.Background(), c.host, nil, nil)
+	assert.Error(t, err)
+}
+
+func TestClientDo(t *testing.T) {
+	c := &client{
+		http: http.DefaultClient,
+		host: "https://example.com",
+	}
+	err := c.Do(context.Background(), http.MethodGet, c.host, nil, nil)
+	assert.Error(t, err)
+}

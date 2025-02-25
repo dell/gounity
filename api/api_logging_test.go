@@ -16,9 +16,24 @@ package api
 import (
 	"bytes"
 	"context"
+	"errors"
 	"net/http"
 	"testing"
 )
+
+// Custom writer that fails after a certain number of writes
+type errorWriter struct {
+	maxWrites int
+	writes    int
+}
+
+func (ew *errorWriter) Write(p []byte) (n int, err error) {
+	if ew.writes >= ew.maxWrites {
+		return 0, errors.New("write error")
+	}
+	ew.writes++
+	return len(p), nil
+}
 
 func TestIsBinOctetBody(t *testing.T) {
 	// Test case: header with correct content type
@@ -161,5 +176,27 @@ func TestWriteIndentedN(t *testing.T) {
 	expected = "    Hello\n    world!"
 	if buf.String() != expected {
 		t.Errorf("Expected %q, got %q", expected, buf.String())
+	}
+
+	// Error conditions using errorWriter
+	// Test case: Error at initial indent
+	ew := &errorWriter{maxWrites: 0}
+	err = WriteIndentedN(ew, []byte("Hello, world!"), 4)
+	if err == nil || err.Error() != "write error" {
+		t.Errorf("Expected write error, got %v", err)
+	}
+
+	// Test case: Error in writing line content
+	ew = &errorWriter{maxWrites: 4}
+	err = WriteIndentedN(ew, []byte("Hello, world!"), 4)
+	if err == nil || err.Error() != "write error" {
+		t.Errorf("Expected write error, got %v", err)
+	}
+
+	// Test case: Error in writing newline
+	ew = &errorWriter{maxWrites: 9} // Enough for "    Hello"
+	err = WriteIndentedN(ew, []byte("Hello\nworld!"), 4)
+	if err == nil || err.Error() != "write error" {
+		t.Errorf("Expected write error, got %v", err)
 	}
 }
