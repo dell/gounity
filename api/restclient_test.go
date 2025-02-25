@@ -15,6 +15,8 @@ package api
 
 import (
 	"context"
+	"crypto/x509"
+	"encoding/json"
 	"errors"
 	"io"
 	"net/http"
@@ -189,6 +191,43 @@ func TestDoWithHeaders(t *testing.T) {
 	}
 	assert.Equal(t, &expectedError, err)
 
+	// for 401 response - when json Decode err is nil
+	server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, http.MethodGet, r.Method)
+		assert.Equal(t, "/api/v1/endpoint", r.URL.String())
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(types.Error{
+			ErrorContent: types.ErrorContent{
+				Message: []types.ErrorMessage{
+					{
+						EnUS: "Unauthorized",
+					},
+				},
+				HTTPStatusCode: 401,
+				ErrorCode:      0,
+			},
+		})
+	}))
+	defer server.Close()
+	c.host = server.URL
+	err = c.DoWithHeaders(ctx, http.MethodGet, "api/v1/endpoint", nil, body, &responseData)
+	errorContent = types.ErrorContent{
+		Message: []types.ErrorMessage{
+			{
+				EnUS: "Unauthorized",
+			},
+			{
+				EnUS: "401 Unauthorized",
+			},
+		},
+		HTTPStatusCode: 401,
+		ErrorCode:      0,
+	}
+	expectedError = types.Error{
+		ErrorContent: errorContent,
+	}
+	assert.Equal(t, &expectedError, err)
+
 	// for 400 response
 	server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, http.MethodGet, r.Method)
@@ -233,6 +272,22 @@ func TestNew(t *testing.T) {
 	}
 	_, err = New(ctx, host, opts, debug)
 	assert.Equal(t, nil, err)
+
+	// Test the System Cert Pool Error
+	originalFunc := systemCertPoolFunc
+	defer func() { systemCertPoolFunc = originalFunc }()
+
+	systemCertPoolFunc = func() (*x509.CertPool, error) {
+		return nil, errors.New("mock system cert pool error")
+	}
+
+	opts = ClientOptions{
+		Insecure: false,
+		Timeout:  0,
+		ShowHTTP: false,
+	}
+	_, err = New(ctx, host, opts, debug)
+	assert.Equal(t, errSysCerts, err)
 }
 
 func TestDoLog(t *testing.T) {
