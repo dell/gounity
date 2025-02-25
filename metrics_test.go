@@ -16,6 +16,7 @@ package gounity
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"testing"
 
@@ -71,4 +72,84 @@ func TestGetMetricsCollection(t *testing.T) {
 	assert.NotNil(t, result)
 
 	fmt.Println("Get Metrics Collection Test - Successful")
+}
+
+func TestGetAllRealTimeMetricPaths(t *testing.T) {
+	fmt.Println("Begin - GetAllRealTimeMetricPaths Test")
+	testConf.metricsAPI.client.api.(*mocks.Client).ExpectedCalls = nil
+	ctx := context.Background()
+
+	testConf.metricsAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(nil).Run(func(args mock.Arguments) {
+		resp := args.Get(5).(*types.MetricPaths)
+		*resp = types.MetricPaths{
+			Entries: []types.MetricEntries{
+				{
+					Cnt: types.MetricContent{
+						ID: 12345,
+					},
+				},
+			},
+		}
+	}).Once()
+	testConf.metricsAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(nil).Run(func(args mock.Arguments) {
+		resp := args.Get(5).(*types.MetricInstance)
+		*resp = types.MetricInstance{
+			Content: types.MetricInfo{
+				IsRealtimeAvailable: true,
+			},
+		}
+	}).Once()
+	err := testConf.metricsAPI.GetAllRealTimeMetricPaths(ctx)
+	assert.Nil(t, err)
+
+	testConf.metricsAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(errors.New("get real time metrics failed")).Once()
+	err = testConf.metricsAPI.GetAllRealTimeMetricPaths(ctx)
+	assert.Error(t, err)
+
+	fmt.Println("GetAllRealTimeMetricPaths Test - Successful")
+}
+
+func TestCreateRealTimeMetricsQuery(t *testing.T) {
+	fmt.Println("Begin - CreateRealTimeMetricsQuery Test")
+	testConf.metricsAPI.client.api.(*mocks.Client).ExpectedCalls = nil
+	ctx := context.Background()
+
+	testConf.metricsAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(nil).Run(func(args mock.Arguments) {
+		resp := args.Get(5).(*types.MetricQueryCreateResponse)
+		*resp = types.MetricQueryCreateResponse{
+			Content: types.MetricQueryResponseContent{
+				Paths:    []string{"dummy"},
+				Interval: 0,
+			},
+		}
+	}).Once()
+	_, err := testConf.metricsAPI.CreateRealTimeMetricsQuery(ctx, []string{"dummy"}, 0)
+	assert.Nil(t, err)
+
+	testConf.metricsAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(errors.New("create real time metrics failed")).Once()
+	_, err = testConf.metricsAPI.CreateRealTimeMetricsQuery(ctx, []string{"dummy"}, 0)
+	assert.Error(t, err)
+
+	fmt.Println("CreateRealTimeMetricsQuery Test - Successful")
+}
+
+func TestGetCapacity(t *testing.T) {
+	fmt.Println("Begin - GetCapacity Test")
+	testConf.metricsAPI.client.api.(*mocks.Client).ExpectedCalls = nil
+	ctx := context.Background()
+
+	testConf.metricsAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(nil).Run(func(args mock.Arguments) {
+		resp := args.Get(5).(*types.SystemCapacityMetricsQueryResult)
+		*resp = types.SystemCapacityMetricsQueryResult{
+			Entries: []types.SystemCapacityMetricsResultEntry{},
+		}
+	}).Once()
+	_, err := testConf.metricsAPI.GetCapacity(ctx)
+	assert.Nil(t, err)
+
+	testConf.metricsAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(errors.New("get capacity failed")).Once()
+	_, err = testConf.metricsAPI.GetCapacity(ctx)
+	assert.Error(t, err)
+
+	fmt.Println("GetCapacity Test - Successful")
 }
