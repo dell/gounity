@@ -112,7 +112,7 @@ func TestLogRequest(t *testing.T) {
 		originalDumpRequest := dumpRequest
 		defer func() { dumpRequest = originalDumpRequest }()
 
-		dumpRequest = func(req *http.Request, body bool) ([]byte, error) {
+		dumpRequest = func(_ *http.Request, _ bool) ([]byte, error) {
 			return nil, errors.New("DumpRequest failed")
 		}
 
@@ -130,14 +130,14 @@ func TestLogRequest(t *testing.T) {
 		// Mock DumpRequest to succeed
 		originalDumpRequest := dumpRequest
 		defer func() { dumpRequest = originalDumpRequest }()
-		dumpRequest = func(res *http.Request, body bool) ([]byte, error) {
+		dumpRequest = func(_ *http.Request, _ bool) ([]byte, error) {
 			return []byte("request body"), nil
 		}
 
 		// Mock WriteIndented to return an error
 		originalWriteIndented := writeIndented
 		defer func() { writeIndented = originalWriteIndented }()
-		writeIndented = func(w io.Writer, b []byte) error {
+		writeIndented = func(_ io.Writer, _ []byte) error {
 			return errors.New("WriteIndented failed")
 		}
 
@@ -190,7 +190,7 @@ func TestLogResponse(t *testing.T) {
 	})
 
 	// Test case: Response with error in DumpResponse
-	t.Run("Response with error in DumpResponse", func(t *testing.T) {
+	t.Run("Response with error in DumpResponse", func(_ *testing.T) {
 		res := &http.Response{
 			Header: http.Header{
 				"Content-Type": []string{"application/json"},
@@ -201,7 +201,7 @@ func TestLogResponse(t *testing.T) {
 		originalDumpResponse := dumpResponse
 		defer func() { dumpResponse = originalDumpResponse }()
 
-		dumpResponse = func(req *http.Response, body bool) ([]byte, error) {
+		dumpResponse = func(_ *http.Response, _ bool) ([]byte, error) {
 			return nil, errors.New("DumpResponse failed")
 		}
 
@@ -210,7 +210,7 @@ func TestLogResponse(t *testing.T) {
 	})
 
 	// Test case: Response with error in WriteIndented
-	t.Run("Failure in WriteIndented", func(t *testing.T) {
+	t.Run("Failure in WriteIndented", func(_ *testing.T) {
 		res := &http.Response{
 			Header: http.Header{
 				"Content-Type": []string{"application/json"},
@@ -220,14 +220,14 @@ func TestLogResponse(t *testing.T) {
 		// Mock DumpResponse to succeed
 		originalDumpResponse := dumpResponse
 		defer func() { dumpResponse = originalDumpResponse }()
-		dumpResponse = func(res *http.Response, body bool) ([]byte, error) {
+		dumpResponse = func(_ *http.Response, _ bool) ([]byte, error) {
 			return []byte("response body"), nil
 		}
 
 		// Mock WriteIndented to return an error
 		originalWriteIndented := writeIndented
 		defer func() { writeIndented = originalWriteIndented }()
-		writeIndented = func(w io.Writer, b []byte) error {
+		writeIndented = func(_ io.Writer, _ []byte) error {
 			return errors.New("WriteIndented failed")
 		}
 
