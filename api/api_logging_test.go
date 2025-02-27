@@ -16,9 +16,25 @@ package api
 import (
 	"bytes"
 	"context"
+	"errors"
+	"io"
 	"net/http"
 	"testing"
 )
+
+// Custom writer that fails after a certain number of writes
+type errorWriter struct {
+	maxWrites int
+	writes    int
+}
+
+func (ew *errorWriter) Write(p []byte) (n int, err error) {
+	if ew.writes >= ew.maxWrites {
+		return 0, errors.New("write error")
+	}
+	ew.writes++
+	return len(p), nil
+}
 
 func TestIsBinOctetBody(t *testing.T) {
 	// Test case: header with correct content type
@@ -84,6 +100,50 @@ func TestLogRequest(t *testing.T) {
 
 		logRequest(context.TODO(), req, nil)
 	})
+
+	// // Test case: Request with error in DumpRequest
+	t.Run("Request with error in DumpRequest", func(t *testing.T) {
+		req, err := http.NewRequest("GET", "http://example.com", nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		// Mock the DumpRequest function to return an error
+		originalDumpRequest := dumpRequest
+		defer func() { dumpRequest = originalDumpRequest }()
+
+		dumpRequest = func(_ *http.Request, _ bool) ([]byte, error) {
+			return nil, errors.New("DumpRequest failed")
+		}
+
+		// Call the logRequest function
+		logRequest(context.TODO(), req, nil)
+	})
+
+	// Test case: Request with error in WriteIndented
+	t.Run("Request with error in WriteIndented", func(t *testing.T) {
+		req, err := http.NewRequest("GET", "http://example.com", nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		// Mock DumpRequest to succeed
+		originalDumpRequest := dumpRequest
+		defer func() { dumpRequest = originalDumpRequest }()
+		dumpRequest = func(_ *http.Request, _ bool) ([]byte, error) {
+			return []byte("request body"), nil
+		}
+
+		// Mock WriteIndented to return an error
+		originalWriteIndented := writeIndented
+		defer func() { writeIndented = originalWriteIndented }()
+		writeIndented = func(_ io.Writer, _ []byte) error {
+			return errors.New("WriteIndented failed")
+		}
+
+		// Call the logRequest function
+		logRequest(context.TODO(), req, nil)
+	})
 }
 
 func TestLogResponse(t *testing.T) {
@@ -128,6 +188,52 @@ func TestLogResponse(t *testing.T) {
 		logResponse(context.Background(), res, nil)
 		// Add assertions to check if the indentation error is logged correctly
 	})
+
+	// Test case: Response with error in DumpResponse
+	t.Run("Response with error in DumpResponse", func(_ *testing.T) {
+		res := &http.Response{
+			Header: http.Header{
+				"Content-Type": []string{"application/json"},
+			},
+		}
+
+		// Mock the DumpResponse function to return an error
+		originalDumpResponse := dumpResponse
+		defer func() { dumpResponse = originalDumpResponse }()
+
+		dumpResponse = func(_ *http.Response, _ bool) ([]byte, error) {
+			return nil, errors.New("DumpResponse failed")
+		}
+
+		// Call the logResponse function
+		logResponse(context.TODO(), res, nil)
+	})
+
+	// Test case: Response with error in WriteIndented
+	t.Run("Failure in WriteIndented", func(_ *testing.T) {
+		res := &http.Response{
+			Header: http.Header{
+				"Content-Type": []string{"application/json"},
+			},
+		}
+
+		// Mock DumpResponse to succeed
+		originalDumpResponse := dumpResponse
+		defer func() { dumpResponse = originalDumpResponse }()
+		dumpResponse = func(_ *http.Response, _ bool) ([]byte, error) {
+			return []byte("response body"), nil
+		}
+
+		// Mock WriteIndented to return an error
+		originalWriteIndented := writeIndented
+		defer func() { writeIndented = originalWriteIndented }()
+		writeIndented = func(_ io.Writer, _ []byte) error {
+			return errors.New("WriteIndented failed")
+		}
+
+		// Call the logResponse function
+		logResponse(context.TODO(), res, nil)
+	})
 }
 
 func TestWriteIndentedN(t *testing.T) {
@@ -161,5 +267,27 @@ func TestWriteIndentedN(t *testing.T) {
 	expected = "    Hello\n    world!"
 	if buf.String() != expected {
 		t.Errorf("Expected %q, got %q", expected, buf.String())
+	}
+
+	// Error conditions using errorWriter
+	// Test case: Error at initial indent
+	ew := &errorWriter{maxWrites: 0}
+	err = WriteIndentedN(ew, []byte("Hello, world!"), 4)
+	if err == nil || err.Error() != "write error" {
+		t.Errorf("Expected write error, got %v", err)
+	}
+
+	// Test case: Error in writing line content
+	ew = &errorWriter{maxWrites: 4}
+	err = WriteIndentedN(ew, []byte("Hello, world!"), 4)
+	if err == nil || err.Error() != "write error" {
+		t.Errorf("Expected write error, got %v", err)
+	}
+
+	// Test case: Error in writing newline
+	ew = &errorWriter{maxWrites: 9} // Enough for "    Hello"
+	err = WriteIndentedN(ew, []byte("Hello\nworld!"), 4)
+	if err == nil || err.Error() != "write error" {
+		t.Errorf("Expected write error, got %v", err)
 	}
 }
