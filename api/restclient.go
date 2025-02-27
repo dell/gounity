@@ -1,5 +1,5 @@
 /*
- Copyright © 2019-2024 Dell Inc. or its subsidiaries. All Rights Reserved.
+ Copyright © 2019-2025 Dell Inc. or its subsidiaries. All Rights Reserved.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -43,8 +43,9 @@ const (
 )
 
 var (
-	errNewClient = errors.New("missing endpoint")
-	errSysCerts  = errors.New("unable to initialize certificate pool from system")
+	errNewClient       = errors.New("missing endpoint")
+	errSysCerts        = errors.New("unable to initialize certificate pool from system")
+	systemCertPoolFunc = x509.SystemCertPool
 )
 
 // Client Interface defines the methods.
@@ -151,7 +152,7 @@ func New(_ context.Context, host string, opts ClientOptions, debug bool) (Client
 			},
 		}
 	} else {
-		pool, err := x509.SystemCertPool()
+		pool, err := systemCertPoolFunc()
 		if err != nil {
 			return nil, errSysCerts
 		}
