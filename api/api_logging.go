@@ -1,7 +1,15 @@
-/*
-Copyright (c) 2019 Dell Corporation
-All Rights Reserved
-*/
+// Copyright © 2019-2025 Dell Inc. or its subsidiaries. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//      http://www.apache.org/licenses/LICENSE-2.0
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 
 package api
 
@@ -21,6 +29,18 @@ func isBinOctetBody(h http.Header) bool {
 	return h.Get(HeaderKeyContentType) == headerValContentTypeBinaryOctetStream
 }
 
+type (
+	dumpRequestFunc   func(req *http.Request, body bool) ([]byte, error)
+	dumpResponseFunc  func(req *http.Response, body bool) ([]byte, error)
+	writeIndentedFunc func(w io.Writer, b []byte) error
+)
+
+var (
+	dumpRequest   dumpRequestFunc   = httputil.DumpRequest
+	dumpResponse  dumpResponseFunc  = httputil.DumpResponse
+	writeIndented writeIndentedFunc = WriteIndented
+)
+
 func logRequest(
 	_ context.Context,
 	req *http.Request,
@@ -33,12 +53,12 @@ func logRequest(
 	fmt.Fprint(w, "GOUNITY HTTP REQUEST")
 	fmt.Fprintln(w, " -------------------------")
 
-	buf, err := httputil.DumpRequest(req, !isBinOctetBody(req.Header))
+	buf, err := dumpRequest(req, !isBinOctetBody(req.Header))
 	if err != nil {
 		return
 	}
 
-	err2 := WriteIndented(w, buf)
+	err2 := writeIndented(w, buf)
 	if err2 != nil {
 		message := fmt.Sprintf("Indentation failed with error: %v", err2)
 		log.Info(message)
@@ -61,13 +81,13 @@ func logResponse(
 	fmt.Fprint(w, "GOUNITY HTTP RESPONSE")
 	fmt.Fprintln(w, " -------------------------")
 
-	buf, err := httputil.DumpResponse(res, !isBinOctetBody(res.Header))
+	buf, err := dumpResponse(res, !isBinOctetBody(res.Header))
 	if err != nil {
 		return
 	}
 
 	bw := &bytes.Buffer{}
-	err2 := WriteIndented(bw, buf)
+	err2 := writeIndented(bw, buf)
 	if err2 != nil {
 		message := fmt.Sprintf("Indentation failed with error: %v", err2)
 		log.Info(message)
