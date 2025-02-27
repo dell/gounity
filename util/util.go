@@ -37,10 +37,9 @@ var (
 	ErrorInvalidCharacters = errors.New("name contains invalid characters or name doesn't start with alphabetic. Allowed characters are 'a-zA-Z0-9_-'")
 )
 
-// UnityLog constant
-const (
-	UnityLog = "unitylog"
-)
+type contextKey string
+
+const UnityLog contextKey = "unitylog"
 
 // UnityLogStruct is structure of UnityLog
 type UnityLogStruct struct {
