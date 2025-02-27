@@ -1,5 +1,5 @@
 /*
- Copyright © 2019-2024 Dell Inc. or its subsidiaries. All Rights Reserved.
+ Copyright © 2019-2025 Dell Inc. or its subsidiaries. All Rights Reserved.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -19,9 +19,9 @@ import (
 	"crypto/tls"
 	"fmt"
 	"testing"
-)
 
-var ctx context.Context
+	"github.com/sirupsen/logrus"
+)
 
 const MaxResourceNameLength = 63
 
@@ -33,21 +33,41 @@ func TestUtils(t *testing.T) {
 	getSecuredCipherSuitesTest(t)
 }
 
-func getRunIDLoggerTest(_ *testing.T) {
+func getRunIDLoggerTest(t *testing.T) {
 	fmt.Println("Begin - Get RunId Logger Test")
 
+	// Scenario 1: rlog is of type *logrus.Entry and has data
 	log := GetLogger()
 	ctx := context.Background()
 	entry := log.WithField("runid", "1111")
-	ctx = context.WithValue(ctx, UnityLogStruct{UnityLog}, entry)
+	ctx = context.WithValue(ctx, UnityLog, entry)
 
+	// This should cover the line: entry = rlog.(*logrus.Entry)
 	logEntry := GetRunIDLogger(ctx)
 	logEntry.Info("Hi This is log test1")
 
-	entry = entry.WithField("arrayid", "arr0000")
-	ctx = context.WithValue(ctx, UnityLogStruct{UnityLog}, entry)
+	if len(logEntry.Data) == 0 {
+		t.Error("Expected logEntry data to have fields, but it was empty")
+	}
+
+	// Scenario 2: rlog is of type *logrus.Entry but has no data
+	emptyEntry := &logrus.Entry{}
+	ctx = context.WithValue(ctx, UnityLog, emptyEntry)
+
+	// This should skip the line and use log.WithContext(ctx)
 	logEntry = GetRunIDLogger(ctx)
 	logEntry.Info("Hi This is log test2")
+
+	if len(logEntry.Data) != 0 {
+		t.Error("Expected logEntry data to be empty, but it had fields")
+	}
+
+	// Additional Scenario: rlog is not of type *logrus.Entry
+	ctx = context.WithValue(ctx, UnityLog, "invalid type")
+
+	// This should go directly to log.WithContext(ctx)
+	logEntry = GetRunIDLogger(ctx)
+	logEntry.Info("Hi This is log test3")
 
 	fmt.Println("Get RunId Logger Test Successful")
 }
@@ -171,4 +191,51 @@ func getSecuredCipherSuitesTest(t *testing.T) {
 	}
 
 	fmt.Println("Get Secured Cipher Suites Test Successful")
+}
+
+func TestChangeLogLevel(t *testing.T) {
+	// Ensure singletonLog is initialized before any tests
+	GetLogger()
+
+	t.Run("Debug level case", func(t *testing.T) {
+		ChangeLogLevel("debug")
+		if singletonLog.Level != logrus.DebugLevel {
+			t.Errorf("expected DebugLevel, got %v", singletonLog.Level)
+		}
+	})
+
+	t.Run("Warn level case", func(t *testing.T) {
+		ChangeLogLevel("warn")
+		if singletonLog.Level != logrus.WarnLevel {
+			t.Errorf("expected WarnLevel, got %v", singletonLog.Level)
+		}
+	})
+
+	t.Run("Warning level case", func(t *testing.T) {
+		ChangeLogLevel("warning")
+		if singletonLog.Level != logrus.WarnLevel {
+			t.Errorf("expected WarnLevel, got %v", singletonLog.Level)
+		}
+	})
+
+	t.Run("Error level case", func(t *testing.T) {
+		ChangeLogLevel("error")
+		if singletonLog.Level != logrus.ErrorLevel {
+			t.Errorf("expected ErrorLevel, got %v", singletonLog.Level)
+		}
+	})
+
+	t.Run("Info level case", func(t *testing.T) {
+		ChangeLogLevel("info")
+		if singletonLog.Level != logrus.InfoLevel {
+			t.Errorf("expected InfoLevel, got %v", singletonLog.Level)
+		}
+	})
+
+	t.Run("Default level case with unknown input", func(t *testing.T) {
+		ChangeLogLevel("unknown")
+		if singletonLog.Level != logrus.InfoLevel {
+			t.Errorf("expected InfoLevel, got %v", singletonLog.Level)
+		}
+	})
 }
