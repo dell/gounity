@@ -136,13 +136,13 @@ func TestFindSnapshotByName(t *testing.T) {
 	assert.Equal(t, errors.New("name empty error"), err)
 
 	snapNameTemp = "dummy-snap-name"
-	testConf.snapAPI.client.api.(*mocks.Client).ExpectedCalls = nil
-	testConf.snapAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(errors.New(SnapshotNotFoundErrorCode)).Once()
-	_, err = testConf.snapAPI.FindSnapshotByName(ctx, snapNameTemp)
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).ExpectedCalls = nil
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(errors.New(SnapshotNotFoundErrorCode)).Once()
+	_, err = testConf.client.FindSnapshotByName(ctx, snapNameTemp)
 	assert.Error(t, err)
 
-	testConf.snapAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(errors.New("unable to find Snapshot Name")).Once()
-	_, err = testConf.snapAPI.FindSnapshotByName(ctx, snapNameTemp)
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(errors.New("unable to find Snapshot Name")).Once()
+	_, err = testConf.client.FindSnapshotByName(ctx, snapNameTemp)
 	assert.Error(t, err)
 
 	fmt.Println("Find Snapshot by Name - Successful")
@@ -165,13 +165,13 @@ func TestFindSnapshotByID(t *testing.T) {
 	assert.Equal(t, errors.New("snapshot ID cannot be empty"), err)
 
 	snapIDTemp = "dummy-snap-id"
-	testConf.snapAPI.client.api.(*mocks.Client).ExpectedCalls = nil
-	testConf.snapAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(errors.New(SnapshotNotFoundErrorCode)).Once()
-	_, err = testConf.snapAPI.FindSnapshotByID(ctx, snapIDTemp)
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).ExpectedCalls = nil
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(errors.New(SnapshotNotFoundErrorCode)).Once()
+	_, err = testConf.client.FindSnapshotByID(ctx, snapIDTemp)
 	assert.Error(t, err)
 
-	testConf.snapAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(errors.New("unable to find Snapshot ID")).Once()
-	_, err = testConf.snapAPI.FindSnapshotByID(ctx, snapIDTemp)
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(errors.New("unable to find Snapshot ID")).Once()
+	_, err = testConf.client.FindSnapshotByID(ctx, snapIDTemp)
 	assert.Error(t, err)
 
 	fmt.Println("Find Snapshot by Id - Successful")

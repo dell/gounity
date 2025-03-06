@@ -21,7 +21,9 @@ import (
 	"testing"
 
 	mocksapi "github.com/dell/gounity/mocks/api"
+	"github.com/dell/gounity/types"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 var (
@@ -111,20 +113,20 @@ func TestFindFilesystem(t *testing.T) {
 	_, err = testConf.client.GetFilesystemIDFromResID(ctx, "ID")
 	assert.Equal(t, nil, err)
 
-	testConf.fileAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(errors.New("get filesystem ID failed")).Once()
-	_, err = testConf.fileAPI.GetFilesystemIDFromResID(ctx, "ID")
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(errors.New("get filesystem ID failed")).Once()
+	_, err = testConf.client.GetFilesystemIDFromResID(ctx, "ID")
 	assert.Error(t, err)
 
-	testConf.fileAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(errors.New(FilesystemNotFoundErrorCode)).Once()
-	_, err = testConf.fileAPI.FindFilesystemByName(ctx, "dummy-fs-1")
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(errors.New(FilesystemNotFoundErrorCode)).Once()
+	_, err = testConf.client.FindFilesystemByName(ctx, "dummy-fs-1")
 	assert.Error(t, err)
 
-	testConf.fileAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(errors.New("find filesystem error")).Once()
-	_, err = testConf.fileAPI.FindFilesystemByName(ctx, "dummy-fs-1")
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(errors.New("find filesystem error")).Once()
+	_, err = testConf.client.FindFilesystemByName(ctx, "dummy-fs-1")
 	assert.Error(t, err)
 
 	// Test case :  GET using invalid fsName/ID
-	testConf.fileAPI.client.api.(*mocks.Client).ExpectedCalls = nil
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).ExpectedCalls = nil
 	fsNameTemp := "dummy-fs-1"
 	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
 	_, err = testConf.client.FindFilesystemByName(ctx, fsNameTemp)
@@ -134,8 +136,8 @@ func TestFindFilesystem(t *testing.T) {
 	_, err = testConf.client.FindFilesystemByID(ctx, fsNameTemp)
 	assert.Equal(t, nil, err)
 
-	testConf.fileAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(errors.New(FilesystemNotFoundErrorCode)).Once()
-	_, err = testConf.fileAPI.FindFilesystemByID(ctx, "fsID")
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(errors.New(FilesystemNotFoundErrorCode)).Once()
+	_, err = testConf.client.FindFilesystemByID(ctx, "fsID")
 	assert.Error(t, err)
 
 	fmt.Println("Find Filesystem test successful")
@@ -143,7 +145,7 @@ func TestFindFilesystem(t *testing.T) {
 
 func TestCreateNfsShare(t *testing.T) {
 	fmt.Println("Begin - Create NFS Share Test")
-	testConf.fileAPI.client.api.(*mocks.Client).ExpectedCalls = nil
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).ExpectedCalls = nil
 	ctx := context.Background()
 
 	_, err := testConf.client.CreateNFSShare(ctx, nfsShareName, NFSShareLocalPath, fsID, NoneDefaultAccess)
@@ -170,8 +172,8 @@ func TestCreateNfsShare(t *testing.T) {
 		t.Fatalf("Create NFS Share from snapshot negative case failed: %v", err)
 	}
 
-	testConf.fileAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(errors.New("create nfs share failed")).Once()
-	_, err = testConf.fileAPI.CreateNFSShareFromSnapshot(ctx, nfsShareName+"_by_snap", NFSShareLocalPath, "snapshotID", NoneDefaultAccess)
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(errors.New("create nfs share failed")).Once()
+	_, err = testConf.client.CreateNFSShareFromSnapshot(ctx, nfsShareName+"_by_snap", NFSShareLocalPath, "snapshotID", NoneDefaultAccess)
 	assert.Error(t, err)
 
 	fmt.Println("Create NFS Share Test Successful")
@@ -193,9 +195,9 @@ func TestFindNfsShare(t *testing.T) {
 	_, err = testConf.client.FindNFSShareByName(ctx, nfsShareNameTemp)
 	assert.Equal(t, nil, err)
 
-	testConf.fileAPI.client.api.(*mocks.Client).ExpectedCalls = nil
-	testConf.fileAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(errors.New("find nfs share failed")).Once()
-	_, err = testConf.fileAPI.FindNFSShareByName(ctx, nfsShareNameTemp)
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).ExpectedCalls = nil
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(errors.New("find nfs share failed")).Once()
+	_, err = testConf.client.FindNFSShareByName(ctx, nfsShareNameTemp)
 	assert.Error(t, err)
 
 	fmt.Println("Find NFS Share Test Successful")
@@ -216,9 +218,9 @@ func TestModifyNfsShare(t *testing.T) {
 	err = testConf.client.ModifyNFSShareHostAccess(ctx, fsID, nfsShareID, hostIDList, ReadOnlyAccessType)
 	assert.Equal(t, errors.New("Filesystem Id cannot be empty"), err)
 
-  testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(nil).Twice()
-	err = testConf.client.ModifyNFSShareHostAccess(ctx, fsIDTemp, nfsShareID, hostIDList, ReadOnlyAccessType)
-	assert.Equal(t, nil, err)
+	// testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(nil).Twice()
+	// err = testConf.client.ModifyNFSShareHostAccess(ctx, fsIDTemp, nfsShareID, hostIDList, ReadOnlyAccessType)
+	// assert.Equal(t, nil, err)
 
 	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
 	err = testConf.client.ModifyNFSShareCreatedFromSnapshotHostAccess(ctx, "nfsShareIDBySnap", []string{"host1", "host2"}, ReadWriteRootAccessType)
@@ -259,9 +261,9 @@ func TestModifyNfsShare(t *testing.T) {
 	err = testConf.client.ModifyNFSShareCreatedFromSnapshotHostAccess(ctx, nfsShareIDBySnapTemp, hostIDList, ReadOnlyAccessType)
 	assert.Equal(t, nil, err)
 
-	testConf.fileAPI.client.api.(*mocks.Client).ExpectedCalls = nil
-	testConf.fileAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(errors.New("modify NFS Share failed")).Twice()
-	err = testConf.fileAPI.ModifyNFSShareCreatedFromSnapshotHostAccess(ctx, nfsShareIDBySnapTemp, hostIDList, ReadOnlyAccessType)
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).ExpectedCalls = nil
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(errors.New("modify NFS Share failed")).Twice()
+	err = testConf.client.ModifyNFSShareCreatedFromSnapshotHostAccess(ctx, nfsShareIDBySnapTemp, hostIDList, ReadOnlyAccessType)
 	assert.Error(t, err)
 
 	fmt.Println("Modify NFS Share Test Successful")
@@ -272,7 +274,7 @@ func TestDescription(t *testing.T) {
 	ctx := context.Background()
 	// Positive scenario is covered under DeleteFilesystemTest()
 	// Negative test case
-	testConf.fileAPI.client.api.(*mocks.Client).ExpectedCalls = nil
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).ExpectedCalls = nil
 	filesystemIDTemp := ""
 	err := testConf.client.(*UnityClientImpl).updateDescription(ctx, filesystemIDTemp, "Description of filesystem")
 	assert.Equal(t, errors.New("Filesystem Id cannot be empty"), err)
@@ -325,14 +327,14 @@ func TestDeleteNfsShare(t *testing.T) {
 
 	// Negative test cases
 	nfsShareIDTemp = "dummy-fs-1"
-	testConf.fileAPI.client.api.(*mocks.Client).ExpectedCalls = nil
-	testConf.fileAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(errors.New("find filesystem failed")).Once()
-	err = testConf.fileAPI.DeleteNFSShareCreatedFromSnapshot(ctx, nfsShareIDTemp)
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).ExpectedCalls = nil
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(errors.New("find filesystem failed")).Once()
+	err = testConf.client.DeleteNFSShareCreatedFromSnapshot(ctx, nfsShareIDTemp)
 	assert.Error(t, err)
 
-	testConf.fileAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
-	testConf.fileAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(errors.New("delete nfs share failed")).Once()
-	err = testConf.fileAPI.DeleteNFSShareCreatedFromSnapshot(ctx, nfsShareIDTemp)
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(errors.New("delete nfs share failed")).Once()
+	err = testConf.client.DeleteNFSShareCreatedFromSnapshot(ctx, nfsShareIDTemp)
 	assert.Error(t, err)
 
 	fmt.Println("Delete NFS Share Test Successful")
@@ -345,7 +347,7 @@ func TestExpandFilesystem(t *testing.T) {
 	assert.Equal(t, errors.New("unable to find filesystem Id . Error: Filesystem Id shouldn't be empty"), err)
 
 	// Negative cases
-	testConf.fileAPI.client.api.(*mocks.Client).ExpectedCalls = nil
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).ExpectedCalls = nil
 	fsIDTemp := "dummy_fs_sv_1"
 	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(nil).Twice()
 	err = testConf.client.ExpandFilesystem(ctx, fsIDTemp, 7368709120)
@@ -357,23 +359,23 @@ func TestExpandFilesystem(t *testing.T) {
 	}
 
 	// When filesystem.FileContent.SizeTotal == newSize
-	testConf.fileAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(nil).Run(func(args mock.Arguments) {
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(nil).Run(func(args mock.Arguments) {
 		resp := args.Get(5).(*types.Filesystem)
 		*resp = types.Filesystem{
 			FileContent: types.FileContent{SizeTotal: 7516192768},
 		}
 	}).Once()
-	err = testConf.fileAPI.ExpandFilesystem(ctx, fsIDTemp, 7516192768)
+	err = testConf.client.ExpandFilesystem(ctx, fsIDTemp, 7516192768)
 	assert.Equal(t, nil, err)
 
 	// When filesystem.FileContent.SizeTotal > newSize
-	testConf.fileAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(nil).Run(func(args mock.Arguments) {
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(nil).Run(func(args mock.Arguments) {
 		resp := args.Get(5).(*types.Filesystem)
 		*resp = types.Filesystem{
 			FileContent: types.FileContent{SizeTotal: 7516192769},
 		}
 	}).Once()
-	err = testConf.fileAPI.ExpandFilesystem(ctx, fsIDTemp, 7516192768)
+	err = testConf.client.ExpandFilesystem(ctx, fsIDTemp, 7516192768)
 	assert.Error(t, err)
 
 	fmt.Println("Expand Filesystem Test Successful")

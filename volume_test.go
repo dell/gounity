@@ -187,8 +187,8 @@ func TestFindVolumeByID(t *testing.T) {
 		t.Fatalf("Find volume by Id with invalid Id case failed: %v", err)
 	}
 
-	testConf.volumeAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(errors.New(VolumeNotFoundErrorCode)).Once()
-	_, err = testConf.volumeAPI.FindVolumeByID(ctx, volIDTemp)
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(errors.New(VolumeNotFoundErrorCode)).Once()
+	_, err = testConf.client.FindVolumeByID(ctx, volIDTemp)
 	assert.Error(t, err)
 
 	fmt.Println("Find Volume by Id Test - Successful")
@@ -211,8 +211,8 @@ func TestListVolumes(t *testing.T) {
 		t.Fatalf("List volumes failed: %v", err)
 	}
 
-	testConf.volumeAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(errors.New("executeWithRetryAuthenticate Error")).Run(nil).Once()
-	_, _, err = testConf.volumeAPI.ListVolumes(ctx, 11, 10)
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(errors.New("executeWithRetryAuthenticate Error")).Run(nil).Once()
+	_, _, err = testConf.client.ListVolumes(ctx, 11, 10)
 	assert.Error(t, err)
 
 	fmt.Println("List Volume Test - Successful")
