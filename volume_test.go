@@ -487,3 +487,12 @@ func TestGetMaxVolumeSizeTest(t *testing.T) {
 
 	fmt.Println("Get Max Volume Size - Successful")
 }
+
+func TestIsFeatureLicensed(t *testing.T) {
+	fmt.Println("Begin - Is Feature Licensed Test")
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).ExpectedCalls = nil
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(errors.New("executeWithRetryAuthenticate Error")).Once()
+	_, err := testConf.client.(*UnityClientImpl).isFeatureLicensed(context.Background(), "dummy_feature")
+	assert.Error(t, err)
+	fmt.Println("Is Feature Licensed Test - Successful")
+}

@@ -393,3 +393,9 @@ func TestNewClient(t *testing.T) {
 		})
 	}
 }
+
+func TestGetAPI(t *testing.T) {
+	apiClient := &UnityClientImpl{api: &mocksapiClient{}}
+	c := apiClient.getAPI()
+	assert.NotNil(t, c)
+}

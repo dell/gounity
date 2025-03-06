@@ -364,11 +364,9 @@ func TestFindHostInitiatorPathByID(t *testing.T) {
 
 	// Negative test cases
 	initiatorPathIDTemp := "Host_initiator_path_dummy_1"
-	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(errors.New("find host initiator path failed")).Once()
 	_, err = testConf.client.FindHostInitiatorPathByID(ctx, initiatorPathIDTemp)
-	if err != nil {
-		t.Fatalf("Find Host Initiator path with invalid Id - Negative case failed")
-	}
+	assert.Error(t, err)
 
 	fmt.Println("Find Initiator Path Test Successful")
 }
@@ -385,11 +383,9 @@ func TestFindFcPortByID(t *testing.T) {
 
 	// Negative test cases
 	fcPortIDTemp := "Fc_Port_dummy_1"
-	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(errors.New("find fc port failed")).Once()
 	_, err = testConf.client.FindFcPortByID(ctx, fcPortIDTemp)
-	if err != nil {
-		t.Fatalf("Find FC Port with invalid Id - Negative case failed")
-	}
+	assert.Error(t, err)
 
 	fmt.Println("Find FC Port Test Successful")
 }

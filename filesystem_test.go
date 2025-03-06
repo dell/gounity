@@ -218,9 +218,14 @@ func TestModifyNfsShare(t *testing.T) {
 	err = testConf.client.ModifyNFSShareHostAccess(ctx, fsID, nfsShareID, hostIDList, ReadOnlyAccessType)
 	assert.Equal(t, errors.New("Filesystem Id cannot be empty"), err)
 
-	// testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(nil).Twice()
-	// err = testConf.client.ModifyNFSShareHostAccess(ctx, fsIDTemp, nfsShareID, hostIDList, ReadOnlyAccessType)
-	// assert.Equal(t, nil, err)
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).ExpectedCalls = nil
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
+	err = testConf.client.ModifyNFSShareCreatedFromSnapshotHostAccess(ctx, "", []string{"host1", "host2"}, ReadOnlyAccessType)
+	assert.Error(t, err)
+
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
+	err = testConf.client.ModifyNFSShareCreatedFromSnapshotHostAccess(ctx, "nfsShareIDBySnap", []string{"host1", "host2"}, ReadOnlyAccessType)
+	assert.Equal(t, nil, err)
 
 	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
 	err = testConf.client.ModifyNFSShareCreatedFromSnapshotHostAccess(ctx, "nfsShareIDBySnap", []string{"host1", "host2"}, ReadWriteRootAccessType)
@@ -278,6 +283,11 @@ func TestDescription(t *testing.T) {
 	filesystemIDTemp := ""
 	err := testConf.client.(*UnityClientImpl).updateDescription(ctx, filesystemIDTemp, "Description of filesystem")
 	assert.Equal(t, errors.New("Filesystem Id cannot be empty"), err)
+
+	filesystemIDTemp = "dummy_fs_1"
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(errors.New("find filesystem failed")).Once()
+	err = testConf.client.(*UnityClientImpl).updateDescription(ctx, filesystemIDTemp, "Description of filesystem")
+	assert.Error(t, err)
 
 	filesystemIDTemp = "dummy_fs_1"
 	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(nil).Twice()
@@ -391,6 +401,11 @@ func TestDeleteFilesystem(t *testing.T) {
 	fsIDTemp := ""
 	err := testConf.client.DeleteFilesystem(ctx, fsIDTemp)
 	assert.Equal(t, errors.New("Filesystem Id cannot be empty"), err)
+
+	fsIDTemp = "dummy-fs-1"
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(errors.New("find filesystem failed")).Once()
+	err = testConf.client.DeleteFilesystem(ctx, fsIDTemp)
+	assert.Error(t, err)
 
 	fsIDTemp = "dummy-fs-1"
 	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(nil).Twice()
