@@ -93,6 +93,16 @@ func TestFindHostByName(t *testing.T) {
 		t.Fatalf("Find Host with invalid hostName - Negative case failed")
 	}
 
+	// When error is MultipleHostFoundErrorCode
+	testConf.hostAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(errors.New(MultipleHostFoundErrorCode)).Once()
+	_, err = testConf.hostAPI.FindHostByName(ctx, hostNameTemp)
+	assert.Error(t, err)
+
+	// When error is HostNotFoundErrorCode
+	testConf.hostAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(errors.New(HostNotFoundErrorCode)).Once()
+	_, err = testConf.hostAPI.FindHostByName(ctx, hostNameTemp)
+	assert.Error(t, err)
+
 	fmt.Println("Find Host by name Successful")
 }
 
@@ -250,7 +260,43 @@ func TestListHostInitiatorsTest(t *testing.T) {
 		t.Fatalf("ListHostInitiators error: %v", err)
 	}
 
+	testConf.volumeAPI.client.api.(*mocks.Client).On("DoWithHeaders", mock.Anything, "GET", "/api/types/hostInitiator/instances?fields=id,health,type,initiatorId,isIgnored,parentHost,paths", mock.Anything, mock.Anything, mock.Anything).Return(errors.New("host initiators not found")).Once()
+	_, err = testConf.hostAPI.ListHostInitiators(ctx)
+	assert.Error(t, err)
+
 	fmt.Println("List Host Initiators Test Successful")
+}
+
+func TestFindHostInitiatorByName(t *testing.T) {
+	fmt.Println("Begin - FindHostInitiatorByName")
+	testConf.volumeAPI.client.api.(*mocks.Client).ExpectedCalls = nil
+	ctx := context.Background()
+
+	_, err := testConf.hostAPI.FindHostInitiatorByName(ctx, "")
+	assert.Equal(t, errors.New("host Initiator Name shouldn't be empty"), err)
+
+	testConf.volumeAPI.client.api.(*mocks.Client).ExpectedCalls = nil
+	testConf.volumeAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(errors.New("host initiators not found")).Once()
+	_, err = testConf.hostAPI.FindHostInitiatorByName(ctx, "id")
+	assert.Error(t, err)
+
+	testConf.volumeAPI.client.api.(*mocks.Client).ExpectedCalls = nil
+	testConf.volumeAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(nil).Run(func(args mock.Arguments) {
+		resp := args.Get(5).(*types.ListHostInitiator)
+		*resp = types.ListHostInitiator{
+			HostInitiator: []types.HostInitiator{
+				{
+					HostInitiatorContent: types.HostInitiatorContent{
+						InitiatorID: "id",
+					},
+				},
+			},
+		}
+	}).Once()
+	_, err = testConf.hostAPI.FindHostInitiatorByName(ctx, "id")
+	assert.Nil(t, err)
+
+	fmt.Println("FindHostInitiatorByName Test Successful")
 }
 
 func TestModifyHostInitiator(t *testing.T) {
@@ -296,6 +342,10 @@ func TestModifyHostInitiatorByID(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Modify Host initiator with invalid initiator - Negative case failed")
 	}
+
+	testConf.hostAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(errors.New("modify host initiator failed")).Once()
+	_, err = testConf.hostAPI.ModifyHostInitiatorByID(ctx, hostIDTemp, "Initiator-123")
+	assert.Error(t, err)
 
 	fmt.Println("Modify Host Initiator By ID Test Successful")
 }
@@ -353,6 +403,10 @@ func TestFindTenants(t *testing.T) {
 		t.Fatalf("Find Tenants failed: %v", err)
 	}
 
+	testConf.hostAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(errors.New("find tenants failed")).Once()
+	_, err = testConf.hostAPI.FindTenants(ctx)
+	assert.Error(t, err)
+
 	fmt.Println("Find Tenants Test Successful")
 }
 
@@ -371,6 +425,11 @@ func TestDeleteHost(t *testing.T) {
 		t.Fatalf("Delete Host with invalid hostName - Negative case failed")
 	}
 
+	hostNameTemp = "dummy-host-1"
+	testConf.hostAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(errors.New("delete host failed")).Once()
+	err = testConf.hostAPI.DeleteHost(ctx, hostNameTemp)
+	assert.Error(t, err)
+
 	fmt.Println("Delete Host Test Successful")
 }
 
@@ -382,4 +441,8 @@ func TestFindHostInitiatorByID(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Find initiator by empty id - Negative case failed")
 	}
+
+	testConf.hostAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(errors.New("find host initiator failed")).Once()
+	_, err = testConf.hostAPI.FindHostInitiatorByID(ctx, "")
+	assert.Error(t, err)
 }
