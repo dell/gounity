@@ -21,7 +21,7 @@ import (
 	"testing"
 
 	"github.com/dell/gounity/api"
-	"github.com/dell/gounity/mocks"
+	mocksapi "github.com/dell/gounity/mocks/api"
 	"github.com/dell/gounity/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -41,15 +41,15 @@ var (
 func TestCreateHost(t *testing.T) {
 	assert := require.New(t)
 	fmt.Println("Begin - Create Host Test")
-	testConf.volumeAPI.client.api.(*mocks.Client).ExpectedCalls = nil
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).ExpectedCalls = nil
 	ctx := context.Background()
 
 	// Mock setup for valid host creation
-	testConf.volumeAPI.client.api.(*mocks.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
 
 	// Positive Case
 	hostName := "valid_host_name" // Ensure this is set to a valid name
-	host, err := testConf.hostAPI.CreateHost(ctx, hostName, testConf.tenant)
+	host, err := testConf.client.CreateHost(ctx, hostName, testConf.tenant)
 	if err != nil {
 		t.Fatalf("Create Host failed: %v", err)
 	}
@@ -59,18 +59,18 @@ func TestCreateHost(t *testing.T) {
 
 	// Negative Cases
 	// Mock setup for empty host name
-	testConf.volumeAPI.client.api.(*mocks.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("hostname shouldn't be empty")).Once()
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("hostname shouldn't be empty")).Once()
 
 	hostNameTemp := ""
-	_, err = testConf.hostAPI.CreateHost(ctx, hostNameTemp, testConf.tenant)
+	_, err = testConf.client.CreateHost(ctx, hostNameTemp, testConf.tenant)
 	assert.Error(err, "Expected error for empty host name")
 	assert.EqualError(err, "hostname shouldn't be empty", "Unexpected error message")
 
 	// Mock setup for invalid tenant ID
-	testConf.volumeAPI.client.api.(*mocks.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("hostname shouldn't be empty")).Once()
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("hostname shouldn't be empty")).Once()
 
 	tenantIDTemp := "tenant_invalid_1"
-	_, err = testConf.hostAPI.CreateHost(ctx, hostName, tenantIDTemp)
+	_, err = testConf.client.CreateHost(ctx, hostName, tenantIDTemp)
 	assert.Error(err, "Expected error for invalid tenant ID")
 	assert.EqualError(err, "hostname shouldn't be empty", "Unexpected error message")
 
@@ -83,24 +83,24 @@ func TestFindHostByName(t *testing.T) {
 
 	// Negative test cases
 	hostNameTemp := ""
-	_, err := testConf.hostAPI.FindHostByName(ctx, hostNameTemp)
+	_, err := testConf.client.FindHostByName(ctx, hostNameTemp)
 	assert.Equal(t, errors.New("host Name shouldn't be empty"), err)
 
 	hostNameTemp = "dummy-host-1"
-	testConf.hostAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(errors.New("error")).Once()
-	_, err = testConf.hostAPI.FindHostByName(ctx, hostNameTemp)
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(errors.New("error")).Once()
+	_, err = testConf.client.FindHostByName(ctx, hostNameTemp)
 	if err == nil {
 		t.Fatalf("Find Host with invalid hostName - Negative case failed")
 	}
 
 	// When error is MultipleHostFoundErrorCode
-	testConf.hostAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(errors.New(MultipleHostFoundErrorCode)).Once()
-	_, err = testConf.hostAPI.FindHostByName(ctx, hostNameTemp)
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(errors.New(MultipleHostFoundErrorCode)).Once()
+	_, err = testConf.client.FindHostByName(ctx, hostNameTemp)
 	assert.Error(t, err)
 
 	// When error is HostNotFoundErrorCode
-	testConf.hostAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(errors.New(HostNotFoundErrorCode)).Once()
-	_, err = testConf.hostAPI.FindHostByName(ctx, hostNameTemp)
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(errors.New(HostNotFoundErrorCode)).Once()
+	_, err = testConf.client.FindHostByName(ctx, hostNameTemp)
 	assert.Error(t, err)
 
 	fmt.Println("Find Host by name Successful")
@@ -109,15 +109,15 @@ func TestFindHostByName(t *testing.T) {
 func TestCreateHostIPPort(t *testing.T) {
 	assert := require.New(t)
 	fmt.Println("Begin - Create Host IP Port Test")
-	testConf.volumeAPI.client.api.(*mocks.Client).ExpectedCalls = nil
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).ExpectedCalls = nil
 	ctx := context.Background()
 
 	// Mock setup for valid host IP port creation
-	testConf.volumeAPI.client.api.(*mocks.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
 
 	// Positive Case
 	hostID := "valid_host_id" // Ensure this is set to a valid ID
-	hostIPPort, err := testConf.hostAPI.CreateHostIPPort(ctx, hostID, testConf.nodeHostIP)
+	hostIPPort, err := testConf.client.CreateHostIPPort(ctx, hostID, testConf.nodeHostIP)
 	if err != nil {
 		t.Fatalf("CreateHostIPPort failed: %v", err)
 	}
@@ -127,18 +127,18 @@ func TestCreateHostIPPort(t *testing.T) {
 
 	// Negative Cases
 	// Mock setup for empty host ID
-	testConf.volumeAPI.client.api.(*mocks.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("host ID shouldn't be empty")).Once()
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("host ID shouldn't be empty")).Once()
 
 	hostIDTemp := ""
-	_, err = testConf.hostAPI.CreateHostIPPort(ctx, hostIDTemp, testConf.nodeHostIP)
+	_, err = testConf.client.CreateHostIPPort(ctx, hostIDTemp, testConf.nodeHostIP)
 	assert.Error(err, "Expected error for empty host ID")
 	assert.EqualError(err, "host ID shouldn't be empty", "Unexpected error message")
 
 	// Mock setup for invalid host ID
-	testConf.volumeAPI.client.api.(*mocks.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("host ID shouldn't be empty")).Once()
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(errors.New("host ID shouldn't be empty")).Once()
 
 	hostIDTemp = "Host_dummy_1"
-	_, err = testConf.hostAPI.CreateHostIPPort(ctx, hostIDTemp, testConf.nodeHostIP)
+	_, err = testConf.client.CreateHostIPPort(ctx, hostIDTemp, testConf.nodeHostIP)
 	assert.Error(err, "Expected error for invalid host ID")
 	assert.EqualError(err, "host ID shouldn't be empty", "Unexpected error message")
 
@@ -149,23 +149,23 @@ func TestFindHostIPPortByID(t *testing.T) {
 	assert := require.New(t)
 	fmt.Println("Begin - Find Host IP Port Test")
 
-	testConf.volumeAPI.client.api.(*mocks.Client).ExpectedCalls = nil
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).ExpectedCalls = nil
 	ctx := context.Background()
 
 	// Mock setup for valid host IP port retrieval
-	testConf.volumeAPI.client.api.(*mocks.Client).On("DoWithHeaders", mock.Anything, "GET", "/api/instances/hostIPPort/"+hostIPPortID+"?fields=id,address", mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, "GET", "/api/instances/hostIPPort/"+hostIPPortID+"?fields=id,address", mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
 
-	_, err := testConf.hostAPI.FindHostIPPortByID(ctx, hostIPPortID)
+	_, err := testConf.client.FindHostIPPortByID(ctx, hostIPPortID)
 	if err != nil {
 		t.Fatalf("Find Host IP Port failed: %v", err)
 	}
 
 	// Mock setup for invalid host IP port ID
-	testConf.volumeAPI.client.api.(*mocks.Client).On("DoWithHeaders", mock.Anything, "GET", "/api/instances/hostIPPort/dummy-ip-port-id-1?fields=id,address", mock.Anything, mock.Anything, mock.Anything).Return(errors.New("host IP port not found")).Once()
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, "GET", "/api/instances/hostIPPort/dummy-ip-port-id-1?fields=id,address", mock.Anything, mock.Anything, mock.Anything).Return(errors.New("host IP port not found")).Once()
 
 	// Negative test case: Invalid host IP port ID
 	hostIPPortIDTemp := "dummy-ip-port-id-1"
-	_, err = testConf.hostAPI.FindHostIPPortByID(ctx, hostIPPortIDTemp)
+	_, err = testConf.client.FindHostIPPortByID(ctx, hostIPPortIDTemp)
 	assert.Error(err, "Expected error for invalid host IP port ID")
 	assert.EqualError(err, "host IP port not found", "Unexpected error message")
 
@@ -175,7 +175,7 @@ func TestFindHostIPPortByID(t *testing.T) {
 func TestCreateHostInitiator(t *testing.T) {
 	fmt.Println("Begin - Create Host Initiator Test")
 
-	testConf.volumeAPI.client.api.(*mocks.Client).ExpectedCalls = nil
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).ExpectedCalls = nil
 	ctx := context.Background()
 
 	// Initialize hostID and WWNs
@@ -183,16 +183,16 @@ func TestCreateHostInitiator(t *testing.T) {
 	testConf.wwns = []string{"valid_wwn1", "valid_wwn2"} // Replace with actual valid WWNs
 
 	// Mock setup for valid host IP port retrieval
-	testConf.volumeAPI.client.api.(*mocks.Client).On("DoWithHeaders", mock.Anything, "GET", "/api/instances/hostIPPort/"+hostIPPortID+"?fields=id,address", mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, "GET", "/api/instances/hostIPPort/"+hostIPPortID+"?fields=id,address", mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
 
 	// Mock setup for host initiator retrieval
-	testConf.volumeAPI.client.api.(*mocks.Client).On("DoWithHeaders", mock.Anything, "GET", "/api/types/hostInitiator/instances?fields=id,health,type,initiatorId,isIgnored,parentHost,paths", mock.Anything, mock.Anything, mock.Anything).Return(nil).Times(4)
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, "GET", "/api/types/hostInitiator/instances?fields=id,health,type,initiatorId,isIgnored,parentHost,paths", mock.Anything, mock.Anything, mock.Anything).Return(nil).Times(4)
 
 	// Mock setup for host initiator creation
-	testConf.volumeAPI.client.api.(*mocks.Client).On("DoWithHeaders", mock.Anything, "POST", "/api/types/hostInitiator/instances", mock.Anything, mock.Anything, mock.Anything).Return(nil).Times(len(testConf.wwns) + 1)
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, "POST", "/api/types/hostInitiator/instances", mock.Anything, mock.Anything, mock.Anything).Return(nil).Times(len(testConf.wwns) + 1)
 
 	// Mock setup for invalid hostID
-	testConf.volumeAPI.client.api.(*mocks.Client).On("DoWithHeaders", mock.Anything, "POST", "/api/types/hostInitiator/instances", mock.Anything, mock.Anything, mock.Anything).Return(fmt.Errorf("invalid hostID")).Once()
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, "POST", "/api/types/hostInitiator/instances", mock.Anything, mock.Anything, mock.Anything).Return(fmt.Errorf("invalid hostID")).Once()
 
 	if hostID == "" {
 		t.Fatalf("hostID should not be empty")
@@ -204,7 +204,7 @@ func TestCreateHostInitiator(t *testing.T) {
 			t.Fatalf("wwn should not be empty")
 		}
 		fmt.Printf("Adding new Initiator: %s to host: %s \n", hostName, wwn)
-		initiator, err := testConf.hostAPI.CreateHostInitiator(ctx, hostID, wwn, api.FCInitiatorType)
+		initiator, err := testConf.client.CreateHostInitiator(ctx, hostID, wwn, api.FCInitiatorType)
 		fmt.Println("CreateHostInitiator:", initiator, err)
 		if err != nil {
 			t.Fatalf("CreateHostInitiator %s Error: %v", wwn, err)
@@ -215,7 +215,7 @@ func TestCreateHostInitiator(t *testing.T) {
 	hostIDTemp := "host_dummy_1"
 
 	// Add Iqn
-	initiator, err := testConf.hostAPI.CreateHostInitiator(ctx, hostID, testConf.iqn, api.ISCSCIInitiatorType)
+	initiator, err := testConf.client.CreateHostInitiator(ctx, hostID, testConf.iqn, api.ISCSCIInitiatorType)
 	fmt.Println("CreateHostInitiator:", initiator, err)
 	if err != nil {
 		t.Fatalf("CreateHostInitiator %s Error: %v", testConf.iqn, err)
@@ -225,19 +225,19 @@ func TestCreateHostInitiator(t *testing.T) {
 	// Negative test cases
 	hostIDTemp = ""
 	iqnTemp := ""
-	_, err = testConf.hostAPI.CreateHostInitiator(ctx, hostIDTemp, testConf.iqn, api.ISCSCIInitiatorType)
+	_, err = testConf.client.CreateHostInitiator(ctx, hostIDTemp, testConf.iqn, api.ISCSCIInitiatorType)
 	if err == nil {
 		t.Fatalf("Create Host Initiator with empty hostID - Negative case failed")
 	}
 
-	_, err = testConf.hostAPI.CreateHostInitiator(ctx, hostID, iqnTemp, api.ISCSCIInitiatorType)
+	_, err = testConf.client.CreateHostInitiator(ctx, hostID, iqnTemp, api.ISCSCIInitiatorType)
 	if err == nil {
 		t.Fatalf("Create Host Initiator with empty iqn - Negative case failed")
 	}
 
 	// Test idempotency for parent host check
 	hostIDTemp = "host_dummy_1"
-	_, err = testConf.hostAPI.CreateHostInitiator(ctx, hostIDTemp, testConf.iqn, api.ISCSCIInitiatorType)
+	_, err = testConf.client.CreateHostInitiator(ctx, hostIDTemp, testConf.iqn, api.ISCSCIInitiatorType)
 	if err == nil {
 		t.Fatalf("Create Host Initiator Idempotency with invalid hostID - Negative case failed")
 	}
@@ -248,20 +248,20 @@ func TestCreateHostInitiator(t *testing.T) {
 
 func TestListHostInitiatorsTest(t *testing.T) {
 	fmt.Println("Begin - List Host Initiators Test")
-	testConf.volumeAPI.client.api.(*mocks.Client).ExpectedCalls = nil
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).ExpectedCalls = nil
 	ctx := context.Background()
 
 	// Mock setup for listing host initiators
-	testConf.volumeAPI.client.api.(*mocks.Client).On("DoWithHeaders", mock.Anything, "GET", "/api/types/hostInitiator/instances?fields=id,health,type,initiatorId,isIgnored,parentHost,paths", mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, "GET", "/api/types/hostInitiator/instances?fields=id,health,type,initiatorId,isIgnored,parentHost,paths", mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
 
-	list, err := testConf.hostAPI.ListHostInitiators(ctx)
+	list, err := testConf.client.ListHostInitiators(ctx)
 	fmt.Println("List Host initiators", list, err)
 	if err != nil {
 		t.Fatalf("ListHostInitiators error: %v", err)
 	}
 
-	testConf.volumeAPI.client.api.(*mocks.Client).On("DoWithHeaders", mock.Anything, "GET", "/api/types/hostInitiator/instances?fields=id,health,type,initiatorId,isIgnored,parentHost,paths", mock.Anything, mock.Anything, mock.Anything).Return(errors.New("host initiators not found")).Once()
-	_, err = testConf.hostAPI.ListHostInitiators(ctx)
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, "GET", "/api/types/hostInitiator/instances?fields=id,health,type,initiatorId,isIgnored,parentHost,paths", mock.Anything, mock.Anything, mock.Anything).Return(errors.New("host initiators not found")).Once()
+	_, err = testConf.client.ListHostInitiators(ctx)
 	assert.Error(t, err)
 
 	fmt.Println("List Host Initiators Test Successful")
@@ -269,19 +269,19 @@ func TestListHostInitiatorsTest(t *testing.T) {
 
 func TestFindHostInitiatorByName(t *testing.T) {
 	fmt.Println("Begin - FindHostInitiatorByName")
-	testConf.volumeAPI.client.api.(*mocks.Client).ExpectedCalls = nil
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).ExpectedCalls = nil
 	ctx := context.Background()
 
-	_, err := testConf.hostAPI.FindHostInitiatorByName(ctx, "")
+	_, err := testConf.client.FindHostInitiatorByName(ctx, "")
 	assert.Equal(t, errors.New("host Initiator Name shouldn't be empty"), err)
 
-	testConf.volumeAPI.client.api.(*mocks.Client).ExpectedCalls = nil
-	testConf.volumeAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(errors.New("host initiators not found")).Once()
-	_, err = testConf.hostAPI.FindHostInitiatorByName(ctx, "id")
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).ExpectedCalls = nil
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(errors.New("host initiators not found")).Once()
+	_, err = testConf.client.FindHostInitiatorByName(ctx, "id")
 	assert.Error(t, err)
 
-	testConf.volumeAPI.client.api.(*mocks.Client).ExpectedCalls = nil
-	testConf.volumeAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(nil).Run(func(args mock.Arguments) {
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).ExpectedCalls = nil
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(nil).Run(func(args mock.Arguments) {
 		resp := args.Get(5).(*types.ListHostInitiator)
 		*resp = types.ListHostInitiator{
 			HostInitiator: []types.HostInitiator{
@@ -293,7 +293,7 @@ func TestFindHostInitiatorByName(t *testing.T) {
 			},
 		}
 	}).Once()
-	_, err = testConf.hostAPI.FindHostInitiatorByName(ctx, "id")
+	_, err = testConf.client.FindHostInitiatorByName(ctx, "id")
 	assert.Nil(t, err)
 
 	fmt.Println("FindHostInitiatorByName Test Successful")
@@ -302,7 +302,7 @@ func TestFindHostInitiatorByName(t *testing.T) {
 func TestModifyHostInitiator(t *testing.T) {
 	fmt.Println("Begin - Modify Host Initiator Test")
 	ctx := context.Background()
-	_, err := testConf.hostAPI.ModifyHostInitiator(ctx, hostID, iqnInitiator)
+	_, err := testConf.client.ModifyHostInitiator(ctx, hostID, iqnInitiator)
 	assert.Equal(t, errors.New("HostInitiator shouldn't be null"), err)
 
 	hostInitiatorContent := types.HostInitiatorContent{
@@ -311,13 +311,13 @@ func TestModifyHostInitiator(t *testing.T) {
 	hostInitiator := types.HostInitiator{
 		HostInitiatorContent: hostInitiatorContent,
 	}
-	_, err = testConf.hostAPI.ModifyHostInitiator(ctx, hostID, &hostInitiator)
+	_, err = testConf.client.ModifyHostInitiator(ctx, hostID, &hostInitiator)
 	if err == nil {
 		t.Fatalf("Modify Host initiator with nil initiator - Negative case failed")
 	}
 
 	hostIDTemp := "host_dummy_1"
-	_, err = testConf.hostAPI.ModifyHostInitiator(ctx, hostIDTemp, iqnInitiator)
+	_, err = testConf.client.ModifyHostInitiator(ctx, hostIDTemp, iqnInitiator)
 	if err == nil {
 		t.Fatalf("Modify Host initiator with invalid initiator - Negative case failed")
 	}
@@ -329,22 +329,22 @@ func TestModifyHostInitiatorByID(t *testing.T) {
 	fmt.Println("Begin - Modify Host Initiator By ID Test")
 	ctx := context.Background()
 
-	_, err := testConf.hostAPI.ModifyHostInitiatorByID(ctx, "", "")
+	_, err := testConf.client.ModifyHostInitiatorByID(ctx, "", "")
 	if err == nil {
 		t.Fatalf("Modify Host initiator with nil initiator - Negative case failed")
 	}
-	_, err = testConf.hostAPI.ModifyHostInitiatorByID(ctx, "hostId", "")
+	_, err = testConf.client.ModifyHostInitiatorByID(ctx, "hostId", "")
 	assert.Equal(t, errors.New("Initiator ID shouldn't be null"), err)
 
 	hostIDTemp := "host_dummy_1"
-	testConf.hostAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
-	_, err = testConf.hostAPI.ModifyHostInitiatorByID(ctx, hostIDTemp, "Initiator-123")
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
+	_, err = testConf.client.ModifyHostInitiatorByID(ctx, hostIDTemp, "Initiator-123")
 	if err != nil {
 		t.Fatalf("Modify Host initiator with invalid initiator - Negative case failed")
 	}
 
-	testConf.hostAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(errors.New("modify host initiator failed")).Once()
-	_, err = testConf.hostAPI.ModifyHostInitiatorByID(ctx, hostIDTemp, "Initiator-123")
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(errors.New("modify host initiator failed")).Once()
+	_, err = testConf.client.ModifyHostInitiatorByID(ctx, hostIDTemp, "Initiator-123")
 	assert.Error(t, err)
 
 	fmt.Println("Modify Host Initiator By ID Test Successful")
@@ -354,8 +354,8 @@ func TestFindHostInitiatorPathByID(t *testing.T) {
 	fmt.Println("Begin - Find Initiator Path Test")
 
 	ctx := context.Background()
-	testConf.hostAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
-	hostInitiatorPath, err := testConf.hostAPI.FindHostInitiatorPathByID(ctx, wwnInitiatorPathID)
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
+	hostInitiatorPath, err := testConf.client.FindHostInitiatorPathByID(ctx, wwnInitiatorPathID)
 	if err != nil {
 		// Change to log if required for vm execution
 		t.Fatalf("Find Host Initiator Path failed: %v", err)
@@ -364,8 +364,8 @@ func TestFindHostInitiatorPathByID(t *testing.T) {
 
 	// Negative test cases
 	initiatorPathIDTemp := "Host_initiator_path_dummy_1"
-	testConf.hostAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(errors.New("find host initiator path failed")).Once()
-	_, err = testConf.hostAPI.FindHostInitiatorPathByID(ctx, initiatorPathIDTemp)
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(errors.New("find host initiator path failed")).Once()
+	_, err = testConf.client.FindHostInitiatorPathByID(ctx, initiatorPathIDTemp)
 	assert.Error(t, err)
 
 	fmt.Println("Find Initiator Path Test Successful")
@@ -374,8 +374,8 @@ func TestFindHostInitiatorPathByID(t *testing.T) {
 func TestFindFcPortByID(t *testing.T) {
 	fmt.Println("Begin - Find FC Port Test")
 	ctx := context.Background()
-	testConf.hostAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
-	_, err := testConf.hostAPI.FindFcPortByID(ctx, fcPortID)
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
+	_, err := testConf.client.FindFcPortByID(ctx, fcPortID)
 	if err != nil {
 		// Change to log if required for vm execution
 		t.Fatalf("Find FC Port failed: %v", err)
@@ -383,8 +383,8 @@ func TestFindFcPortByID(t *testing.T) {
 
 	// Negative test cases
 	fcPortIDTemp := "Fc_Port_dummy_1"
-	testConf.hostAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(errors.New("find fc port failed")).Once()
-	_, err = testConf.hostAPI.FindFcPortByID(ctx, fcPortIDTemp)
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(errors.New("find fc port failed")).Once()
+	_, err = testConf.client.FindFcPortByID(ctx, fcPortIDTemp)
 	assert.Error(t, err)
 
 	fmt.Println("Find FC Port Test Successful")
@@ -393,14 +393,14 @@ func TestFindFcPortByID(t *testing.T) {
 func TestFindTenants(t *testing.T) {
 	fmt.Println("Begin - Find Tenants Test")
 	ctx := context.Background()
-	testConf.hostAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
-	_, err := testConf.hostAPI.FindTenants(ctx)
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
+	_, err := testConf.client.FindTenants(ctx)
 	if err != nil {
 		t.Fatalf("Find Tenants failed: %v", err)
 	}
 
-	testConf.hostAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(errors.New("find tenants failed")).Once()
-	_, err = testConf.hostAPI.FindTenants(ctx)
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(errors.New("find tenants failed")).Once()
+	_, err = testConf.client.FindTenants(ctx)
 	assert.Error(t, err)
 
 	fmt.Println("Find Tenants Test Successful")
@@ -411,19 +411,19 @@ func TestDeleteHost(t *testing.T) {
 
 	ctx := context.Background()
 	hostNameTemp := ""
-	err := testConf.hostAPI.DeleteHost(ctx, hostNameTemp)
+	err := testConf.client.DeleteHost(ctx, hostNameTemp)
 	assert.Equal(t, errors.New("hostname shouldn't be empty"), err)
 
 	hostNameTemp = "dummy-host-1"
-	testConf.hostAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
-	err = testConf.hostAPI.DeleteHost(ctx, hostNameTemp)
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
+	err = testConf.client.DeleteHost(ctx, hostNameTemp)
 	if err != nil {
 		t.Fatalf("Delete Host with invalid hostName - Negative case failed")
 	}
 
 	hostNameTemp = "dummy-host-1"
-	testConf.hostAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(errors.New("delete host failed")).Once()
-	err = testConf.hostAPI.DeleteHost(ctx, hostNameTemp)
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(errors.New("delete host failed")).Once()
+	err = testConf.client.DeleteHost(ctx, hostNameTemp)
 	assert.Error(t, err)
 
 	fmt.Println("Delete Host Test Successful")
@@ -432,13 +432,13 @@ func TestDeleteHost(t *testing.T) {
 func TestFindHostInitiatorByID(t *testing.T) {
 	fmt.Println("Begin - Find HostInitiator By ID")
 	ctx := context.Background()
-	testConf.hostAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
-	_, err := testConf.hostAPI.FindHostInitiatorByID(ctx, "")
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
+	_, err := testConf.client.FindHostInitiatorByID(ctx, "")
 	if err != nil {
 		t.Fatalf("Find initiator by empty id - Negative case failed")
 	}
 
-	testConf.hostAPI.client.api.(*mocks.Client).On("DoWithHeaders", anyArgs...).Return(errors.New("find host initiator failed")).Once()
-	_, err = testConf.hostAPI.FindHostInitiatorByID(ctx, "")
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(errors.New("find host initiator failed")).Once()
+	_, err = testConf.client.FindHostInitiatorByID(ctx, "")
 	assert.Error(t, err)
 }

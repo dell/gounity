@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/dell/gounity/mocks"
+	mocksapi "github.com/dell/gounity/mocks/api"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
@@ -29,12 +29,12 @@ var storagePoolName string
 
 func TestFindStoragePoolByID(t *testing.T) {
 	fmt.Println("Begin - Find Storage Pool by ID Test")
-	testConf.volumeAPI.client.api.(*mocks.Client).ExpectedCalls = nil
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).ExpectedCalls = nil
 	ctx := context.Background()
-	testConf.volumeAPI.client.api.(*mocks.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
 
 	// Positive case
-	pool, err := testConf.poolAPI.FindStoragePoolByID(ctx, testConf.poolID)
+	pool, err := testConf.client.FindStoragePoolByID(ctx, testConf.poolID)
 	fmt.Println("Find Storage Pool by ID:", prettyPrintJSON(pool), err)
 	if err != nil {
 		t.Fatalf("Find Storage Pool by ID failed: %v", err)
@@ -44,16 +44,16 @@ func TestFindStoragePoolByID(t *testing.T) {
 	// Negative cases
 	// Case 1: Empty ID
 	emptyID := ""
-	testConf.volumeAPI.client.api.(*mocks.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(fmt.Errorf("invalid ID")).Once()
-	pool, err = testConf.poolAPI.FindStoragePoolByID(ctx, emptyID)
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(fmt.Errorf("invalid ID")).Once()
+	_, err = testConf.client.FindStoragePoolByID(ctx, emptyID)
 	if err == nil {
 		t.Fatalf("Find Storage Pool by ID with empty ID case - failed: %v", err)
 	}
 
 	// Case 2: Invalid ID
 	invalidID := "dummy_pool_id_1"
-	testConf.volumeAPI.client.api.(*mocks.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(fmt.Errorf("invalid ID")).Once()
-	pool, err = testConf.poolAPI.FindStoragePoolByID(ctx, invalidID)
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(fmt.Errorf("invalid ID")).Once()
+	_, err = testConf.client.FindStoragePoolByID(ctx, invalidID)
 	if err == nil {
 		t.Fatalf("Find Storage Pool by ID with invalid ID case - failed: %v", err)
 	}
@@ -62,36 +62,36 @@ func TestFindStoragePoolByID(t *testing.T) {
 }
 
 func TestFindStoragePoolByNameTest(t *testing.T) {
-	testConf.volumeAPI.client.api.(*mocks.Client).ExpectedCalls = nil
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).ExpectedCalls = nil
 	assert := require.New(t)
 	fmt.Println("Begin - Find Storage Pool by Name Test")
 	ctx := context.Background()
 
 	// Mock setup for valid pool name
-	testConf.volumeAPI.client.api.(*mocks.Client).On("DoWithHeaders", mock.Anything, "GET", "/api/instances/pool/name:valid_pool_name?fields=id,name,description,sizeFree,sizeTotal,sizeUsed,sizeSubscribed,hasDataReductionEnabledLuns,hasDataReductionEnabledFs,isFASTCacheEnabled,type,isAllFlash,poolFastVP", mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, "GET", "/api/instances/pool/name:valid_pool_name?fields=id,name,description,sizeFree,sizeTotal,sizeUsed,sizeSubscribed,hasDataReductionEnabledLuns,hasDataReductionEnabledFs,isFASTCacheEnabled,type,isAllFlash,poolFastVP", mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
 
 	// Positive Case
 	storagePoolName := "valid_pool_name" // Ensure this is set to a valid name
-	pool, err := testConf.poolAPI.FindStoragePoolByName(ctx, storagePoolName)
+	pool, err := testConf.client.FindStoragePoolByName(ctx, storagePoolName)
 	fmt.Println("Find volume by Name:", prettyPrintJSON(pool), err)
 	assert.NoError(err, "Find Pool by Name failed")
 	assert.NotNil(pool, "Pool should not be nil")
 
 	// Mock setup for empty pool name
-	testConf.volumeAPI.client.api.(*mocks.Client).On("DoWithHeaders", mock.Anything, "GET", "/api/instances/pool/name:?fields=id,name,description,sizeFree,sizeTotal,sizeUsed,sizeSubscribed,hasDataReductionEnabledLuns,hasDataReductionEnabledFs,isFASTCacheEnabled,type,isAllFlash,poolFastVP", mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, "GET", "/api/instances/pool/name:?fields=id,name,description,sizeFree,sizeTotal,sizeUsed,sizeSubscribed,hasDataReductionEnabledLuns,hasDataReductionEnabledFs,isFASTCacheEnabled,type,isAllFlash,poolFastVP", mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
 
 	// Negative Case: Empty pool name
 	storagePoolNameTemp := ""
-	pool, err = testConf.poolAPI.FindStoragePoolByName(ctx, storagePoolNameTemp)
+	pool, err = testConf.client.FindStoragePoolByName(ctx, storagePoolNameTemp)
 	assert.Error(err, "Expected error for empty pool name")
 	assert.Nil(pool, "Pool should be nil for empty name")
 
 	// Mock setup for invalid pool name
-	testConf.volumeAPI.client.api.(*mocks.Client).On("DoWithHeaders", mock.Anything, "GET", "/api/instances/pool/name:dummy_pool_name_1?fields=id,name,description,sizeFree,sizeTotal,sizeUsed,sizeSubscribed,hasDataReductionEnabledLuns,hasDataReductionEnabledFs,isFASTCacheEnabled,type,isAllFlash,poolFastVP", mock.Anything, mock.Anything, mock.Anything).Return(errors.New("pool not found")).Once()
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, "GET", "/api/instances/pool/name:dummy_pool_name_1?fields=id,name,description,sizeFree,sizeTotal,sizeUsed,sizeSubscribed,hasDataReductionEnabledLuns,hasDataReductionEnabledFs,isFASTCacheEnabled,type,isAllFlash,poolFastVP", mock.Anything, mock.Anything, mock.Anything).Return(errors.New("pool not found")).Once()
 
 	// Negative Case: Invalid pool name
 	storagePoolNameTemp = "dummy_pool_name_1"
-	pool, err = testConf.poolAPI.FindStoragePoolByName(ctx, storagePoolNameTemp)
+	pool, err = testConf.client.FindStoragePoolByName(ctx, storagePoolNameTemp)
 	assert.Error(err, "Expected error for invalid pool name")
 	assert.Nil(pool, "Pool should be nil for invalid name")
 
