@@ -26,8 +26,8 @@ import (
 const MaxResourceNameLength = 63
 
 func TestUtils(t *testing.T) {
+	getLoggerTest(t)
 	getRunIDLoggerTest(t)
-	getLoggetTest(t)
 	validateResourceNameTest(t)
 	validateDurationTest(t)
 	getSecuredCipherSuitesTest(t)
@@ -72,11 +72,13 @@ func getRunIDLoggerTest(t *testing.T) {
 	fmt.Println("Get RunId Logger Test Successful")
 }
 
-func getLoggetTest(_ *testing.T) {
+func getLoggerTest(_ *testing.T) {
 	fmt.Println("Begin - Get Logger Test")
-
+	// debug flag needs to be true to hit a test condition, reset it after
+	formerDebug := Debug
+	Debug = true
 	_ = GetLogger()
-
+	Debug = formerDebug
 	fmt.Println("Get Logger Test Successful")
 }
 
