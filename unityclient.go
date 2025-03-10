@@ -41,11 +41,82 @@ var (
 	accHeader string
 	conHeader string
 
-	errNoLink = errors.New("error: problem finding link")
+	debug, _    = strconv.ParseBool(os.Getenv("GOUNITY_DEBUG"))
+	showHTTP, _ = strconv.ParseBool(os.Getenv("GOUNITY_SHOWHTTP"))
+	errNoLink   = errors.New("error: problem finding link")
 )
 
-// Client Struct holds the configuration & REST Client.
-type Client struct {
+// UnityClient interface for Unity Client
+type UnityClient interface {
+	Authenticate(ctx context.Context, configConnect *ConfigConnect) error
+	BasicSystemInfo(ctx context.Context, configConnect *ConfigConnect) error
+	GetToken() string
+	SetToken(token string)
+	CreateFilesystem(ctx context.Context, name string, storagepool string, description string, nasServer string, size uint64, tieringPolicy int, hostIOSize int, supportedProtocol int, isThinEnabled bool, isDataReductionEnabled bool) (*types.Filesystem, error)
+	CreateNFSShare(ctx context.Context, name string, path string, filesystemID string, nfsShareDefaultAccess NFSShareDefaultAccess) (*types.Filesystem, error)
+	CreateNFSShareFromSnapshot(ctx context.Context, name string, path string, snapshotID string, nfsShareDefaultAccess NFSShareDefaultAccess) (*types.NFSShare, error)
+	DeleteFilesystem(ctx context.Context, filesystemID string) error
+	DeleteNFSShare(ctx context.Context, filesystemID string, nfsShareID string) error
+	DeleteNFSShareCreatedFromSnapshot(ctx context.Context, nfsShareID string) error
+	ExpandFilesystem(ctx context.Context, filesystemID string, newSize uint64) error
+	FindFilesystemByID(ctx context.Context, filesystemID string) (*types.Filesystem, error)
+	FindFilesystemByName(ctx context.Context, filesystemName string) (*types.Filesystem, error)
+	FindNASServerByID(ctx context.Context, nasServerID string) (*types.NASServer, error)
+	FindNFSShareByID(ctx context.Context, nfsShareID string) (*types.NFSShare, error)
+	FindNFSShareByName(ctx context.Context, nfsSharename string) (*types.NFSShare, error)
+	GetFilesystemIDFromResID(ctx context.Context, filesystemResID string) (string, error)
+	ModifyNFSShareCreatedFromSnapshotHostAccess(ctx context.Context, nfsShareID string, hostIDs []string, accessType AccessType) error
+	ModifyNFSShareHostAccess(ctx context.Context, filesystemID string, nfsShareID string, hostIDs []string, accessType AccessType) error
+	FindHostByName(ctx context.Context, hostName string) (*types.Host, error)
+	CreateHost(ctx context.Context, hostName string, tenantID string) (*types.Host, error)
+	DeleteHost(ctx context.Context, hostName string) error
+	CreateHostIPPort(ctx context.Context, hostID, ip string) (*types.HostIPPort, error)
+	FindHostIPPortByID(ctx context.Context, hostIPID string) (*types.HostIPPort, error)
+	ListHostInitiators(ctx context.Context) ([]types.HostInitiator, error)
+	FindHostInitiatorByName(ctx context.Context, wwnOrIqn string) (*types.HostInitiator, error)
+	FindHostInitiatorByID(ctx context.Context, wwnOrIqn string) (*types.HostInitiator, error)
+	CreateHostInitiator(ctx context.Context, hostID, wwnOrIqn string, initiatorType types.InitiatorType) (*types.HostInitiator, error)
+	ModifyHostInitiator(ctx context.Context, hostID string, initiator *types.HostInitiator) (*types.HostInitiator, error)
+	ModifyHostInitiatorByID(ctx context.Context, hostID, initiatorID string) (*types.HostInitiator, error)
+	FindHostInitiatorPathByID(ctx context.Context, initiatorPathID string) (*types.HostInitiatorPath, error)
+	FindFcPortByID(ctx context.Context, fcPortID string) (*types.FcPort, error)
+	FindTenants(ctx context.Context) (*types.TenantInfo, error)
+	ListIscsiIPInterfaces(ctx context.Context) ([]types.IPInterfaceEntries, error)
+	CreateRealTimeMetricsQuery(ctx context.Context, metricPaths []string, interval int) (*types.MetricQueryCreateResponse, error)
+	DeleteRealTimeMetricsQuery(ctx context.Context, queryID int) error
+	GetAllRealTimeMetricPaths(ctx context.Context) error
+	GetCapacity(ctx context.Context) (*types.SystemCapacityMetricsQueryResult, error)
+	GetMetricsCollection(ctx context.Context, queryID int) (*types.MetricQueryResult, error)
+	CopySnapshot(ctx context.Context, sourceSnapshotID string, name string) (*types.Snapshot, error)
+	CreateSnapshot(ctx context.Context, storageResourceID string, snapshotName string, description string, retentionDuration string) (*types.Snapshot, error)
+	CreateSnapshotWithFsAccesType(ctx context.Context, storageResourceID string, snapshotName string, _ string, retentionDuration string, filesystemAccessType FilesystemAccessType) (*types.Snapshot, error)
+	DeleteFilesystemAsSnapshot(ctx context.Context, snapshotID string, sourceFs *types.Filesystem) error
+	DeleteSnapshot(ctx context.Context, snapshotID string) error
+	FindSnapshotByID(ctx context.Context, snapshotID string) (*types.Snapshot, error)
+	FindSnapshotByName(ctx context.Context, snapshotName string) (*types.Snapshot, error)
+	ListSnapshots(ctx context.Context, startToken int, maxEntries int, sourceVolumeID string, snapshotID string) ([]types.Snapshot, int, error)
+	ModifySnapshot(ctx context.Context, snapshotID string, description string, retentionDuration string) error
+	ModifySnapshotAutoDeleteParameter(ctx context.Context, snapshotID string) error
+	FindStoragePoolByName(ctx context.Context, poolName string) (*types.StoragePool, error)
+	FindStoragePoolByID(ctx context.Context, poolID string) (*types.StoragePool, error)
+	CreateCloneFromVolume(ctx context.Context, name string, volID string) (*types.Volume, error)
+	CreateLun(ctx context.Context, name string, poolID string, description string, size uint64, fastVPTieringPolicy int, hostIOLimitID string, isThinEnabled bool, isDataReductionEnabled bool) (*types.Volume, error)
+	CreteLunThinClone(ctx context.Context, name string, snapID string, volID string) (*types.Volume, error)
+	DeleteVolume(ctx context.Context, volumeID string) error
+	ExpandVolume(ctx context.Context, volumeID string, newSize uint64) error
+	ExportVolume(ctx context.Context, volID string, hostID string) error
+	FindHostIOLimitByName(ctx context.Context, hostIoPolicyName string) (*types.IoLimitPolicy, error)
+	FindVolumeByID(ctx context.Context, volID string) (*types.Volume, error)
+	FindVolumeByName(ctx context.Context, volName string) (*types.Volume, error)
+	GetMaxVolumeSize(ctx context.Context, systemLimitID string) (*types.MaxVolumSizeInfo, error)
+	ListVolumes(ctx context.Context, startToken int, maxEntries int) ([]types.Volume, int, error)
+	ModifyVolumeExport(ctx context.Context, volID string, hostIDList []string) error
+	RenameVolume(ctx context.Context, newName string, volID string) error
+	UnexportVolume(ctx context.Context, volID string) error
+}
+
+// UnityClientImpl Struct holds the configuration & REST Client.
+type UnityClientImpl struct {
 	configConnect *ConfigConnect
 	api           api.Client
 	loginMutex    sync.Mutex
@@ -60,7 +131,7 @@ type ConfigConnect struct {
 }
 
 // BasicSystemInfo make a REST API call [/basicSystemInfo/instances] to Unity to check if array is responding.
-func (c *Client) BasicSystemInfo(ctx context.Context, configConnect *ConfigConnect) error {
+func (c *UnityClientImpl) BasicSystemInfo(ctx context.Context, configConnect *ConfigConnect) error {
 	log := util.GetRunIDLogger(ctx)
 	log.Debug("Executing BasicSystemInfo REST client")
 	c.configConnect = configConnect
@@ -97,7 +168,7 @@ func (c *Client) BasicSystemInfo(ctx context.Context, configConnect *ConfigConne
 
 // Authenticate make a REST API call [/loginSessionInfo] to Unity to get authenticate the given credentials.
 // The response contains the EMC-CSRF-TOKEN and the client caches it for further communication.
-func (c *Client) Authenticate(ctx context.Context, configConnect *ConfigConnect) error {
+func (c *UnityClientImpl) Authenticate(ctx context.Context, configConnect *ConfigConnect) error {
 	c.loginMutex.Lock()
 	defer c.loginMutex.Unlock()
 	log := util.GetRunIDLogger(ctx)
@@ -149,7 +220,7 @@ func basicAuth(username, password string) string {
 
 // GetJSONWithRetry method responsible to make the given API call to Unity REST API Server.
 // In case if the given EMC-CSRF-TOKEN becomes invalid, retries the same operation after performing authentication.
-func (c *Client) executeWithRetryAuthenticate(ctx context.Context, method, uri string, body, resp interface{}) error {
+func (c *UnityClientImpl) executeWithRetryAuthenticate(ctx context.Context, method, uri string, body, resp interface{}) error {
 	log := util.GetRunIDLogger(ctx)
 	headers := make(map[string]string, 2)
 	headers[api.HeaderKeyAccept] = accHeader
@@ -182,23 +253,23 @@ func (c *Client) executeWithRetryAuthenticate(ctx context.Context, method, uri s
 }
 
 // SetToken function sets token
-func (c *Client) SetToken(token string) {
+func (c *UnityClientImpl) SetToken(token string) {
 	c.api.SetToken(token)
 }
 
 // GetToken function gets token
-func (c *Client) GetToken() string {
+func (c *UnityClientImpl) GetToken() string {
 	return c.api.GetToken()
 }
 
 // NewClient initialize the new REST Client with default options.
-func NewClient(ctx context.Context) (client *Client, err error) {
+func NewClient(ctx context.Context) (UnityClient, error) {
 	insecure, _ := strconv.ParseBool(os.Getenv("GOUNITY_INSECURE"))
 	return NewClientWithArgs(ctx, os.Getenv("GOUNITY_ENDPOINT"), insecure)
 }
 
 // NewClientWithArgs initialize the new REST Client with the given arguments.
-func NewClientWithArgs(ctx context.Context, endpoint string, insecure bool) (client *Client, err error) {
+func NewClientWithArgs(ctx context.Context, endpoint string, insecure bool) (UnityClient, error) {
 	log := util.GetRunIDLogger(ctx)
 	if util.ShowHTTP {
 		util.Debug = true
@@ -228,7 +299,7 @@ func NewClientWithArgs(ctx context.Context, endpoint string, insecure bool) (cli
 		return nil, fmt.Errorf("unable to create HTTP client %v", err)
 	}
 
-	client = &Client{
+	client := &UnityClientImpl{
 		api:           ac,
 		configConnect: &ConfigConnect{},
 	}
@@ -263,4 +334,8 @@ func withFieldsE(fields map[string]interface{}, message string, inner error) err
 	}
 
 	return fmt.Errorf("%s %s", message, b.String())
+}
+
+func (c *UnityClientImpl) getAPI() api.Client {
+	return c.api
 }
