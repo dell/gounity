@@ -27,7 +27,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/dell/gounity/mocks"
+	mocksapi "github.com/dell/gounity/mocks/api"
 )
 
 type testConfig struct {
@@ -43,13 +43,7 @@ type testConfig struct {
 	nasServer       string
 	tenant          string
 	hostList        []string
-	volumeAPI       *Volume
-	hostAPI         *Host
-	poolAPI         *Storagepool
-	snapAPI         *Snapshot
-	ipinterfaceAPI  *Ipinterface
-	fileAPI         *Filesystem
-	metricsAPI      *Metrics
+	client          UnityClient
 }
 
 var testConf *testConfig
@@ -61,16 +55,13 @@ func TestMain(m *testing.M) {
 	// for this tutorial, we will hard code it to config.txt
 	testProp, err := readTestProperties("test.properties_template")
 	if err != nil {
+		fmt.Println(err)
 		panic("The system cannot find the file specified")
 	}
 
 	insecure, _ := strconv.ParseBool(testProp["X_CSI_UNITY_INSECURE"])
 	/* #nosec G402 */
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: insecure}
-
-	if err != nil {
-		fmt.Println(err)
-	}
 
 	testConf = &testConfig{}
 	testConf.unityEndPoint = "https://mock-endpoint"
@@ -90,26 +81,18 @@ func TestMain(m *testing.M) {
 	os.Setenv("X_CSI_UNITY_USER", testConf.username)
 	os.Setenv("X_CSI_UNITY_PASSWORD", testConf.password)
 
-	testClient := getTestClient()
+	testConf.client = getTestClient()
 	testConf.wwns = strings.Split(wwnStr, ",")
 	testConf.hostList = strings.Split(hostListStr, ",")
-
-	testConf.hostAPI = NewHost(testClient)
-	testConf.poolAPI = NewStoragePool(testClient)
-	testConf.snapAPI = NewSnapshot(testClient)
-	testConf.volumeAPI = NewVolume(testClient)
-	testConf.ipinterfaceAPI = NewIPInterface(testClient)
-	testConf.fileAPI = NewFilesystem(testClient)
-	testConf.metricsAPI = NewMetrics(testClient)
 
 	code := m.Run()
 	fmt.Println("------------End of TestMain--------------")
 	os.Exit(code)
 }
 
-func getTestClient() *Client {
-	return &Client{
-		api:           &mocks.Client{},
+func getTestClient() *UnityClientImpl {
+	return &UnityClientImpl{
+		api:           &mocksapi.Client{},
 		configConnect: &ConfigConnect{},
 	}
 }

@@ -16,22 +16,12 @@ import (
 	"github.com/dell/gounity/types"
 )
 
-// Ipinterface structure
-type Ipinterface struct {
-	client *Client
-}
-
-// NewIPInterface returns IP interface
-func NewIPInterface(client *Client) *Ipinterface {
-	return &Ipinterface{client}
-}
-
 // ListIscsiIPInterfaces - List the IpnInterfaces configured on the array
-func (f *Ipinterface) ListIscsiIPInterfaces(ctx context.Context) ([]types.IPInterfaceEntries, error) {
+func (c *UnityClientImpl) ListIscsiIPInterfaces(ctx context.Context) ([]types.IPInterfaceEntries, error) {
 	log := util.GetRunIDLogger(ctx)
 	hResponse := &types.ListIPInterfaces{}
 	log.Debugf("URI: "+api.UnityAPIInstanceTypeResourcesWithFields, api.IPInterface, IscsiIPFields)
-	err := f.client.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityAPIInstanceTypeResourcesWithFields, api.IPInterface, IscsiIPFields), nil, hResponse)
+	err := c.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityAPIInstanceTypeResourcesWithFields, api.IPInterface, IscsiIPFields), nil, hResponse)
 	if err != nil {
 		return nil, fmt.Errorf("unable to list Ip Interfaces %v", err)
 	}
