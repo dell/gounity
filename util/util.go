@@ -37,6 +37,11 @@ var (
 	ErrorInvalidCharacters = errors.New("name contains invalid characters or name doesn't start with alphabetic. Allowed characters are 'a-zA-Z0-9_-'")
 )
 
+var (
+	Debug, _    = strconv.ParseBool(os.Getenv("GOUNITY_DEBUG"))
+	ShowHTTP, _ = strconv.ParseBool(os.Getenv("GOUNITY_SHOWHTTP"))
+)
+
 type contextKey string
 
 const UnityLog contextKey = "unitylog"
@@ -75,6 +80,11 @@ func GetLogger() *logrus.Logger {
 
 		// Gounity users can make use of this environment variable to initialize log level. Default level will be Info
 		logLevel := os.Getenv("X_CSI_LOG_LEVEL")
+
+		// in addition, if Debug flag or ShowHTTP flag is set, then set log level to debug
+		if Debug || ShowHTTP {
+			logLevel = "debug"
+		}
 
 		ChangeLogLevel(logLevel)
 

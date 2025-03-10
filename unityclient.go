@@ -42,6 +42,7 @@ var (
 
 	debug, _    = strconv.ParseBool(os.Getenv("GOUNITY_DEBUG"))
 	showHTTP, _ = strconv.ParseBool(os.Getenv("GOUNITY_SHOWHTTP"))
+	errNoLink = errors.New("error: problem finding link")
 )
 
 // UnityClient interface for Unity Client
@@ -269,15 +270,15 @@ func NewClient(ctx context.Context) (UnityClient, error) {
 // NewClientWithArgs initialize the new REST Client with the given arguments.
 func NewClientWithArgs(ctx context.Context, endpoint string, insecure bool) (UnityClient, error) {
 	log := util.GetRunIDLogger(ctx)
-	if showHTTP {
-		debug = true
+	if util.ShowHTTP {
+		util.Debug = true
 	}
 
 	fields := map[string]interface{}{
 		"endpoint": endpoint,
 		"insecure": insecure,
-		"debug":    debug,
-		"showHTTP": showHTTP,
+		"debug":    util.Debug,
+		"showHTTP": util.ShowHTTP,
 	}
 
 	log.WithFields(fields).Debug("unity client init")
@@ -289,10 +290,10 @@ func NewClientWithArgs(ctx context.Context, endpoint string, insecure bool) (Uni
 
 	opts := api.ClientOptions{
 		Insecure: insecure,
-		ShowHTTP: showHTTP,
+		ShowHTTP: util.ShowHTTP,
 	}
 
-	ac, err := api.New(ctx, endpoint, opts, debug)
+	ac, err := api.New(ctx, endpoint, opts, util.Debug)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create HTTP client %v", err)
 	}
