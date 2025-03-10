@@ -18,6 +18,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -42,7 +43,7 @@ var (
 
 	debug, _    = strconv.ParseBool(os.Getenv("GOUNITY_DEBUG"))
 	showHTTP, _ = strconv.ParseBool(os.Getenv("GOUNITY_SHOWHTTP"))
-	errNoLink = errors.New("error: problem finding link")
+	errNoLink   = errors.New("error: problem finding link")
 )
 
 // UnityClient interface for Unity Client
