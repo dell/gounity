@@ -331,7 +331,7 @@ func (c *client) DoWithHeaders(ctx context.Context, method, uri string, headers 
 				c.doLog(log.WithError(err).Error, fmt.Sprintf("Unable to decode response into %+v", resp))
 				return err
 			}
-			log.Debugf("Response recieved in DoWithHeaders: %v", &resp)
+			log.Debugf("Response recieved in DoWithHeaders: %v", resp)
 		}
 	case res.StatusCode == 401:
 		jsonError := &types.Error{}
