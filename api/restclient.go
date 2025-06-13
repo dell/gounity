@@ -293,9 +293,7 @@ func (c *client) DoAndGetResponseBody(ctx context.Context, method, uri string, h
 		req.Header.Set(HeaderEMCCSRFToken, c.token)
 	}
 
-	if c.showHTTP {
-		logRequest(ctx, req, c.doLog)
-	}
+	logRequest(ctx, req, c.doLog)
 
 	// send the request
 	req = req.WithContext(ctx)
@@ -303,9 +301,7 @@ func (c *client) DoAndGetResponseBody(ctx context.Context, method, uri string, h
 		return nil, err
 	}
 
-	if c.showHTTP {
-		logResponse(ctx, res, c.doLog)
-	}
+	logResponse(ctx, res, c.doLog)
 
 	log.Debugf("Response code:%d for url: %s", res.StatusCode, uri)
 	return res, err
@@ -335,6 +331,7 @@ func (c *client) DoWithHeaders(ctx context.Context, method, uri string, headers 
 				c.doLog(log.WithError(err).Error, fmt.Sprintf("Unable to decode response into %+v", resp))
 				return err
 			}
+			log.Debugf("Response recieved in DoWithHeaders: %v", &resp)
 		}
 	case res.StatusCode == 401:
 		jsonError := &types.Error{}

@@ -44,7 +44,7 @@ var (
 func logRequest(
 	_ context.Context,
 	req *http.Request,
-	_ func(func(args ...interface{}), string),
+	lf func(func(args ...interface{}), string),
 ) {
 	w := &bytes.Buffer{}
 
@@ -65,14 +65,13 @@ func logRequest(
 	}
 	fmt.Fprintln(w)
 
-	// Will not be logging request to avoid logging of headers as it is
-	// lf(log.Debug, w.String())
+	lf(log.Debug, w.String())
 }
 
 func logResponse(
 	_ context.Context,
 	res *http.Response,
-	_ func(func(args ...interface{}), string),
+	lf func(func(args ...interface{}), string),
 ) {
 	w := &bytes.Buffer{}
 
@@ -101,7 +100,7 @@ func logResponse(
 		fmt.Fprintln(w, scanner.Text())
 	}
 
-	log.Debug(w.String())
+	lf(log.Debug, w.String())
 }
 
 // WriteIndentedN indents all lines n spaces.
