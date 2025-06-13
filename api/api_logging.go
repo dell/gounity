@@ -65,7 +65,7 @@ func logRequest(
 	}
 	fmt.Fprintln(w)
 
-	lf(log.Debug, w.String())
+	lf(log.Info, w.String())
 }
 
 func logResponse(
@@ -100,7 +100,7 @@ func logResponse(
 		fmt.Fprintln(w, scanner.Text())
 	}
 
-	lf(log.Debug, w.String())
+	lf(log.Info, w.String())
 }
 
 // WriteIndentedN indents all lines n spaces.
