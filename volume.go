@@ -39,6 +39,18 @@ var ErrorDependentClones = errors.New("the specified volume cannot be deleted be
 // VolumeNotFoundErrorCode stores Volume not found error code
 var VolumeNotFoundErrorCode = "0x7d13005"
 
+// LUNModifiedErrorCode indicates that the requested operation
+// has failed because the LUN has already been modified by another request.
+var LUNModifiedErrorCode = "0x6701500"
+
+// NothingToModifyErrorCode indicates that the user requested modification
+// of the storage resource but the system found that there is nothing to modify.
+var NothingToModifyErrorCode = "0x6701020"
+
+// VolumeHostAccessErrorCode indicates that the storage resource can still be accessed by one or more hosts.
+// Remove all host access from the storage resource before attempting to delete it.
+var VolumeHostAccessErrorCode = "0x6701688"
+
 // ErrorVolumeNotFound stores Volume not found error
 var ErrorVolumeNotFound = errors.New("Unable to find volume")
 
@@ -203,9 +215,6 @@ func (c *UnityClientImpl) DeleteVolume(ctx context.Context, volumeID string) err
 	if len(volumeID) == 0 {
 		return errors.New("Volume Id cannot be empty")
 	}
-	volumeResp := &types.Volume{}
-
-	err := c.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityAPIGetResourceURI, api.StorageResourceAction, volumeID), nil, volumeResp)
 
 	volResp, err := c.FindVolumeByID(ctx, volumeID)
 	if err != nil {
