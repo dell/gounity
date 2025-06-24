@@ -245,8 +245,6 @@ func TestExportVolume(t *testing.T) {
 	}
 
 	// Negative case for Delete Volume
-	// Mock executeWithRetryAuthenticate to return no error
-	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
 	// Mock FindVolumeByID to return no error
 	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
 	// Mock DeleteVolume to return a specific error type
@@ -402,29 +400,25 @@ func TestDeleteVolumeTest(t *testing.T) {
 	err := testConf.client.DeleteVolume(ctx, "")
 	assert.ErrorContains(t, err, "Volume Id cannot be empty")
 
-	// Mock the executeWithRetryAuthenticate, FindVolumeByID, executeWithRetryAuthenticate method to return no error
-	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(nil).Times(3)
+	// Mock the FindVolumeByID, executeWithRetryAuthenticate method to return no error
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(nil).Twice()
 	err = testConf.client.DeleteVolume(ctx, volID)
 	assert.Nil(t, err)
 
-	// Mock the executeWithRetryAuthenticate method to return no error
-	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
 	// Mock the FindVolumeByID method to return voume not found error
 	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(fmt.Errorf("volume not found")).Once()
 	err = testConf.client.DeleteVolume(ctx, volID)
 	assert.Errorf(t, err, "volume not found")
 
 	// Mock the executeWithRetryAuthenticate method to return no error
-	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(nil).Twice()
-	// Mock the FindVolumeByID method to return voume not found error
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
+	// Mock the FindVolumeByID method to return volume not found error
 	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(errors.New(DependentClonesErrorCode)).Once()
 	// Mock the RenameVolume method to return no error
 	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
 	err = testConf.client.DeleteVolume(ctx, volID)
 	assert.Nil(t, err)
 
-	// Mock the executeWithRetryAuthenticate method to return no error
-	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
 	// Mock the FindVolumeByID method to return expected response
 	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(nil).
 		Run(func(args mock.Arguments) {
