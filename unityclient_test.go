@@ -213,6 +213,11 @@ func TestExecuteWithRetryAuthenticate(t *testing.T) {
 			expectedError: false,
 		},
 		{
+			name:          "Unauthorized error",
+			uri:           "/unauthorized",
+			expectedError: true,
+		},
+		{
 			name:          "Server error",
 			uri:           "/server-error",
 			expectedError: true,
@@ -243,6 +248,10 @@ func TestExecuteWithRetryAuthenticate(t *testing.T) {
 				UnityClientImpl: &UnityClientImpl{
 					api:        mocksapiClient,
 					loginMutex: sync.Mutex{},
+					configConnect: &ConfigConnect{
+						Username: "u",
+						Password: "p",
+					},
 				},
 			}
 
