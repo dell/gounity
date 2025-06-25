@@ -337,6 +337,20 @@ type NASServerContent struct {
 	NFSServer NFSServer `json:"nfsServer,omitempty"`
 }
 
+type NFSServersResponse struct {
+	Base    string           `json:"@base"`
+	Updated time.Time        `json:"updated"`
+	Links   []Link           `json:"links"`
+	Entries []NFSServerEntry `json:"entries"`
+}
+
+type NFSServerEntry struct {
+	Base    string    `json:"@base"`
+	Updated time.Time `json:"updated"`
+	Links   []Link    `json:"links"`
+	Content NFSServer `json:"content"`
+}
+
 // NFSServer struct to capture NFS Server object
 type NFSServer struct {
 	ID           string `json:"id"`

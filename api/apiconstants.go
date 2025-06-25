@@ -123,4 +123,6 @@ const (
 	HostIPPortAction        = "hostIPPort"
 	NasServerAction         = "nasServer"
 	TenantAction            = "tenant"
+	UnityNFSServer          = "nfsServer"
+	UnityNFS3AndNFS4Enabled = "nfsv3Enabled,nfsv4Enabled"
 )

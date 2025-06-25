@@ -516,3 +516,18 @@ func (c *UnityClientImpl) ExpandFilesystem(ctx context.Context, filesystemID str
 	}
 	return c.executeWithRetryAuthenticate(ctx, http.MethodPost, fmt.Sprintf(api.UnityModifyFilesystemURI, filesystem.FileContent.StorageResource.ID), fsExpandReqParam, nil)
 }
+
+func (c *UnityClientImpl) GetAllNFSServers(ctx context.Context) (*types.NFSServersResponse, error) {
+	log := util.GetRunIDLogger(ctx)
+
+	queryURI := fmt.Sprintf(api.UnityAPIInstanceTypeResourcesWithFields, api.UnityNFSServer, api.UnityNFS3AndNFS4Enabled)
+	log.Info("GetAllNFSServers: ", queryURI)
+
+	nfsServersResponseQueryResult := &types.NFSServersResponse{}
+	err := c.executeWithRetryAuthenticate(ctx, http.MethodGet, queryURI, nil, nfsServersResponseQueryResult)
+	if err != nil {
+		return nil, err
+	}
+
+	return nfsServersResponseQueryResult, nil
+}
