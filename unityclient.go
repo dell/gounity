@@ -246,9 +246,9 @@ func (c *UnityClientImpl) executeWithRetryAuthenticate(ctx context.Context, meth
 			return c.api.DoWithHeaders(ctx, method, uri, headers, body, resp)
 		}
 	} else {
-		log.Error("Error is not a type of \"*types.Error\". Error:", err)
+		log.Debugf("Error is not a type of \"*types.Error\". Error: %v", err)
 	}
-	log.WithError(err).Error("failed to invoke Unity REST API server")
+	log.WithError(err).Debug("failed to invoke Unity REST API server")
 
 	return err
 }
