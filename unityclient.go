@@ -113,6 +113,7 @@ type UnityClient interface {
 	ModifyVolumeExport(ctx context.Context, volID string, hostIDList []string) error
 	RenameVolume(ctx context.Context, newName string, volID string) error
 	UnexportVolume(ctx context.Context, volID string) error
+	GetAllNFSServers(ctx context.Context) (*types.NFSServersResponse, error)
 }
 
 // UnityClientImpl Struct holds the configuration & REST Client.
