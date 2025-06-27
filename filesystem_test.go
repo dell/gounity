@@ -428,3 +428,20 @@ func TestDeleteFilesystem(t *testing.T) {
 
 	fmt.Println("Delete Filesystem Test Successful")
 }
+
+func TestGetAllNFSServers(t *testing.T) {
+	fmt.Println("Begin - Get All NFS Servers Test")
+	ctx := context.Background()
+
+	// Test case :  Successful GET call
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
+	_, err := testConf.client.GetAllNFSServers(ctx)
+	assert.Equal(t, nil, err)
+
+	// Test case :  Failed GET call
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(errors.New("Failed to get all NFS servers")).Once()
+	_, err = testConf.client.GetAllNFSServers(ctx)
+	assert.Error(t, err)
+
+	fmt.Println("Get All NFS Servers test successful")
+}
