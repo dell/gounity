@@ -520,7 +520,7 @@ func (c *UnityClientImpl) ExpandFilesystem(ctx context.Context, filesystemID str
 func (c *UnityClientImpl) GetAllNFSServers(ctx context.Context) (*types.NFSServersResponse, error) {
 	log := util.GetRunIDLogger(ctx)
 
-	queryURI := fmt.Sprintf(api.UnityAPIInstanceTypeResourcesWithFields, api.UnityNFSServer, api.UnityNFS3AndNFS4Enabled)
+	queryURI := fmt.Sprintf(api.UnityAPIInstanceTypeResourcesWithFields, api.UnityNFSServer, api.UnityNFSv3AndNFSv4Enabled)
 	log.Info("GetAllNFSServers: ", queryURI)
 
 	nfsServersResponseQueryResult := &types.NFSServersResponse{}
