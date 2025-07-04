@@ -21,8 +21,8 @@ import (
 	"testing"
 
 	"github.com/dell/gounity/api"
-	mocksapi "github.com/dell/gounity/mocks/api"
 	"github.com/dell/gounity/apitypes"
+	mocksapi "github.com/dell/gounity/mocks/api"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"

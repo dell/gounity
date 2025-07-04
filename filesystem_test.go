@@ -20,8 +20,8 @@ import (
 	"fmt"
 	"testing"
 
-	mocksapi "github.com/dell/gounity/mocks/api"
 	"github.com/dell/gounity/apitypes"
+	mocksapi "github.com/dell/gounity/mocks/api"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
