@@ -21,7 +21,7 @@ import (
 	"testing"
 
 	mocksapi "github.com/dell/gounity/mocks/api"
-	"github.com/dell/gounity/types"
+	"github.com/dell/gounity/apitypes"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -76,10 +76,10 @@ func TestCreateLun(t *testing.T) {
 	// Mock FindStoragePoolByID to return nil
 	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
 	// Mock isFeatureLicensed to return expected response
-	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.AnythingOfType("*types.LicenseInfo")).Return(nil).
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.AnythingOfType("*apitypes.LicenseInfo")).Return(nil).
 		Run(func(args mock.Arguments) {
-			resp := args.Get(5).(*types.LicenseInfo)
-			*resp = types.LicenseInfo{LicenseInfoContent: types.LicenseInfoContent{IsInstalled: true, IsValid: true}}
+			resp := args.Get(5).(*apitypes.LicenseInfo)
+			*resp = apitypes.LicenseInfo{LicenseInfoContent: apitypes.LicenseInfoContent{IsInstalled: true, IsValid: true}}
 		}).Twice()
 	// Mock create request to return nil
 	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
@@ -113,10 +113,10 @@ func TestCreateLun(t *testing.T) {
 	// Mock FindStoragePoolByID to return no error
 	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
 	// Mock isFeatureLicensed to return expected response
-	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.AnythingOfType("*types.LicenseInfo")).Return(nil).
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.AnythingOfType("*apitypes.LicenseInfo")).Return(nil).
 		Run(func(args mock.Arguments) {
-			resp := args.Get(5).(*types.LicenseInfo)
-			*resp = types.LicenseInfo{LicenseInfoContent: types.LicenseInfoContent{IsInstalled: true, IsValid: true}}
+			resp := args.Get(5).(*apitypes.LicenseInfo)
+			*resp = apitypes.LicenseInfo{LicenseInfoContent: apitypes.LicenseInfoContent{IsInstalled: true, IsValid: true}}
 		}).Twice()
 	// Mock create volume to return error
 	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(fmt.Errorf("volume already exists")).Once()
@@ -200,8 +200,8 @@ func TestListVolumes(t *testing.T) {
 	ctx := context.Background()
 	// Mock ListVolumes to return no error
 	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(nil).Run(func(args mock.Arguments) {
-		resp := args.Get(5).(*types.ListVolumes)
-		resp.Volumes = make([]types.Volume, 10)
+		resp := args.Get(5).(*apitypes.ListVolumes)
+		resp.Volumes = make([]apitypes.Volume, 10)
 	}).Once()
 	vols, _, err := testConf.client.ListVolumes(ctx, 11, 10)
 	fmt.Println("List volumes count: ", len(vols))
@@ -225,8 +225,8 @@ func TestExportVolume(t *testing.T) {
 
 	// Mock FindHostByName to return a valid host object
 	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
-	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("FindHostByName", ctx, testConf.nodeHostName).Return(&types.Host{
-		HostContent: types.HostContent{
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("FindHostByName", ctx, testConf.nodeHostName).Return(&apitypes.Host{
+		HostContent: apitypes.HostContent{
 			ID: "valid_host_id",
 		},
 	}, nil)
@@ -248,9 +248,9 @@ func TestExportVolume(t *testing.T) {
 	// Mock FindVolumeByID to return no error
 	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
 	// Mock DeleteVolume to return a specific error type
-	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&types.Error{
-		ErrorContent: types.ErrorContent{
-			Message: []types.ErrorMessage{
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&apitypes.Error{
+		ErrorContent: apitypes.ErrorContent{
+			Message: []apitypes.ErrorMessage{
 				{EnUS: "failed to delete exported volume"},
 			},
 			HTTPStatusCode: 500,
@@ -285,7 +285,7 @@ func TestExpandVolumeTest(t *testing.T) {
 	fmt.Println("Begin - Expand Volume Test")
 	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).ExpectedCalls = nil
 	ctx := context.Background()
-	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("FindVolumeByID", ctx, "volID").Return(&types.VolumeContent{SizeTotal: 5368709120}, nil).Once()
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("FindVolumeByID", ctx, "volID").Return(&apitypes.VolumeContent{SizeTotal: 5368709120}, nil).Once()
 	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("FindVolumeByID", ctx, "dummy_vol_sv_1").Return(nil, errors.New("unable to find volume Id")).Once()
 	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("executeWithRetryAuthenticate", ctx, "POST", "api/modify/lun/volID", mock.Anything, nil).Return(nil).Once()
 	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Maybe()
@@ -422,11 +422,11 @@ func TestDeleteVolumeTest(t *testing.T) {
 	// Mock the FindVolumeByID method to return expected response
 	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(nil).
 		Run(func(args mock.Arguments) {
-			resp := args.Get(5).(*types.Volume)
-			*resp = types.Volume{
-				VolumeContent: types.VolumeContent{
+			resp := args.Get(5).(*apitypes.Volume)
+			*resp = apitypes.Volume{
+				VolumeContent: apitypes.VolumeContent{
 					IsThinClone:  true,
-					ParentVolume: types.StorageResource{ID: volID},
+					ParentVolume: apitypes.StorageResource{ID: volID},
 				},
 			}
 		}).Once()
@@ -435,9 +435,9 @@ func TestDeleteVolumeTest(t *testing.T) {
 	// Mock the sourceVolID FindVolumeByID method to return expected response
 	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(nil).
 		Run(func(args mock.Arguments) {
-			resp := args.Get(5).(*types.Volume)
-			*resp = types.Volume{
-				VolumeContent: types.VolumeContent{
+			resp := args.Get(5).(*apitypes.Volume)
+			*resp = apitypes.Volume{
+				VolumeContent: apitypes.VolumeContent{
 					Name: MarkVolumeForDeletion,
 				},
 			}
@@ -459,7 +459,7 @@ func TestGetMaxVolumeSizeTest(t *testing.T) {
 	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Maybe()
 
 	// Mock the GetMaxVolumeSize method to return an error for invalid systemLimitID
-	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, "GET", "/api/types/systemLimit/instances/dummy_name", mock.Anything, mock.Anything).Return(fmt.Errorf("invalid systemLimitID")).Once()
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, "GET", "/api/apitypes/systemLimit/instances/dummy_name", mock.Anything, mock.Anything).Return(fmt.Errorf("invalid systemLimitID")).Once()
 
 	// Positive case: Get maximum volume size with a valid system limit ID
 	systemLimitID := "Limit_MaxLUNSize"

@@ -14,12 +14,12 @@
 
 package api
 
-import "github.com/dell/gounity/types"
+import "github.com/dell/gounity/apitypes"
 
 // InitiatorType constants
 const (
-	FCInitiatorType     types.InitiatorType = "1"
-	ISCSCIInitiatorType types.InitiatorType = "2"
+	FCInitiatorType     apitypes.InitiatorType = "1"
+	ISCSCIInitiatorType apitypes.InitiatorType = "2"
 )
 
 // constants and URIs
@@ -30,7 +30,7 @@ const (
 	XEmcRestClient      = "X-EMC-REST-CLIENT"
 	// Base resource URIs
 	unityRootAPI  = "/api"
-	unityAPITypes = unityRootAPI + "/types"
+	unityAPITypes = unityRootAPI + "/apitypes"
 
 	UnityAPIInstanceTypeResources = unityAPITypes + "/%s" + "/instances"
 
@@ -104,7 +104,7 @@ const (
 	// UnitySystemCapacity is used to get capacity metrics for Unity XT
 	UnitySystemCapacity = "systemCapacity"
 
-	// Action types for URL's
+	// Action apitypes for URL's
 
 	LunAction                 = "lun"
 	CreateLunAction           = "createLun"

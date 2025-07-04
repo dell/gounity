@@ -23,7 +23,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/dell/gounity/types"
+	"github.com/dell/gounity/apitypes"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -48,15 +48,15 @@ func (m *mocksapiClient) Delete(_ context.Context, _ string, _ map[string]string
 
 func (m *mocksapiClient) DoWithHeaders(_ context.Context, _, uri string, _ map[string]string, _, _ interface{}) error {
 	if uri == "/unauthorized" {
-		return &types.Error{
-			ErrorContent: types.ErrorContent{
+		return &apitypes.Error{
+			ErrorContent: apitypes.ErrorContent{
 				HTTPStatusCode: http.StatusUnauthorized,
 			},
 		}
 	}
 	if uri == "/server-error" {
-		return &types.Error{
-			ErrorContent: types.ErrorContent{
+		return &apitypes.Error{
+			ErrorContent: apitypes.ErrorContent{
 				HTTPStatusCode: http.StatusInternalServerError,
 			},
 		}

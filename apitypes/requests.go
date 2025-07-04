@@ -3,7 +3,7 @@ Copyright (c) 2019 Dell Corporation
 All Rights Reserved
 */
 
-package types
+package apitypes
 
 import "fmt"
 

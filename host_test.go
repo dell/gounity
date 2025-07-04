@@ -22,7 +22,7 @@ import (
 
 	"github.com/dell/gounity/api"
 	mocksapi "github.com/dell/gounity/mocks/api"
-	"github.com/dell/gounity/types"
+	"github.com/dell/gounity/apitypes"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -35,7 +35,7 @@ var (
 	iqnInitiatorID     string
 	wwnInitiatorPathID string
 	fcPortID           string
-	iqnInitiator       *types.HostInitiator
+	iqnInitiator       *apitypes.HostInitiator
 )
 
 func TestCreateHost(t *testing.T) {
@@ -186,13 +186,13 @@ func TestCreateHostInitiator(t *testing.T) {
 	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, "GET", "/api/instances/hostIPPort/"+hostIPPortID+"?fields=id,address", mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
 
 	// Mock setup for host initiator retrieval
-	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, "GET", "/api/types/hostInitiator/instances?fields=id,health,type,initiatorId,isIgnored,parentHost,paths", mock.Anything, mock.Anything, mock.Anything).Return(nil).Times(4)
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, "GET", "/api/apitypes/hostInitiator/instances?fields=id,health,type,initiatorId,isIgnored,parentHost,paths", mock.Anything, mock.Anything, mock.Anything).Return(nil).Times(4)
 
 	// Mock setup for host initiator creation
-	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, "POST", "/api/types/hostInitiator/instances", mock.Anything, mock.Anything, mock.Anything).Return(nil).Times(len(testConf.wwns) + 1)
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, "POST", "/api/apitypes/hostInitiator/instances", mock.Anything, mock.Anything, mock.Anything).Return(nil).Times(len(testConf.wwns) + 1)
 
 	// Mock setup for invalid hostID
-	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, "POST", "/api/types/hostInitiator/instances", mock.Anything, mock.Anything, mock.Anything).Return(fmt.Errorf("invalid hostID")).Once()
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, "POST", "/api/apitypes/hostInitiator/instances", mock.Anything, mock.Anything, mock.Anything).Return(fmt.Errorf("invalid hostID")).Once()
 
 	if hostID == "" {
 		t.Fatalf("hostID should not be empty")
@@ -252,7 +252,7 @@ func TestListHostInitiatorsTest(t *testing.T) {
 	ctx := context.Background()
 
 	// Mock setup for listing host initiators
-	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, "GET", "/api/types/hostInitiator/instances?fields=id,health,type,initiatorId,isIgnored,parentHost,paths", mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, "GET", "/api/apitypes/hostInitiator/instances?fields=id,health,type,initiatorId,isIgnored,parentHost,paths", mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
 
 	list, err := testConf.client.ListHostInitiators(ctx)
 	fmt.Println("List Host initiators", list, err)
@@ -260,7 +260,7 @@ func TestListHostInitiatorsTest(t *testing.T) {
 		t.Fatalf("ListHostInitiators error: %v", err)
 	}
 
-	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, "GET", "/api/types/hostInitiator/instances?fields=id,health,type,initiatorId,isIgnored,parentHost,paths", mock.Anything, mock.Anything, mock.Anything).Return(errors.New("host initiators not found")).Once()
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, "GET", "/api/apitypes/hostInitiator/instances?fields=id,health,type,initiatorId,isIgnored,parentHost,paths", mock.Anything, mock.Anything, mock.Anything).Return(errors.New("host initiators not found")).Once()
 	_, err = testConf.client.ListHostInitiators(ctx)
 	assert.Error(t, err)
 
@@ -282,11 +282,11 @@ func TestFindHostInitiatorByName(t *testing.T) {
 
 	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).ExpectedCalls = nil
 	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(nil).Run(func(args mock.Arguments) {
-		resp := args.Get(5).(*types.ListHostInitiator)
-		*resp = types.ListHostInitiator{
-			HostInitiator: []types.HostInitiator{
+		resp := args.Get(5).(*apitypes.ListHostInitiator)
+		*resp = apitypes.ListHostInitiator{
+			HostInitiator: []apitypes.HostInitiator{
 				{
-					HostInitiatorContent: types.HostInitiatorContent{
+					HostInitiatorContent: apitypes.HostInitiatorContent{
 						InitiatorID: "id",
 					},
 				},
@@ -305,10 +305,10 @@ func TestModifyHostInitiator(t *testing.T) {
 	_, err := testConf.client.ModifyHostInitiator(ctx, hostID, iqnInitiator)
 	assert.Equal(t, errors.New("HostInitiator shouldn't be null"), err)
 
-	hostInitiatorContent := types.HostInitiatorContent{
+	hostInitiatorContent := apitypes.HostInitiatorContent{
 		ID: "id",
 	}
-	hostInitiator := types.HostInitiator{
+	hostInitiator := apitypes.HostInitiator{
 		HostInitiatorContent: hostInitiatorContent,
 	}
 	_, err = testConf.client.ModifyHostInitiator(ctx, hostID, &hostInitiator)
