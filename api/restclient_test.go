@@ -23,7 +23,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/dell/gounity/apitypes"
+	types "github.com/dell/gounity/apitypes"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -177,8 +177,8 @@ func TestDoWithHeaders(t *testing.T) {
 	defer server.Close()
 	c.host = server.URL
 	err = c.DoWithHeaders(ctx, http.MethodGet, "api/v1/endpoint", nil, body, &responseData)
-	errorContent := apitypes.ErrorContent{
-		Message: []apitypes.ErrorMessage{
+	errorContent := types.ErrorContent{
+		Message: []types.ErrorMessage{
 			{
 				EnUS: "Unauthorized",
 			},
@@ -186,7 +186,7 @@ func TestDoWithHeaders(t *testing.T) {
 		HTTPStatusCode: 401,
 		ErrorCode:      0,
 	}
-	expectedError := apitypes.Error{
+	expectedError := types.Error{
 		ErrorContent: errorContent,
 	}
 	assert.Equal(t, &expectedError, err)
@@ -196,9 +196,9 @@ func TestDoWithHeaders(t *testing.T) {
 		assert.Equal(t, http.MethodGet, r.Method)
 		assert.Equal(t, "/api/v1/endpoint", r.URL.String())
 		w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(apitypes.Error{
-			ErrorContent: apitypes.ErrorContent{
-				Message: []apitypes.ErrorMessage{
+		json.NewEncoder(w).Encode(types.Error{
+			ErrorContent: types.ErrorContent{
+				Message: []types.ErrorMessage{
 					{
 						EnUS: "Unauthorized",
 					},
@@ -211,8 +211,8 @@ func TestDoWithHeaders(t *testing.T) {
 	defer server.Close()
 	c.host = server.URL
 	err = c.DoWithHeaders(ctx, http.MethodGet, "api/v1/endpoint", nil, body, &responseData)
-	errorContent = apitypes.ErrorContent{
-		Message: []apitypes.ErrorMessage{
+	errorContent = types.ErrorContent{
+		Message: []types.ErrorMessage{
 			{
 				EnUS: "Unauthorized",
 			},
@@ -223,7 +223,7 @@ func TestDoWithHeaders(t *testing.T) {
 		HTTPStatusCode: 401,
 		ErrorCode:      0,
 	}
-	expectedError = apitypes.Error{
+	expectedError = types.Error{
 		ErrorContent: errorContent,
 	}
 	assert.Equal(t, &expectedError, err)
@@ -237,12 +237,12 @@ func TestDoWithHeaders(t *testing.T) {
 	defer server.Close()
 	c.host = server.URL
 	err = c.DoWithHeaders(ctx, http.MethodGet, "api/v1/endpoint", nil, body, &responseData)
-	errorContent = apitypes.ErrorContent{
+	errorContent = types.ErrorContent{
 		Message:        nil,
 		HTTPStatusCode: 0,
 		ErrorCode:      0,
 	}
-	expectedError = apitypes.Error{
+	expectedError = types.Error{
 		ErrorContent: errorContent,
 	}
 	assert.Equal(t, &expectedError, err)

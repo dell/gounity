@@ -1,13 +1,16 @@
 /*
- * Copyright (c) 2021. Dell Inc., or its subsidiaries. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- */
+ Copyright © 2021-2025 Dell Inc. or its subsidiaries. All Rights Reserved.
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+      http://www.apache.org/licenses/LICENSE-2.0
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+*/
 
 package gounity
 
@@ -19,29 +22,29 @@ import (
 	"strconv"
 
 	"github.com/dell/gounity/api"
-	"github.com/dell/gounity/apitypes"
-	"github.com/dell/gounity/gounityutil"
+	types "github.com/dell/gounity/apitypes"
+	util "github.com/dell/gounity/gounityutil"
 )
 
 // GetAllRealTimeMetricPaths gets all the Unity Metric paths. Consider using for debugging
 // or enumerating metrics. This will take a bit of time to complete.
-// - /api/apitypes/metric/instances?compact=true&filter=isRealtimeAvailable eq true
+// - /api/types/metric/instances?compact=true&filter=isRealtimeAvailable eq true
 func (c *UnityClientImpl) GetAllRealTimeMetricPaths(ctx context.Context) error {
-	log := gounityutil.GetRunIDLogger(ctx)
+	log := util.GetRunIDLogger(ctx)
 	filter := "isRealtimeAvailable eq true"
 
 	query := fmt.Sprintf("%s&compact=true", url.QueryEscape(filter))
 	queryURI := fmt.Sprintf(api.UnityInstancesFilter, api.UnityMetric, query)
 	log.Info("GetAllRealTimeMetricPaths: ", queryURI)
 
-	result := &apitypes.MetricPaths{}
+	result := &types.MetricPaths{}
 
 	err := c.executeWithRetryAuthenticate(ctx, http.MethodGet, queryURI, nil, result)
 	if err != nil {
 		return err
 	}
 
-	metricInstance := &apitypes.MetricInstance{}
+	metricInstance := &types.MetricInstance{}
 	for _, entry := range result.Entries {
 		instanceURI := fmt.Sprintf(api.UnityAPIGetResourceURI, api.UnityMetric, strconv.Itoa(entry.Cnt.ID))
 		err = c.executeWithRetryAuthenticate(ctx, http.MethodGet, instanceURI, nil, metricInstance)
@@ -53,15 +56,15 @@ func (c *UnityClientImpl) GetAllRealTimeMetricPaths(ctx context.Context) error {
 
 // GetMetricsCollection gets Unity MetricsCollection of the provided 'queryID'.
 // - The MetricCollection should exist already or you can create one using CreateXXXMetricsQuery.
-// - Example: GET /api/apitypes/metricQueryResult/instances?filter=queryId eq 37
-func (c *UnityClientImpl) GetMetricsCollection(ctx context.Context, queryID int) (*apitypes.MetricQueryResult, error) {
-	log := gounityutil.GetRunIDLogger(ctx)
+// - Example: GET /api/types/metricQueryResult/instances?filter=queryId eq 37
+func (c *UnityClientImpl) GetMetricsCollection(ctx context.Context, queryID int) (*types.MetricQueryResult, error) {
+	log := util.GetRunIDLogger(ctx)
 
 	filter := fmt.Sprintf("queryId eq %d", queryID)
 	queryURI := fmt.Sprintf(api.UnityInstancesFilter, api.UnityMetricQueryResult, url.QueryEscape(filter))
 	log.Info("GetMetricsCollection: ", queryURI)
 
-	metricsQueryResult := &apitypes.MetricQueryResult{}
+	metricsQueryResult := &types.MetricQueryResult{}
 	err := c.executeWithRetryAuthenticate(ctx, http.MethodGet, queryURI, nil, metricsQueryResult)
 	if err != nil {
 		return nil, err
@@ -72,19 +75,19 @@ func (c *UnityClientImpl) GetMetricsCollection(ctx context.Context, queryID int)
 
 // CreateRealTimeMetricsQuery create an MetricRealTime Collection of the given metric paths and collection interval.
 //   - The GetMetricsCollection interface can be called to retrieve results.
-//   - Example: POST api/apitypes/metricRealTimeQuery/instances
+//   - Example: POST api/types/metricRealTimeQuery/instances
 //     BODY:  {
 //     "paths": ["sp.*.cpu.summary.busyTicks" ,"sp.*.cpu.summary.idleTicks"],
 //     "interval": 5
 //     }
-func (c *UnityClientImpl) CreateRealTimeMetricsQuery(ctx context.Context, metricPaths []string, interval int) (*apitypes.MetricQueryCreateResponse, error) {
-	log := gounityutil.GetRunIDLogger(ctx)
+func (c *UnityClientImpl) CreateRealTimeMetricsQuery(ctx context.Context, metricPaths []string, interval int) (*types.MetricQueryCreateResponse, error) {
+	log := util.GetRunIDLogger(ctx)
 
 	createURI := fmt.Sprintf(api.UnityAPIInstanceTypeResources, api.UnityMetricRealTimeQuery)
 	log.Info("CreateRealTimeMetricQuery: ", createURI)
 
-	metricQueryResponse := &apitypes.MetricQueryCreateResponse{}
-	metricQuery := apitypes.MetricRealTimeQuery{
+	metricQueryResponse := &types.MetricQueryCreateResponse{}
+	metricQuery := types.MetricRealTimeQuery{
 		Interval: interval,
 		Paths:    metricPaths,
 	}
@@ -99,7 +102,7 @@ func (c *UnityClientImpl) CreateRealTimeMetricsQuery(ctx context.Context, metric
 // DeleteRealTimeMetricsQuery deletes the MetricRealTime Collection of the given queryID.
 // - Example: DELETE /api/instances/metricRealTimeQuery/37
 func (c *UnityClientImpl) DeleteRealTimeMetricsQuery(ctx context.Context, queryID int) error {
-	log := gounityutil.GetRunIDLogger(ctx)
+	log := util.GetRunIDLogger(ctx)
 	deleteURI := fmt.Sprintf(api.UnityAPIGetResourceURI, api.UnityMetricRealTimeQuery, strconv.Itoa(queryID))
 	log.Info("DeleteRealTimeMetricsQuery:", deleteURI)
 
@@ -112,14 +115,14 @@ func (c *UnityClientImpl) DeleteRealTimeMetricsQuery(ctx context.Context, queryI
 }
 
 // GetCapacity gets Unity capacity metrics at the system level.
-// - Example: GET /api/apitypes/systemCapacity/instances?fields=id,sizeFree,sizeTotal,sizeUsed,sizePreallocated,sizeSubscribed,totalLogicalSize
-func (c *UnityClientImpl) GetCapacity(ctx context.Context) (*apitypes.SystemCapacityMetricsQueryResult, error) {
-	log := gounityutil.GetRunIDLogger(ctx)
+// - Example: GET /api/types/systemCapacity/instances?fields=id,sizeFree,sizeTotal,sizeUsed,sizePreallocated,sizeSubscribed,totalLogicalSize
+func (c *UnityClientImpl) GetCapacity(ctx context.Context) (*types.SystemCapacityMetricsQueryResult, error) {
+	log := util.GetRunIDLogger(ctx)
 
 	queryURI := fmt.Sprintf(api.UnityAPIInstanceTypeResourcesWithFields, api.UnitySystemCapacity, SystemCapacityFields)
 	log.Info("GetSystemCapacityMetrics: ", queryURI)
 
-	systemCapacityMetricsQueryResult := &apitypes.SystemCapacityMetricsQueryResult{}
+	systemCapacityMetricsQueryResult := &types.SystemCapacityMetricsQueryResult{}
 	err := c.executeWithRetryAuthenticate(ctx, http.MethodGet, queryURI, nil, systemCapacityMetricsQueryResult)
 	if err != nil {
 		return nil, err

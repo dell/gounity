@@ -20,8 +20,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/dell/gounity/apitypes"
 	mocksapi "github.com/dell/gounity/mocks/api"
+	types "github.com/dell/gounity/apitypes"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -370,9 +370,9 @@ func TestExpandFilesystem(t *testing.T) {
 
 	// When filesystem.FileContent.SizeTotal == newSize
 	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(nil).Run(func(args mock.Arguments) {
-		resp := args.Get(5).(*apitypes.Filesystem)
-		*resp = apitypes.Filesystem{
-			FileContent: apitypes.FileContent{SizeTotal: 7516192768},
+		resp := args.Get(5).(*types.Filesystem)
+		*resp = types.Filesystem{
+			FileContent: types.FileContent{SizeTotal: 7516192768},
 		}
 	}).Once()
 	err = testConf.client.ExpandFilesystem(ctx, fsIDTemp, 7516192768)
@@ -380,9 +380,9 @@ func TestExpandFilesystem(t *testing.T) {
 
 	// When filesystem.FileContent.SizeTotal > newSize
 	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(nil).Run(func(args mock.Arguments) {
-		resp := args.Get(5).(*apitypes.Filesystem)
-		*resp = apitypes.Filesystem{
-			FileContent: apitypes.FileContent{SizeTotal: 7516192769},
+		resp := args.Get(5).(*types.Filesystem)
+		*resp = types.Filesystem{
+			FileContent: types.FileContent{SizeTotal: 7516192769},
 		}
 	}).Once()
 	err = testConf.client.ExpandFilesystem(ctx, fsIDTemp, 7516192768)

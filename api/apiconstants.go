@@ -14,12 +14,14 @@
 
 package api
 
-import "github.com/dell/gounity/apitypes"
+import (
+	types "github.com/dell/gounity/apitypes"
+)
 
 // InitiatorType constants
 const (
-	FCInitiatorType     apitypes.InitiatorType = "1"
-	ISCSCIInitiatorType apitypes.InitiatorType = "2"
+	FCInitiatorType     types.InitiatorType = "1"
+	ISCSCIInitiatorType types.InitiatorType = "2"
 )
 
 // constants and URIs
@@ -106,23 +108,21 @@ const (
 
 	// Action types for URL's
 
-	LunAction                 = "lun"
-	CreateLunAction           = "createLun"
-	FileSystemAction          = "filesystem"
-	CreateFSAction            = "createFilesystem"
-	NfsShareAction            = "nfsShare"
-	StorageResourceAction     = "storageResource"
-	HostAction                = "host"
-	IPInterface               = "ipInterface"
-	SnapAction                = "snap"
-	PoolAction                = "pool"
-	IOLimitPolicy             = "ioLimitPolicy"
-	LicenseAction             = "license"
-	HostInitiatorPathAction   = "hostInitiatorPath"
-	HostInitiatorAction       = "hostInitiator"
-	HostIPPortAction          = "hostIPPort"
-	NasServerAction           = "nasServer"
-	TenantAction              = "tenant"
-	UnityNFSServer            = "nfsServer"
-	UnityNFSv3AndNFSv4Enabled = "nfsv3Enabled,nfsv4Enabled"
+	LunAction               = "lun"
+	CreateLunAction         = "createLun"
+	FileSystemAction        = "filesystem"
+	CreateFSAction          = "createFilesystem"
+	NfsShareAction          = "nfsShare"
+	StorageResourceAction   = "storageResource"
+	HostAction              = "host"
+	IPInterface             = "ipInterface"
+	SnapAction              = "snap"
+	PoolAction              = "pool"
+	IOLimitPolicy           = "ioLimitPolicy"
+	LicenseAction           = "license"
+	HostInitiatorPathAction = "hostInitiatorPath"
+	HostInitiatorAction     = "hostInitiator"
+	HostIPPortAction        = "hostIPPort"
+	NasServerAction         = "nasServer"
+	TenantAction            = "tenant"
 )

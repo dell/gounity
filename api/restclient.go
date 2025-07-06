@@ -29,8 +29,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/dell/gounity/apitypes"
-	"github.com/dell/gounity/gounityutil"
+	types "github.com/dell/gounity/apitypes"
+	util "github.com/dell/gounity/gounityutil"
 )
 
 // Header Key constants
@@ -148,7 +148,7 @@ func New(_ context.Context, host string, opts ClientOptions, debug bool) (Client
 		c.http.Transport = &http.Transport{
 			TLSClientConfig: &tls.Config{
 				InsecureSkipVerify: true,
-				CipherSuites:       gounityutil.GetSecuredCipherSuites(),
+				CipherSuites:       util.GetSecuredCipherSuites(),
 			},
 		}
 	} else {
@@ -160,7 +160,7 @@ func New(_ context.Context, host string, opts ClientOptions, debug bool) (Client
 			TLSClientConfig: &tls.Config{
 				RootCAs:            pool,
 				InsecureSkipVerify: false,
-				CipherSuites:       gounityutil.GetSecuredCipherSuites(),
+				CipherSuites:       util.GetSecuredCipherSuites(),
 				MinVersion:         tls.VersionTLS12,
 			},
 		}
@@ -206,7 +206,7 @@ func endsWithSlash(s string) bool {
 }
 
 func (c *client) DoAndGetResponseBody(ctx context.Context, method, uri string, headers map[string]string, body interface{}) (*http.Response, error) {
-	log := gounityutil.GetRunIDLogger(ctx)
+	log := util.GetRunIDLogger(ctx)
 	var (
 		err                error
 		req                *http.Request
@@ -312,7 +312,7 @@ func (c *client) DoAndGetResponseBody(ctx context.Context, method, uri string, h
 }
 
 func (c *client) DoWithHeaders(ctx context.Context, method, uri string, headers map[string]string, body, resp interface{}) error {
-	log := gounityutil.GetRunIDLogger(ctx)
+	log := util.GetRunIDLogger(ctx)
 	if body != nil {
 		data, _ := json.Marshal(body)
 		strBody := strings.ReplaceAll(string(data), "\"", "")
@@ -337,15 +337,15 @@ func (c *client) DoWithHeaders(ctx context.Context, method, uri string, headers 
 			}
 		}
 	case res.StatusCode == 401:
-		jsonError := &apitypes.Error{}
+		jsonError := &types.Error{}
 		if err := json.NewDecoder(res.Body).Decode(jsonError); err != nil {
 			jsonError.ErrorContent.HTTPStatusCode = res.StatusCode
-			jsonError.ErrorContent.Message = append(jsonError.ErrorContent.Message, apitypes.ErrorMessage{EnUS: http.StatusText(res.StatusCode)})
+			jsonError.ErrorContent.Message = append(jsonError.ErrorContent.Message, types.ErrorMessage{EnUS: http.StatusText(res.StatusCode)})
 			return jsonError
 		}
 
 		jsonError.ErrorContent.HTTPStatusCode = res.StatusCode
-		jsonError.ErrorContent.Message = append(jsonError.ErrorContent.Message, apitypes.ErrorMessage{EnUS: string(res.Status)})
+		jsonError.ErrorContent.Message = append(jsonError.ErrorContent.Message, types.ErrorMessage{EnUS: string(res.Status)})
 		return jsonError
 	default:
 		log.Debugf("Invalid Response received Body: %s error: %v", body, err)
@@ -363,8 +363,8 @@ func (c *client) GetToken() string {
 }
 
 func (c *client) ParseJSONError(ctx context.Context, r *http.Response) error {
-	log := gounityutil.GetRunIDLogger(ctx)
-	jsonError := &apitypes.Error{}
+	log := util.GetRunIDLogger(ctx)
+	jsonError := &types.Error{}
 	err := json.NewDecoder(r.Body).Decode(jsonError)
 	if err != nil && err != io.EOF {
 		return fmt.Errorf("ParseJSONError: %v", err)

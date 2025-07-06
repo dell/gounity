@@ -20,8 +20,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/dell/gounity/apitypes"
 	mocksapi "github.com/dell/gounity/mocks/api"
+	types "github.com/dell/gounity/apitypes"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -56,9 +56,9 @@ func TestGetMetricsCollection(t *testing.T) {
 	ctx := context.Background()
 	queryID := 12345
 
-	metricsQueryResult := &apitypes.MetricQueryResult{}
+	metricsQueryResult := &types.MetricQueryResult{}
 	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Run(func(args mock.Arguments) {
-		resp := args.Get(5).(*apitypes.MetricQueryResult)
+		resp := args.Get(5).(*types.MetricQueryResult)
 		if resp != nil {
 			*resp = *metricsQueryResult
 		}
@@ -80,11 +80,11 @@ func TestGetAllRealTimeMetricPaths(t *testing.T) {
 	ctx := context.Background()
 
 	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(nil).Run(func(args mock.Arguments) {
-		resp := args.Get(5).(*apitypes.MetricPaths)
-		*resp = apitypes.MetricPaths{
-			Entries: []apitypes.MetricEntries{
+		resp := args.Get(5).(*types.MetricPaths)
+		*resp = types.MetricPaths{
+			Entries: []types.MetricEntries{
 				{
-					Cnt: apitypes.MetricContent{
+					Cnt: types.MetricContent{
 						ID: 12345,
 					},
 				},
@@ -92,9 +92,9 @@ func TestGetAllRealTimeMetricPaths(t *testing.T) {
 		}
 	}).Once()
 	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(nil).Run(func(args mock.Arguments) {
-		resp := args.Get(5).(*apitypes.MetricInstance)
-		*resp = apitypes.MetricInstance{
-			Content: apitypes.MetricInfo{
+		resp := args.Get(5).(*types.MetricInstance)
+		*resp = types.MetricInstance{
+			Content: types.MetricInfo{
 				IsRealtimeAvailable: true,
 			},
 		}
@@ -115,9 +115,9 @@ func TestCreateRealTimeMetricsQuery(t *testing.T) {
 	ctx := context.Background()
 
 	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(nil).Run(func(args mock.Arguments) {
-		resp := args.Get(5).(*apitypes.MetricQueryCreateResponse)
-		*resp = apitypes.MetricQueryCreateResponse{
-			Content: apitypes.MetricQueryResponseContent{
+		resp := args.Get(5).(*types.MetricQueryCreateResponse)
+		*resp = types.MetricQueryCreateResponse{
+			Content: types.MetricQueryResponseContent{
 				Paths:    []string{"dummy"},
 				Interval: 0,
 			},
@@ -139,9 +139,9 @@ func TestGetCapacity(t *testing.T) {
 	ctx := context.Background()
 
 	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(nil).Run(func(args mock.Arguments) {
-		resp := args.Get(5).(*apitypes.SystemCapacityMetricsQueryResult)
-		*resp = apitypes.SystemCapacityMetricsQueryResult{
-			Entries: []apitypes.SystemCapacityMetricsResultEntry{},
+		resp := args.Get(5).(*types.SystemCapacityMetricsQueryResult)
+		*resp = types.SystemCapacityMetricsQueryResult{
+			Entries: []types.SystemCapacityMetricsResultEntry{},
 		}
 	}).Once()
 	_, err := testConf.client.GetCapacity(ctx)
