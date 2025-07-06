@@ -1211,6 +1211,36 @@ func (_m *UnityClient) FindVolumeByName(ctx context.Context, volName string) (*t
 	return r0, r1
 }
 
+// GetAllNFSServers provides a mock function with given fields: ctx
+func (_m *UnityClient) GetAllNFSServers(ctx context.Context) (*types.NFSServersResponse, error) {
+	ret := _m.Called(ctx)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetAllNFSServers")
+	}
+
+	var r0 *types.NFSServersResponse
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context) (*types.NFSServersResponse, error)); ok {
+		return rf(ctx)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context) *types.NFSServersResponse); ok {
+		r0 = rf(ctx)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*types.NFSServersResponse)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = rf(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetAllRealTimeMetricPaths provides a mock function with given fields: ctx
 func (_m *UnityClient) GetAllRealTimeMetricPaths(ctx context.Context) error {
 	ret := _m.Called(ctx)
