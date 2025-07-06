@@ -15,8 +15,8 @@ import (
 	"time"
 
 	"github.com/dell/gounity/api"
-	"github.com/dell/gounity/apitypes"
-	"github.com/dell/gounity/gounityutil"
+	types "github.com/dell/gounity/apitypes"
+	util "github.com/dell/gounity/gounityutil"
 )
 
 // LicenseType is string
@@ -68,8 +68,8 @@ var MarkVolumeForDeletion = "csi-marked-vol-for-deletion"
 //  2. Size of Lun should be in bytes.
 func (c *UnityClientImpl) CreateLun(ctx context.Context, name, poolID, description string, size uint64, fastVPTieringPolicy int,
 	hostIOLimitID string, isThinEnabled, isDataReductionEnabled bool,
-) (*apitypes.Volume, error) {
-	log := gounityutil.GetRunIDLogger(ctx)
+) (*types.Volume, error) {
+	log := util.GetRunIDLogger(ctx)
 
 	if name == "" {
 		return nil, errors.New("lun name should not be empty")
@@ -84,11 +84,11 @@ func (c *UnityClientImpl) CreateLun(ctx context.Context, name, poolID, descripti
 		return nil, fmt.Errorf("unable to get PoolID (%s) Error:%v", poolID, err)
 	}
 
-	storagePool := apitypes.StoragePoolID{
+	storagePool := types.StoragePoolID{
 		PoolID: pool.StoragePoolContent.ID,
 	}
 
-	lunParams := apitypes.LunParameters{
+	lunParams := types.LunParameters{
 		StoragePool: &storagePool,
 		Size:        size,
 	}
@@ -116,10 +116,10 @@ func (c *UnityClientImpl) CreateLun(ctx context.Context, name, poolID, descripti
 	}
 
 	if hostIOLimitID != "" {
-		ioLimitPolicyParam := apitypes.IoLimitPolicyParam{
+		ioLimitPolicyParam := types.IoLimitPolicyParam{
 			ID: hostIOLimitID,
 		}
-		ioLimitParameters := apitypes.HostIoLimitParameters{
+		ioLimitParameters := types.HostIoLimitParameters{
 			IoLimitPolicyParam: &ioLimitPolicyParam,
 		}
 
@@ -128,7 +128,7 @@ func (c *UnityClientImpl) CreateLun(ctx context.Context, name, poolID, descripti
 
 	if pool != nil && pool.StoragePoolContent.PoolFastVP.Status != 0 {
 		log.Debug("FastVP is enabled")
-		fastVPParameters := apitypes.FastVPParameters{
+		fastVPParameters := types.FastVPParameters{
 			TieringPolicy: fastVPTieringPolicy,
 		}
 		lunParams.FastVPParameters = &fastVPParameters
@@ -139,13 +139,13 @@ func (c *UnityClientImpl) CreateLun(ctx context.Context, name, poolID, descripti
 		}
 	}
 
-	volumeReqParam := apitypes.LunCreateParam{
+	volumeReqParam := types.LunCreateParam{
 		Name:          name,
 		Description:   description,
 		LunParameters: &lunParams,
 	}
 
-	volumeResp := &apitypes.Volume{}
+	volumeResp := &types.Volume{}
 	err = c.executeWithRetryAuthenticate(ctx,
 		http.MethodPost, fmt.Sprintf(api.UnityAPIStorageResourceActionURI, api.CreateLunAction), volumeReqParam, volumeResp)
 	if err != nil {
@@ -155,11 +155,11 @@ func (c *UnityClientImpl) CreateLun(ctx context.Context, name, poolID, descripti
 }
 
 // FindVolumeByName - Find the volume by it's name. If the volume is not found, an error will be returned.
-func (c *UnityClientImpl) FindVolumeByName(ctx context.Context, volName string) (*apitypes.Volume, error) {
+func (c *UnityClientImpl) FindVolumeByName(ctx context.Context, volName string) (*types.Volume, error) {
 	if len(volName) == 0 {
 		return nil, fmt.Errorf("lun Name shouldn't be empty")
 	}
-	volumeResp := &apitypes.Volume{}
+	volumeResp := &types.Volume{}
 	err := c.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityAPIGetResourceByNameWithFieldsURI, api.LunAction, volName, LunDisplayFields), nil, volumeResp)
 	if err != nil {
 		return nil, fmt.Errorf("unable to find volume by name %s", volName)
@@ -169,12 +169,12 @@ func (c *UnityClientImpl) FindVolumeByName(ctx context.Context, volName string) 
 }
 
 // FindVolumeByID - Find the volume by it's Id. If the volume is not found, an error will be returned.
-func (c *UnityClientImpl) FindVolumeByID(ctx context.Context, volID string) (*apitypes.Volume, error) {
-	log := gounityutil.GetRunIDLogger(ctx)
+func (c *UnityClientImpl) FindVolumeByID(ctx context.Context, volID string) (*types.Volume, error) {
+	log := util.GetRunIDLogger(ctx)
 	if len(volID) == 0 {
 		return nil, errors.New("lun ID shouldn't be empty")
 	}
-	volumeResp := &apitypes.Volume{}
+	volumeResp := &types.Volume{}
 	err := c.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityAPIGetResourceWithFieldsURI, api.LunAction, volID, LunDisplayFields), nil, volumeResp)
 	if err != nil {
 		if strings.Contains(err.Error(), VolumeNotFoundErrorCode) {
@@ -187,9 +187,9 @@ func (c *UnityClientImpl) FindVolumeByID(ctx context.Context, volID string) (*ap
 }
 
 // ListVolumes - list volumes
-func (c *UnityClientImpl) ListVolumes(ctx context.Context, startToken int, maxEntries int) ([]apitypes.Volume, int, error) {
-	log := gounityutil.GetRunIDLogger(ctx)
-	volumeResp := &apitypes.ListVolumes{}
+func (c *UnityClientImpl) ListVolumes(ctx context.Context, startToken int, maxEntries int) ([]types.Volume, int, error) {
+	log := util.GetRunIDLogger(ctx)
+	volumeResp := &types.ListVolumes{}
 	nextToken := startToken + 1
 	lunURI := fmt.Sprintf(api.UnityAPIInstanceTypeResourcesWithFields, api.LunAction, LunDisplayFields)
 
@@ -211,7 +211,7 @@ func (c *UnityClientImpl) ListVolumes(ctx context.Context, startToken int, maxEn
 
 // DeleteVolume - Delete Volume by its ID. If the Volume is not present on the array, an error will be returned.
 func (c *UnityClientImpl) DeleteVolume(ctx context.Context, volumeID string) error {
-	log := gounityutil.GetRunIDLogger(ctx)
+	log := util.GetRunIDLogger(ctx)
 	if len(volumeID) == 0 {
 		return errors.New("Volume Id cannot be empty")
 	}
@@ -266,19 +266,19 @@ func (c *UnityClientImpl) DeleteVolume(ctx context.Context, volumeID string) err
 
 // ExportVolume - Export volume to a host
 func (c *UnityClientImpl) ExportVolume(ctx context.Context, volID, hostID string) error {
-	hostIDContent := apitypes.HostIDContent{
+	hostIDContent := types.HostIDContent{
 		ID: hostID,
 	}
 
-	hostAccess := apitypes.HostAccess{
+	hostAccess := types.HostAccess{
 		HostIDContent: &hostIDContent,
 		AccessMask:    "1", // Hardcoded as 1 so that the host can have access to production LUNs only.
 	}
-	hostAccessArray := []apitypes.HostAccess{hostAccess}
-	lunParams := apitypes.LunHostAccessParameters{
+	hostAccessArray := []types.HostAccess{hostAccess}
+	lunParams := types.LunHostAccessParameters{
 		HostAccess: &hostAccessArray,
 	}
-	lunModifyParam := apitypes.LunHostAccessModifyParam{
+	lunModifyParam := types.LunHostAccessModifyParam{
 		LunHostAccessParameters: &lunParams,
 	}
 	return c.executeWithRetryAuthenticate(ctx, http.MethodPost, fmt.Sprintf(api.UnityModifyLunURI, volID), lunModifyParam, nil)
@@ -286,23 +286,23 @@ func (c *UnityClientImpl) ExportVolume(ctx context.Context, volID, hostID string
 
 // ModifyVolumeExport - Export volume to multiple hosts / Modify the host access list on a given Volume
 func (c *UnityClientImpl) ModifyVolumeExport(ctx context.Context, volID string, hostIDList []string) error {
-	hostAccessArray := []apitypes.HostAccess{}
+	hostAccessArray := []types.HostAccess{}
 	for _, hostID := range hostIDList {
-		hostIDContent := apitypes.HostIDContent{
+		hostIDContent := types.HostIDContent{
 			ID: hostID,
 		}
 
-		hostAccess := apitypes.HostAccess{
+		hostAccess := types.HostAccess{
 			HostIDContent: &hostIDContent,
 			AccessMask:    "1", // Hardcoded as 1 so that the host can have access to production LUNs only.
 		}
 		hostAccessArray = append(hostAccessArray, hostAccess)
 	}
 
-	lunParams := apitypes.LunHostAccessParameters{
+	lunParams := types.LunHostAccessParameters{
 		HostAccess: &hostAccessArray,
 	}
-	lunModifyParam := apitypes.LunHostAccessModifyParam{
+	lunModifyParam := types.LunHostAccessModifyParam{
 		LunHostAccessParameters: &lunParams,
 	}
 	return c.executeWithRetryAuthenticate(ctx, http.MethodPost, fmt.Sprintf(api.UnityModifyLunURI, volID), lunModifyParam, nil)
@@ -310,11 +310,11 @@ func (c *UnityClientImpl) ModifyVolumeExport(ctx context.Context, volID string, 
 
 // UnexportVolume - Unexport volume
 func (c *UnityClientImpl) UnexportVolume(ctx context.Context, volID string) error {
-	hostAccessArray := []apitypes.HostAccess{}
-	lunParams := apitypes.LunHostAccessParameters{
+	hostAccessArray := []types.HostAccess{}
+	lunParams := types.LunHostAccessParameters{
 		HostAccess: &hostAccessArray,
 	}
-	lunModifyParam := apitypes.LunHostAccessModifyParam{
+	lunModifyParam := types.LunHostAccessModifyParam{
 		LunHostAccessParameters: &lunParams,
 	}
 	return c.executeWithRetryAuthenticate(ctx, http.MethodPost, fmt.Sprintf(api.UnityModifyLunURI, volID), lunModifyParam, nil)
@@ -322,7 +322,7 @@ func (c *UnityClientImpl) UnexportVolume(ctx context.Context, volID string) erro
 
 // ExpandVolume - Expand volume to provided capacity
 func (c *UnityClientImpl) ExpandVolume(ctx context.Context, volumeID string, newSize uint64) error {
-	log := gounityutil.GetRunIDLogger(ctx)
+	log := util.GetRunIDLogger(ctx)
 	vol, err := c.FindVolumeByID(ctx, volumeID)
 	if err != nil {
 		return fmt.Errorf("unable to find volume Id %s Error: %v", volumeID, err)
@@ -333,21 +333,21 @@ func (c *UnityClientImpl) ExpandVolume(ctx context.Context, volumeID string, new
 	} else if vol.VolumeContent.SizeTotal > newSize {
 		return fmt.Errorf("requested new capacity smaller than existing capacity")
 	}
-	lunParams := apitypes.LunExpandParameters{
+	lunParams := types.LunExpandParameters{
 		Size: newSize,
 	}
-	volumeReqParam := apitypes.LunExpandModifyParam{
+	volumeReqParam := types.LunExpandModifyParam{
 		LunParameters: &lunParams,
 	}
 	return c.executeWithRetryAuthenticate(ctx, http.MethodPost, fmt.Sprintf(api.UnityAPIModifyLunURI, volumeID), volumeReqParam, nil)
 }
 
 // FindHostIOLimitByName - Find Host IO limit
-func (c *UnityClientImpl) FindHostIOLimitByName(ctx context.Context, hostIoPolicyName string) (*apitypes.IoLimitPolicy, error) {
+func (c *UnityClientImpl) FindHostIOLimitByName(ctx context.Context, hostIoPolicyName string) (*types.IoLimitPolicy, error) {
 	if len(hostIoPolicyName) == 0 {
 		return nil, errors.New("policy Name shouldn't be empty")
 	}
-	ioLimitPolicyResp := &apitypes.IoLimitPolicy{}
+	ioLimitPolicyResp := &types.IoLimitPolicy{}
 	err := c.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityAPIGetResourceByNameWithFieldsURI, api.IOLimitPolicy, hostIoPolicyName, HostIOLimitFields), nil, ioLimitPolicyResp)
 	if err != nil {
 		return nil, fmt.Errorf("unable to find IO Limit Policy:%s Error: %v", hostIoPolicyName, err)
@@ -356,22 +356,22 @@ func (c *UnityClientImpl) FindHostIOLimitByName(ctx context.Context, hostIoPolic
 }
 
 // CreteLunThinClone - Create a lun thin clone
-func (c *UnityClientImpl) CreteLunThinClone(ctx context.Context, name, snapID, volID string) (*apitypes.Volume, error) {
-	snapIDContent := apitypes.SnapshotIDContent{
+func (c *UnityClientImpl) CreteLunThinClone(ctx context.Context, name, snapID, volID string) (*types.Volume, error) {
+	snapIDContent := types.SnapshotIDContent{
 		ID: snapID,
 	}
-	createLunThinCloneParam := apitypes.CreateLunThinCloneParam{
+	createLunThinCloneParam := types.CreateLunThinCloneParam{
 		SnapIDContent: &snapIDContent,
 		Name:          name,
 	}
-	volumeResp := &apitypes.Volume{}
+	volumeResp := &types.Volume{}
 	err := c.executeWithRetryAuthenticate(ctx, http.MethodPost, fmt.Sprintf(api.UnityAPICreateLunThinCloneURI, volID), createLunThinCloneParam, volumeResp)
 	return volumeResp, err
 }
 
 // isFeatureLicensed - Get License information
-func (c *UnityClientImpl) isFeatureLicensed(ctx context.Context, featureName LicenseType) (*apitypes.LicenseInfo, error) {
-	licenseInfoResp := &apitypes.LicenseInfo{}
+func (c *UnityClientImpl) isFeatureLicensed(ctx context.Context, featureName LicenseType) (*types.LicenseInfo, error) {
+	licenseInfoResp := &types.LicenseInfo{}
 	err := c.executeWithRetryAuthenticate(ctx, http.MethodGet, fmt.Sprintf(api.UnityAPIGetResourceByNameWithFieldsURI, api.LicenseAction, featureName, LicenseInfoDisplayFields), nil, licenseInfoResp)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get license info for feature: %s", featureName)
@@ -380,8 +380,8 @@ func (c *UnityClientImpl) isFeatureLicensed(ctx context.Context, featureName Lic
 }
 
 // CreateCloneFromVolume - Volume cloning
-func (c *UnityClientImpl) CreateCloneFromVolume(ctx context.Context, name, volID string) (*apitypes.Volume, error) {
-	log := gounityutil.GetRunIDLogger(ctx)
+func (c *UnityClientImpl) CreateCloneFromVolume(ctx context.Context, name, volID string) (*types.Volume, error) {
+	log := util.GetRunIDLogger(ctx)
 	// Create snapshot for cloning
 	snapName := SnapForClone + strconv.FormatInt(time.Now().Unix(), 10)
 	snapResp, err := c.CreateSnapshot(ctx, volID, snapName, "", "")
@@ -408,15 +408,15 @@ func (c *UnityClientImpl) CreateCloneFromVolume(ctx context.Context, name, volID
 
 // RenameVolume - Rename Volume
 func (c *UnityClientImpl) RenameVolume(ctx context.Context, newName, volID string) error {
-	lunParams := apitypes.LunParameters{
+	lunParams := types.LunParameters{
 		Name: newName,
 	}
 	return c.executeWithRetryAuthenticate(ctx, http.MethodPost, fmt.Sprintf(api.UnityModifyLunURI, volID), lunParams, nil)
 }
 
 // GetMaxVolumeSize - Returns the max size of a volume supported by the array
-func (c *UnityClientImpl) GetMaxVolumeSize(ctx context.Context, systemLimitID string) (*apitypes.MaxVolumSizeInfo, error) {
-	volumeResp := &apitypes.MaxVolumSizeInfo{}
+func (c *UnityClientImpl) GetMaxVolumeSize(ctx context.Context, systemLimitID string) (*types.MaxVolumSizeInfo, error) {
+	volumeResp := &types.MaxVolumSizeInfo{}
 	if len(systemLimitID) == 0 {
 		return nil, errors.New("system limit ID shouldn't be empty")
 	}

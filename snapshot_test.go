@@ -21,7 +21,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/dell/gounity/apitypes"
+	types "github.com/dell/gounity/apitypes"
 	mocksapi "github.com/dell/gounity/mocks/api"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -48,10 +48,10 @@ func TestCreateSnapshot(t *testing.T) {
 	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).ExpectedCalls = nil
 	ctx := context.Background()
 	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
-	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.AnythingOfType("*apitypes.LicenseInfo")).Return(nil).
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.AnythingOfType("*types.LicenseInfo")).Return(nil).
 		Run(func(args mock.Arguments) {
-			resp := args.Get(5).(*apitypes.LicenseInfo)
-			*resp = apitypes.LicenseInfo{LicenseInfoContent: apitypes.LicenseInfoContent{IsInstalled: true, IsValid: true}}
+			resp := args.Get(5).(*types.LicenseInfo)
+			*resp = types.LicenseInfo{LicenseInfoContent: types.LicenseInfoContent{IsInstalled: true, IsValid: true}}
 		}).Twice()
 
 	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
@@ -256,12 +256,12 @@ func TestCopySnapshot(t *testing.T) {
 	fmt.Println("Begin - Copy Snapshot Test")
 	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).ExpectedCalls = nil
 	ctx := context.Background()
-	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.AnythingOfType("*apitypes.CopySnapshots")).Return(nil).
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.AnythingOfType("*types.CopySnapshots")).Return(nil).
 		Run(func(args mock.Arguments) {
-			resp := args.Get(5).(*apitypes.CopySnapshots)
-			*resp = apitypes.CopySnapshots{
-				CopySnapshotsContent: apitypes.CopySnapshotsContent{
-					Copies: []apitypes.StorageResource{
+			resp := args.Get(5).(*types.CopySnapshots)
+			*resp = types.CopySnapshots{
+				CopySnapshotsContent: types.CopySnapshotsContent{
+					Copies: []types.StorageResource{
 						{ID: snapCopyID},
 					},
 				},
@@ -310,8 +310,8 @@ func TestDeleteFilesystemAsSnapshot(t *testing.T) {
 	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).ExpectedCalls = nil
 	ctx := context.Background()
 	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
-	sourceFs := &apitypes.Filesystem{
-		FileContent: apitypes.FileContent{
+	sourceFs := &types.Filesystem{
+		FileContent: types.FileContent{
 			ID:          "test-filesystem-id",
 			Description: "test description",
 		},
@@ -320,8 +320,8 @@ func TestDeleteFilesystemAsSnapshot(t *testing.T) {
 	assert.Equal(t, nil, err)
 
 	// MarkFilesystemForDeletion
-	sourceFs = &apitypes.Filesystem{
-		FileContent: apitypes.FileContent{
+	sourceFs = &types.Filesystem{
+		FileContent: types.FileContent{
 			ID:          "test-filesystem-id-delete",
 			Description: "csi-marked-filesystem-for-deletion(do not remove this from description)",
 		},
