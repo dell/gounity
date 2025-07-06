@@ -1725,7 +1725,8 @@ func (_m *UnityClient) UnexportVolume(ctx context.Context, volID string) error {
 func NewUnityClient(t interface {
 	mock.TestingT
 	Cleanup(func())
-}) *UnityClient {
+},
+) *UnityClient {
 	mock := &UnityClient{}
 	mock.Mock.Test(t)
 
