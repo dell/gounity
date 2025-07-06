@@ -30,7 +30,7 @@ const (
 	XEmcRestClient      = "X-EMC-REST-CLIENT"
 	// Base resource URIs
 	unityRootAPI  = "/api"
-	unityAPITypes = unityRootAPI + "/apitypes"
+	unityAPITypes = unityRootAPI + "/types"
 
 	UnityAPIInstanceTypeResources = unityAPITypes + "/%s" + "/instances"
 
@@ -104,7 +104,7 @@ const (
 	// UnitySystemCapacity is used to get capacity metrics for Unity XT
 	UnitySystemCapacity = "systemCapacity"
 
-	// Action apitypes for URL's
+	// Action types for URL's
 
 	LunAction                 = "lun"
 	CreateLunAction           = "createLun"
