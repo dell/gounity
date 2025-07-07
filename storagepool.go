@@ -12,7 +12,7 @@ import (
 	"net/http"
 
 	"github.com/dell/gounity/api"
-	"github.com/dell/gounity/types"
+	types "github.com/dell/gounity/apitypes"
 )
 
 // FindStoragePoolByName - Find the volume by it's name. If the volume is not found, an error will be returned.

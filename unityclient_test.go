@@ -23,7 +23,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/dell/gounity/types"
+	types "github.com/dell/gounity/apitypes"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

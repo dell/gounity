@@ -20,8 +20,8 @@ import (
 	"fmt"
 	"testing"
 
+	types "github.com/dell/gounity/apitypes"
 	mocksapi "github.com/dell/gounity/mocks/api"
-	"github.com/dell/gounity/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -427,4 +427,21 @@ func TestDeleteFilesystem(t *testing.T) {
 	assert.ErrorContainsf(t, err, "Error", "mark filesystem %s for deletion failed.", fsIDTemp)
 
 	fmt.Println("Delete Filesystem Test Successful")
+}
+
+func TestGetAllNFSServers(t *testing.T) {
+	fmt.Println("Begin - Get All NFS Servers Test")
+	ctx := context.Background()
+
+	// Test case :  Successful GET call
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
+	_, err := testConf.client.GetAllNFSServers(ctx)
+	assert.Equal(t, nil, err)
+
+	// Test case :  Failed GET call
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(errors.New("Failed to get all NFS servers")).Once()
+	_, err = testConf.client.GetAllNFSServers(ctx)
+	assert.Error(t, err)
+
+	fmt.Println("Get All NFS Servers test successful")
 }

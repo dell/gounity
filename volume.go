@@ -15,8 +15,8 @@ import (
 	"time"
 
 	"github.com/dell/gounity/api"
-	"github.com/dell/gounity/types"
-	"github.com/dell/gounity/util"
+	types "github.com/dell/gounity/apitypes"
+	util "github.com/dell/gounity/gounityutil"
 )
 
 // LicenseType is string

@@ -20,8 +20,8 @@ import (
 	"fmt"
 	"testing"
 
+	types "github.com/dell/gounity/apitypes"
 	mocksapi "github.com/dell/gounity/mocks/api"
-	"github.com/dell/gounity/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -76,7 +76,7 @@ func TestCreateLun(t *testing.T) {
 	// Mock FindStoragePoolByID to return nil
 	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
 	// Mock isFeatureLicensed to return expected response
-	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.AnythingOfType("*types.LicenseInfo")).Return(nil).
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.AnythingOfType("*apitypes.LicenseInfo")).Return(nil).
 		Run(func(args mock.Arguments) {
 			resp := args.Get(5).(*types.LicenseInfo)
 			*resp = types.LicenseInfo{LicenseInfoContent: types.LicenseInfoContent{IsInstalled: true, IsValid: true}}
@@ -113,7 +113,7 @@ func TestCreateLun(t *testing.T) {
 	// Mock FindStoragePoolByID to return no error
 	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
 	// Mock isFeatureLicensed to return expected response
-	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.AnythingOfType("*types.LicenseInfo")).Return(nil).
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.AnythingOfType("*apitypes.LicenseInfo")).Return(nil).
 		Run(func(args mock.Arguments) {
 			resp := args.Get(5).(*types.LicenseInfo)
 			*resp = types.LicenseInfo{LicenseInfoContent: types.LicenseInfoContent{IsInstalled: true, IsValid: true}}

@@ -1,5 +1,5 @@
 /*
- Copyright © 2019 Dell Inc. or its subsidiaries. All Rights Reserved.
+ Copyright © 2019-2025 Dell Inc. or its subsidiaries. All Rights Reserved.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -22,8 +22,8 @@ import (
 	"strings"
 
 	"github.com/dell/gounity/api"
-	"github.com/dell/gounity/types"
-	"github.com/dell/gounity/util"
+	types "github.com/dell/gounity/apitypes"
+	util "github.com/dell/gounity/gounityutil"
 )
 
 // FilesystemAccessType is integer

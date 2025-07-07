@@ -1,5 +1,5 @@
 /*
- Copyright © 2019 Dell Inc. or its subsidiaries. All Rights Reserved.
+ Copyright © 2019-2025 Dell Inc. or its subsidiaries. All Rights Reserved.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -25,10 +25,10 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/dell/gounity/util"
+	util "github.com/dell/gounity/gounityutil"
 
 	"github.com/dell/gounity/api"
-	"github.com/dell/gounity/types"
+	types "github.com/dell/gounity/apitypes"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -113,6 +113,7 @@ type UnityClient interface {
 	ModifyVolumeExport(ctx context.Context, volID string, hostIDList []string) error
 	RenameVolume(ctx context.Context, newName string, volID string) error
 	UnexportVolume(ctx context.Context, volID string) error
+	GetAllNFSServers(ctx context.Context) (*types.NFSServersResponse, error)
 }
 
 // UnityClientImpl Struct holds the configuration & REST Client.
@@ -245,7 +246,7 @@ func (c *UnityClientImpl) executeWithRetryAuthenticate(ctx context.Context, meth
 			return c.api.DoWithHeaders(ctx, method, uri, headers, body, resp)
 		}
 	} else {
-		log.Debugf("Error is not a type of \"*types.Error\". Error: %v", err)
+		log.Debugf("Error is not a type of \"*apitypes.Error\". Error: %v", err)
 	}
 	log.WithError(err).Debug("failed to invoke Unity REST API server")
 

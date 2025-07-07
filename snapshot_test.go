@@ -21,8 +21,8 @@ import (
 	"testing"
 	"time"
 
+	types "github.com/dell/gounity/apitypes"
 	mocksapi "github.com/dell/gounity/mocks/api"
-	"github.com/dell/gounity/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -48,7 +48,7 @@ func TestCreateSnapshot(t *testing.T) {
 	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).ExpectedCalls = nil
 	ctx := context.Background()
 	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", anyArgs...).Return(nil).Once()
-	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.AnythingOfType("*types.LicenseInfo")).Return(nil).
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.AnythingOfType("*apitypes.LicenseInfo")).Return(nil).
 		Run(func(args mock.Arguments) {
 			resp := args.Get(5).(*types.LicenseInfo)
 			*resp = types.LicenseInfo{LicenseInfoContent: types.LicenseInfoContent{IsInstalled: true, IsValid: true}}
@@ -256,7 +256,7 @@ func TestCopySnapshot(t *testing.T) {
 	fmt.Println("Begin - Copy Snapshot Test")
 	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).ExpectedCalls = nil
 	ctx := context.Background()
-	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.AnythingOfType("*types.CopySnapshots")).Return(nil).
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.AnythingOfType("*apitypes.CopySnapshots")).Return(nil).
 		Run(func(args mock.Arguments) {
 			resp := args.Get(5).(*types.CopySnapshots)
 			*resp = types.CopySnapshots{

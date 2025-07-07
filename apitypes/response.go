@@ -1,5 +1,5 @@
 /*
- Copyright © 2020 Dell Inc. or its subsidiaries. All Rights Reserved.
+ Copyright © 2020-2025 Dell Inc. or its subsidiaries. All Rights Reserved.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
  limitations under the License.
 */
 
-package types
+package apitypes
 
 import (
 	"time"
@@ -335,6 +335,20 @@ type NASServerContent struct {
 	ID        string    `json:"id"`
 	Name      string    `json:"name,omitempty"`
 	NFSServer NFSServer `json:"nfsServer,omitempty"`
+}
+
+type NFSServersResponse struct {
+	Base    string           `json:"@base"`
+	Updated time.Time        `json:"updated"`
+	Links   []Link           `json:"links"`
+	Entries []NFSServerEntry `json:"entries"`
+}
+
+type NFSServerEntry struct {
+	Base    string    `json:"@base"`
+	Updated time.Time `json:"updated"`
+	Links   []Link    `json:"links"`
+	Content NFSServer `json:"content"`
 }
 
 // NFSServer struct to capture NFS Server object

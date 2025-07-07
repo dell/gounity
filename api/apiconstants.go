@@ -1,5 +1,5 @@
 /*
- Copyright © 2019 Dell Inc. or its subsidiaries. All Rights Reserved.
+ Copyright © 2019-2025 Dell Inc. or its subsidiaries. All Rights Reserved.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -14,7 +14,9 @@
 
 package api
 
-import "github.com/dell/gounity/types"
+import (
+	types "github.com/dell/gounity/apitypes"
+)
 
 // InitiatorType constants
 const (
@@ -106,21 +108,23 @@ const (
 
 	// Action types for URL's
 
-	LunAction               = "lun"
-	CreateLunAction         = "createLun"
-	FileSystemAction        = "filesystem"
-	CreateFSAction          = "createFilesystem"
-	NfsShareAction          = "nfsShare"
-	StorageResourceAction   = "storageResource"
-	HostAction              = "host"
-	IPInterface             = "ipInterface"
-	SnapAction              = "snap"
-	PoolAction              = "pool"
-	IOLimitPolicy           = "ioLimitPolicy"
-	LicenseAction           = "license"
-	HostInitiatorPathAction = "hostInitiatorPath"
-	HostInitiatorAction     = "hostInitiator"
-	HostIPPortAction        = "hostIPPort"
-	NasServerAction         = "nasServer"
-	TenantAction            = "tenant"
+	LunAction                 = "lun"
+	CreateLunAction           = "createLun"
+	FileSystemAction          = "filesystem"
+	CreateFSAction            = "createFilesystem"
+	NfsShareAction            = "nfsShare"
+	StorageResourceAction     = "storageResource"
+	HostAction                = "host"
+	IPInterface               = "ipInterface"
+	SnapAction                = "snap"
+	PoolAction                = "pool"
+	IOLimitPolicy             = "ioLimitPolicy"
+	LicenseAction             = "license"
+	HostInitiatorPathAction   = "hostInitiatorPath"
+	HostInitiatorAction       = "hostInitiator"
+	HostIPPortAction          = "hostIPPort"
+	NasServerAction           = "nasServer"
+	TenantAction              = "tenant"
+	UnityNFSServer            = "nfsServer"
+	UnityNFSv3AndNFSv4Enabled = "nfsv3Enabled,nfsv4Enabled"
 )
