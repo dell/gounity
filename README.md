@@ -24,7 +24,7 @@ For existing customers using Dell’s Container Storage Modules, you will contin
 * **Continued Access to Current Open Source Version**<br>
        The current open-source version will remain available under its existing license for those who rely on it.
 
-Moving to a Enterprise model allows Dell’s development team to accelerate feature delivery and enhance integration across our Enterprise Kubernetes Storage solutions ultimately providing a more seamless and robust experience.<br>
+Moving to a closed source model allows Dell’s development team to accelerate feature delivery and enhance integration across our Enterprise Kubernetes Storage solutions ultimately providing a more seamless and robust experience.<br>
 We deeply appreciate the contributions of the open source community and remain committed to supporting our customers through this transition.<br>
 
 For questions or access requests, please contact the maintainers via [Dell Support](https://www.dell.com/support/kbdoc/en-in/000188046/container-storage-interface-csi-drivers-and-container-storage-modules-csm-how-to-get-support).
@@ -41,3 +41,4 @@ Follow the steps to run integration tests:
 3. To run the integration tests, run `make go-unittest`. Once all the tests in each module are run successfully, you will see `Output` as `PASS` for each of the module else `Output` is `FAIL`.
 4. To get the integration test coverage for each module, run `make go-coverage`.
 5. To generate and analyze coverage statistics, run `go tool cover -html=gounity_coverprofile.out`.
+
