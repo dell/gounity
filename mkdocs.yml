@@ -1,0 +1,7 @@
+site_name: 'gounity'
+site_description: 'gounity Documentation.'
+docs_dir: docs
+plugins:
+  - techdocs-core
+theme:
+  name: material
