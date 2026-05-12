@@ -26,4 +26,3 @@ Follow the steps to run integration tests:
 4. To get the integration test coverage for each module, run `make go-coverage`.
 5. To generate and analyze coverage statistics, run `go tool cover -html=gounity_coverprofile.out`.
 
-

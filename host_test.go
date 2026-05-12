@@ -442,3 +442,25 @@ func TestFindHostInitiatorByID(t *testing.T) {
 	_, err = testConf.client.FindHostInitiatorByID(ctx, "")
 	assert.Error(t, err)
 }
+
+func TestListHosts(t *testing.T) {
+	fmt.Println("Begin - List All Hosts Test")
+	ctx := context.Background()
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).ExpectedCalls = nil
+
+	// Mock setup for listing all hosts
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, "GET", "/api/types/host/instances?fields=id,name,description,fcHostInitiators,iscsiHostInitiators,hostIPPorts?fields", mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
+
+	hosts, err := testConf.client.ListHosts(ctx)
+	fmt.Println("List All Hosts", hosts, err)
+	if err != nil {
+		t.Fatalf("List All Hosts failed: %v", err)
+	}
+
+	testConf.client.(*UnityClientImpl).api.(*mocksapi.Client).On("DoWithHeaders", mock.Anything, "GET", "/api/types/host/instances?fields=id,name,description,fcHostInitiators,iscsiHostInitiators,hostIPPorts?fields", mock.Anything, mock.Anything, mock.Anything).Return(errors.New("list all hosts failed")).Once()
+
+	_, err = testConf.client.ListHosts(ctx)
+	assert.Error(t, err)
+
+	fmt.Println("List All Hosts Test Successful")
+}

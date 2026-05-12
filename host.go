@@ -97,6 +97,17 @@ func (c *UnityClientImpl) DeleteHost(ctx context.Context, hostName string) error
 	return nil
 }
 
+// ListHosts lists all hosts
+func (c *UnityClientImpl) ListHosts(ctx context.Context) ([]types.Host, error) {
+	listHostResp := &types.ListHost{}
+	listHostURI := api.UnityListHostsURI + HostfieldsToQuery
+	err := c.executeWithRetryAuthenticate(ctx, http.MethodGet, listHostURI, nil, listHostResp)
+	if err != nil {
+		return nil, err
+	}
+	return listHostResp.Hosts, nil
+}
+
 // CreateHostIPPort - Create Host IP Port
 func (c *UnityClientImpl) CreateHostIPPort(ctx context.Context, hostID, ip string) (*types.HostIPPort, error) {
 	if len(hostID) == 0 {

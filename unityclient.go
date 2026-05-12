@@ -73,6 +73,7 @@ type UnityClient interface {
 	CreateHostIPPort(ctx context.Context, hostID, ip string) (*types.HostIPPort, error)
 	FindHostIPPortByID(ctx context.Context, hostIPID string) (*types.HostIPPort, error)
 	ListHostInitiators(ctx context.Context) ([]types.HostInitiator, error)
+	ListHosts(ctx context.Context) ([]types.Host, error)
 	FindHostInitiatorByName(ctx context.Context, wwnOrIqn string) (*types.HostInitiator, error)
 	FindHostInitiatorByID(ctx context.Context, wwnOrIqn string) (*types.HostInitiator, error)
 	CreateHostInitiator(ctx context.Context, hostID, wwnOrIqn string, initiatorType types.InitiatorType) (*types.HostInitiator, error)

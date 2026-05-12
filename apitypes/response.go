@@ -161,6 +161,11 @@ type HostContent struct {
 	Address         string       `json:"address,omitempty"`
 }
 
+// ListHost struct to capture host list
+type ListHost struct {
+	Hosts []Host `json:"entries"`
+}
+
 // Initiators struct to capture Initiator ID
 type Initiators struct {
 	ID string `json:"id"`

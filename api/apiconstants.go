@@ -96,6 +96,9 @@ const (
 	UnityListHostInitiatorsURI = unityAPITypes + "/hostInitiator/instances?fields="
 	UnityModifyHostInitiators  = unityRootAPI + "/instances/hostInitiator/%s/action/modify"
 
+	// UnityListHostsURI gets Hosts URIs
+	UnityListHostsURI = unityAPITypes + "/host/instances?fields="
+
 	// UnityInstancesFilter does Unity Instance Filter
 	UnityInstancesFilter = UnityAPIInstanceTypeResources + "?filter=%s"
 
