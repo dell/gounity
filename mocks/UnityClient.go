@@ -1425,6 +1425,36 @@ func (_m *UnityClient) ListHostInitiators(ctx context.Context) ([]types.HostInit
 	return r0, r1
 }
 
+// ListHosts provides a mock function with given fields: ctx
+func (_m *UnityClient) ListHosts(ctx context.Context) ([]types.Host, error) {
+	ret := _m.Called(ctx)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListHosts")
+	}
+
+	var r0 []types.Host
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context) ([]types.Host, error)); ok {
+		return rf(ctx)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context) []types.Host); ok {
+		r0 = rf(ctx)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]types.Host)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = rf(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // ListIscsiIPInterfaces provides a mock function with given fields: ctx
 func (_m *UnityClient) ListIscsiIPInterfaces(ctx context.Context) ([]types.IPInterfaceEntries, error) {
 	ret := _m.Called(ctx)

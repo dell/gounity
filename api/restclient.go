@@ -299,7 +299,7 @@ func (c *client) DoAndGetResponseBody(ctx context.Context, method, uri string, h
 
 	// send the request
 	req = req.WithContext(ctx)
-	if res, err = c.http.Do(req); err != nil {
+	if res, err = c.http.Do(req); err != nil { // #nosec G704
 		return nil, err
 	}
 
